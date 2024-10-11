@@ -12,19 +12,20 @@ dotenv.config();
 const app = express();
 
 // Connect to the database
-connectDB();
+
+// connectDB();
 
 // Middleware
 app.use(express.json()); // Parse incoming JSON requests
-app.use(morgan('dev'));  // HTTP request logger
+app.use(morgan('tiny'));  // HTTP request logger
 
 // Routes
 app.use('/api', routes); // Use all routes under '/api'
 
 // Error handling middleware
-app.use(errorHandler);
+// app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}...`);
 });
