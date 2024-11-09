@@ -1,12 +1,12 @@
-import './App.css';
-import Router from './Router.tsx';
+import "./App.css";
+import Router from "./Router.tsx";
 
 function App() {
-  return(
+  return (
     <div>
-      <Router/>
+      <Router />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

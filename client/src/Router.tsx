@@ -1,10 +1,10 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage.tsx';
-import StudentsLandingPage from './pages/StudentsLandingPage.tsx';
-import ElectiveChoicePage from './pages/ElectiveChoicePage.tsx';
-import OpenElectivesPage from './pages/OpenElectivesPage.tsx';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage.tsx";
+import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
+import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
+import OpenElectivesPage from "./pages/OpenElectivesPage.tsx";
 
-export default function Router () {
+export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
@@ -14,5 +14,5 @@ export default function Router () {
         <Route path="/open-electives" element={<OpenElectivesPage />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
