@@ -60,7 +60,7 @@ export default function UpcomingDeadlinesList() {
   return (
     <ul role="list" className="divide-y divide-gray-100">
       {projects.map((project) => (
-        <li key={project.id} className="flex items-center justify-between gap-x-6 py-5">
+        <li key={project.id} className="flex items-center justify-between gap-x-6 py-5 hover:bg-gray-100 px-4 rounded-lg">
           <div className="min-w-0">
             <div className="flex items-start gap-x-3">
               <p className="text-sm/6 font-semibold text-gray-900">{project.name}</p>

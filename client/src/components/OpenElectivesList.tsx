@@ -1,7 +1,6 @@
 import { electives } from '../data.ts';
 
 
-
 export default function OpenElectivesList() {
   return (
     <div className="px-4 sm:px-6 lg:px-8">

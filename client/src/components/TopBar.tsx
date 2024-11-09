@@ -1,4 +1,4 @@
-import { Bars3Icon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon } from '@heroicons/react/24/outline';
 
 export default function TopBar() {
   return (

@@ -1,17 +1,8 @@
-import {
-  CalendarIcon,
-  ChartPieIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
-  HomeIcon,
-  UsersIcon,
-} from '@heroicons/react/24/outline'
-import { BookOpenIcon } from '@heroicons/react/16/solid';
+import { HomeIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 
 const navigation = [
   { name: 'Home', href: '/home', icon: HomeIcon, count: '5', current: true },
-  { name: 'Open electives', href: '/open-electives', icon: BookOpenIcon, count: '5', current: false },
   { name: 'Programme electives', href: '/open-electives', icon: HomeIcon, count: '5', current: false },
 ]
 
