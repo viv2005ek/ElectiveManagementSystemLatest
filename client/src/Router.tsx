@@ -4,6 +4,7 @@ import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
 import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
 import OpenElectivesPage from "./pages/OpenElectivesPage.tsx";
 import AllStudentList from "./pages/AllStudentListPage.tsx";
+import UserProfilePage from "./pages/UserProfilePage.tsx";
 
 export default function Router() {
   return (
@@ -14,6 +15,7 @@ export default function Router() {
         <Route path="/choose/:id" element={<ElectiveChoicePage />} />
         <Route path="/open-electives" element={<OpenElectivesPage />} />
         <Route path="/student-list" element={<AllStudentList />} />
+        <Route path="/user-profile" element={<UserProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
