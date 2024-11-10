@@ -19,7 +19,7 @@ function classNames(...classes: string[]) {
 export default function Sidebar() {
   return (
     <div className="flex grow flex-col  gap-y-5 min-h-screen h-full overflow-y-auto bg-muj-orange  text-white px-6">
-      <div className="flex h-16 mt-4 shrink-0 items-center">
+      <div className="flex h-16 mt-4 shrink-0 items-center bg-white">
         <img alt="Your Company" src="/MUJ_logo.png" className="h-48 w-auto" />
       </div>
       <nav className="flex mt-8 flex-1 flex-col">
