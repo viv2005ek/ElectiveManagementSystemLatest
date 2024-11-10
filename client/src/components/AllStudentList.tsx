@@ -1,4 +1,5 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
+import allUsers from "../store/allStudentData";
 
 type Elective = {
   subject: string;
@@ -7,35 +8,24 @@ type Elective = {
 
 type Student = {
   name: string;
-  regNo: string;
+  registrationNo: string;  // Updated to match the data
+  mobileNo1: string;
+  mobileNo2: string;
+  departmentName: string;
+  branchName: string;
   semester: string;
-  department: string;
+  classCoordinator: boolean;
+  profilePic: string | null;
+  classCoordinatorName: string;
+  mailId: string;
+  section: string;
+  batchNo: string;
+  gender: string;
   elective: Elective;
 };
 
 export default function AllStudentList() {
-  const students: Student[] = [
-    { name: "John Doe", regNo: "BTECH1234", semester: "5", department: "CSE", elective: { subject: "Data Science", credits: 3 } },
-    { name: "Jane Smith", regNo: "BTECH5678", semester: "3", department: "ECE", elective: { subject: "AI Basics", credits: 2 } },
-    { name: "Mike Johnson", regNo: "BTECH9101", semester: "7", department: "ME", elective: { subject: "Robotics", credits: 4 } },
-    { name: "Sara Brown", regNo: "BTECH1123", semester: "1", department: "IT", elective: { subject: "Cybersecurity", credits: 3 } },
-    { name: "Robert Green", regNo: "BTECH1617", semester: "6", department: "CSE", elective: { subject: "Machine Learning", credits: 3 } },
-{ name: "Laura Black", regNo: "BTECH1819", semester: "2", department: "ECE", elective: { subject: "Embedded Systems", credits: 2 } },
-{ name: "Chris Adams", regNo: "BTECH2021", semester: "4", department: "ME", elective: { subject: "Thermodynamics", credits: 3 } },
-{ name: "Amy Clark", regNo: "BTECH2223", semester: "8", department: "IT", elective: { subject: "Cloud Computing", credits: 4 } },
-{ name: "David Lewis", regNo: "BTECH2425", semester: "5", department: "CE", elective: { subject: "Environmental Science", credits: 3 } },
-{ name: "Rachel Wilson", regNo: "BTECH2627", semester: "3", department: "CSE", elective: { subject: "Web Development", credits: 2 } },
-{ name: "Brian Martinez", regNo: "BTECH2829", semester: "1", department: "ECE", elective: { subject: "Digital Electronics", credits: 3 } },
-{ name: "Olivia Scott", regNo: "BTECH3031", semester: "7", department: "ME", elective: { subject: "Fluid Mechanics", credits: 4 } },
-{ name: "Jack Thomas", regNo: "BTECH3233", semester: "6", department: "IT", elective: { subject: "Data Privacy", credits: 3 } },
-{ name: "Sophia Turner", regNo: "BTECH3435", semester: "2", department: "CE", elective: { subject: "Geotechnical Engineering", credits: 2 } },
-{ name: "Liam Evans", regNo: "BTECH3637", semester: "5", department: "CSE", elective: { subject: "Artificial Intelligence", credits: 3 } },
-{ name: "Mia Roberts", regNo: "BTECH3839", semester: "4", department: "ECE", elective: { subject: "Signal Processing", credits: 3 } },
-{ name: "Ethan Baker", regNo: "BTECH4041", semester: "8", department: "ME", elective: { subject: "Manufacturing Processes", credits: 4 } },
-{ name: "Ava King", regNo: "BTECH4243", semester: "3", department: "IT", elective: { subject: "Network Security", credits: 2 } },
-{ name: "Benjamin Lee", regNo: "BTECH4445", semester: "1", department: "CE", elective: { subject: "Engineering Graphics", credits: 3 } }
-
-  ];
+  const students: Student[] = allUsers;
 
   const [search, setSearch] = useState<string>("");
   const [filterDepartment, setFilterDepartment] = useState<string>("");
@@ -45,13 +35,12 @@ export default function AllStudentList() {
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(search.toLowerCase()) ||
-      student.regNo.toLowerCase().includes(search.toLowerCase());
-    const matchesDepartment = filterDepartment ? student.department === filterDepartment : true;
+      student.registrationNo.toLowerCase().includes(search.toLowerCase());
+    const matchesDepartment = filterDepartment ? student.departmentName === filterDepartment : true;
     const matchesSemester = filterSemester ? student.semester === filterSemester : true;
 
     return matchesSearch && matchesDepartment && matchesSemester;
   });
-
 
   useEffect(() => {
     if (selectedStudent) {
@@ -60,10 +49,9 @@ export default function AllStudentList() {
       document.body.style.overflow = ""; 
     }
     return () => {
-      document.body.style.overflow = ""; // Always restore when component unmounts
+      document.body.style.overflow = ""; 
     };
   }, [selectedStudent]);
-
 
   return (
     <div className="p-4 max-w-screen-lg mx-auto">
@@ -98,9 +86,13 @@ export default function AllStudentList() {
         >
           <option value="">All Semesters</option>
           <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
           <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
           <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
           <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
         </select>
       </div>
 
@@ -111,33 +103,57 @@ export default function AllStudentList() {
             onClick={() => setSelectedStudent(student)}
             className="cursor-pointer p-4 border border-gray-200 rounded-lg shadow-md flex flex-col justify-between items-start"
           >
-            <p className="text-lg font-semibold">{student.name} - {student.regNo}</p>
-            <p className="text-sm">Department: {student.department} | Semester: {student.semester}</p>
+            <p className="text-lg font-semibold">{student.name} - {student.registrationNo}</p>
+            <p className="text-sm">Department: {student.departmentName} | Semester: {student.semester}</p>
             <p className="text-sm">Elective: {student.elective.subject} ({student.elective.credits} Credits)</p>
           </li>
         ))}
       </ul>
 
       {selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
-            <button
-              onClick={() => setSelectedStudent(null)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              style={{scale:"1.75"}}
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-semibold mb-2">Student Details</h2>
-            <p className="mb-1"><strong>Name:</strong> {selectedStudent.name}</p>
-            <p className="mb-1"><strong>Registration Number:</strong> {selectedStudent.regNo}</p>
-            <p className="mb-1"><strong>Department:</strong> {selectedStudent.department}</p>
-            <p className="mb-1"><strong>Semester:</strong> {selectedStudent.semester}</p>
-            <p className="mb-1"><strong>Open Elective:</strong> {selectedStudent.elective.subject}</p>
-            <p><strong>Credits:</strong> {selectedStudent.elective.credits}</p>
-          </div>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+      <button
+        onClick={() => setSelectedStudent(null)}
+        className="absolute top-2 right-5 text-gray-500 hover:text-gray-700"
+        style={{ scale: "1.75" }}
+      >
+        &times;
+      </button>
+      <h2 className="text-xl font-semibold mb-2">Student Details</h2>
+
+      <p className="mb-1"><strong>Name:</strong> {selectedStudent.name}</p>
+      <p className="mb-1"><strong>Registration Number:</strong> {selectedStudent.registrationNo}</p>
+      <p className="mb-1"><strong>Mobile Number 1:</strong> {selectedStudent.mobileNo1}</p>
+      <p className="mb-1"><strong>Mobile Number 2:</strong> {selectedStudent.mobileNo2}</p>
+      <p className="mb-1"><strong>Department:</strong> {selectedStudent.departmentName}</p>
+      <p className="mb-1"><strong>Branch:</strong> {selectedStudent.branchName}</p>
+      <p className="mb-1"><strong>Semester:</strong> {selectedStudent.semester}</p>
+      <p className="mb-1"><strong>Class Coordinator:</strong> {selectedStudent.classCoordinator ? "Yes" : "No"}</p>
+      <p className="mb-1"><strong>Class Coordinator Name:</strong> {selectedStudent.classCoordinatorName}</p>
+      <p className="mb-1"><strong>Email:</strong> {selectedStudent.mailId}</p>
+      <p className="mb-1"><strong>Section:</strong> {selectedStudent.section}</p>
+      <p className="mb-1"><strong>Batch Number:</strong> {selectedStudent.batchNo}</p>
+      <p className="mb-1"><strong>Gender:</strong> {selectedStudent.gender}</p>
+      
+      <h3 className="text-lg font-semibold mt-4">Elective Details:</h3>
+      <p className="mb-1"><strong>Subject:</strong> {selectedStudent.elective.subject}</p>
+      <p><strong>Credits:</strong> {selectedStudent.elective.credits}</p>
+
+      {/* If the student has a profile picture, display it */}
+      {selectedStudent.profilePic && (
+        <div className="mt-4">
+          <img
+            src={selectedStudent.profilePic}
+            alt="Profile Picture"
+            className="w-24 h-24 rounded-full object-cover"
+          />
         </div>
       )}
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
