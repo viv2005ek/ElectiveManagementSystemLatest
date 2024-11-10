@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
 // Routes
-app.use('/api/example', exampleRoute);
+
 
 // Health Check Route
 app.get('/', (req: Request, res: Response) => {
