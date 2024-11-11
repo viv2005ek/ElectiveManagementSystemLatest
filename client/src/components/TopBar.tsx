@@ -39,6 +39,7 @@ export default function TopBar() {
     };
   }, [isSidebarOpen]);
 
+
   return (
     <div className="sticky top-0 bg-white">
       <div className="shadow-md h-auto flex items-center justify-between px-6 py-2">
@@ -88,8 +89,10 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Conditionally render Sidebar */}
-      {isSidebarOpen && <Sidebar />}
+<div  className={`transition-transform duration-300 transform ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:relative md:translate-x-0`}>{isSidebarOpen && <Sidebar />}</div>
+      
     </div>
   );
 }
