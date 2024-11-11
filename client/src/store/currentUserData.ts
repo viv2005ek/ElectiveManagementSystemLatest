@@ -7,7 +7,7 @@ export const currentUser = {
   branchName: "Software Engineering",
   semester: "6th",
   classCoordinator: true,
-  profilePic: null,
+  profilePic: "./User.png",
   classCoordinatorName: "Dr. Jane Smith",
   mailId: "john.doe@example.com",
   section: "A",
