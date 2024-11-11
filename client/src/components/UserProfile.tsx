@@ -17,7 +17,8 @@ export default function UserProfile() {
     section,
     batchNo,
     gender,
-    password, 
+    password,
+    courseName
   } = currentUser;
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -51,8 +52,8 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="p-8 max-w-screen-lg mx-auto">
-      <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col items-center">
+    <div className="sm:p-8 max-w-screen-lg mx-auto">
+      <div className="bg-white shadow-lg rounded-lg p-4 sm:p-8 flex flex-col items-center">
         <img
           src={profilePic ?? "./userDefaultPfp.png"}
           alt={`${name}'s Profile`}
@@ -63,6 +64,8 @@ export default function UserProfile() {
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
           <p><span className="font-semibold">Registration No:</span> {registrationNo}</p>
+          <p><span className="font-semibold">Course:</span> {courseName}</p>
+
           <p><span className="font-semibold">Department:</span> {departmentName}</p>
           <p><span className="font-semibold">Branch:</span> {branchName}</p>
           <p><span className="font-semibold">Semester:</span> {semester}</p>
@@ -71,6 +74,8 @@ export default function UserProfile() {
           <p><span className="font-semibold">Gender:</span> {gender}</p>
           <p><span className="font-semibold">Mobile 1:</span> {mobileNo1}</p>
           <p><span className="font-semibold">Mobile 2:</span> {mobileNo2}</p>
+
+          
           <p>
             <span className="font-semibold">Class Coordinator:</span> {classCoordinator ? 'Yes' : 'No'}
           </p>
