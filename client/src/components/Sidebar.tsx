@@ -10,6 +10,13 @@ const navigation = [
     count: "5",
     current: false,
   },
+  {
+    name: "Student List",
+    href: "/student-list",
+    icon: HomeIcon,
+    count: "5",
+    current: false,
+  },
 ];
 
 function classNames(...classes: string[]) {
@@ -18,40 +25,39 @@ function classNames(...classes: string[]) {
 
 export default function Sidebar() {
   return (
-    <div className="flex grow flex-col  gap-y-5 min-h-screen h-full overflow-y-auto bg-muj-orange  text-white px-6">
-      <div className="flex h-16 mt-4 shrink-0 items-center bg-white">
-        <img alt="Your Company" src="/MUJ_logo.png" className="h-48 w-auto" />
+    <div className="flex flex-col min-h-screen h-full overflow-y-auto bg-muj-orange text-white px-6">
+      <div className="flex h-24 mt-4 shrink-0 items-center justify-center bg-white rounded-lg shadow-md">
+        <img alt="Your Company" src="/MUJ_logo.png" className="h-16 w-auto" style={{scale:"3"}}/>
       </div>
+
       <nav className="flex mt-8 flex-1 flex-col">
-        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-          <li>
-            <ul role="list" className="-mx-2 space-y-1">
-              {navigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={item.href}
-                    className={classNames(
-                      item.current
-                        ? "bg-muj-orange bg-opacity-70  "
-                        : " hover:bg-muj-orange hover:bg-opacity-30",
-                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-                    )}
-                  >
-                    <item.icon
-                      aria-hidden="true"
-                      className={classNames(
-                        item.current
-                          ? ""
-                          : "text-indigo-200 stroke-white font-semibold ",
-                        "h-6 w-6 shrink-0",
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </li>
+        <ul role="list" className="flex flex-1 flex-col gap-y-6">
+          {navigation.map((item) => (
+            <li key={item.name}>
+              <Link
+                to={item.href}
+                className={classNames(
+                  item.current
+                    ? "bg-white text-muj-orange shadow-lg"
+                    : "text-white hover:bg-opacity-20 hover:bg-white",
+                  "group flex items-center gap-x-4 rounded-lg p-3 font-semibold text-md transition-all duration-300 ease-in-out"
+                )}
+              >
+                <item.icon
+                  aria-hidden="true"
+                  className={classNames(
+                    item.current
+                      ? "text-muj-orange"
+                      : "text-white group-hover:text-muj-orange",
+                    "h-6 w-6 transition-colors duration-300 ease-in-out"
+                  )}
+                />
+                <span className="flex-1">{item.name}</span>
+
+              
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
     </div>
