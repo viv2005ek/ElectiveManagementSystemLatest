@@ -22,6 +22,10 @@ const navigation = [
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
+function handleClick(currentItem) {
+  navigation.map((item) => (item.current=false));
+  currentItem.current = true;
+}
 
 export default function Sidebar() {
   return (
@@ -33,7 +37,7 @@ export default function Sidebar() {
       <nav className="flex mt-8 flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-6">
           {navigation.map((item) => (
-            <li key={item.name}>
+            <li key={item.name} onClick={()=>handleClick(item)}>
               <Link
                 to={item.href}
                 className={classNames(
