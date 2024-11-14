@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import currentUser from '../store/currentUserData'; 
+import  { useState } from 'react';
+import currentUser from '../store/currentUserData';
 
 export default function UserProfile() {
   const {
@@ -44,11 +44,11 @@ export default function UserProfile() {
     }
 
     setMessage("Password changed successfully.");
-    
+
     setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    setShowPasswordForm(false); 
+    setShowPasswordForm(false);
   };
 
   return (
@@ -75,7 +75,7 @@ export default function UserProfile() {
           <p><span className="font-semibold">Mobile 1:</span> {mobileNo1}</p>
           <p><span className="font-semibold">Mobile 2:</span> {mobileNo2}</p>
 
-          
+
           <p>
             <span className="font-semibold">Class Coordinator:</span> {classCoordinator ? 'Yes' : 'No'}
           </p>
@@ -94,7 +94,7 @@ export default function UserProfile() {
         {showPasswordForm && (
           <div className="w-full mt-6 p-6 bg-gray-50 rounded-lg shadow-inner">
             <h2 className="text-lg font-semibold text-gray-700 mb-4">Change Password</h2>
-            
+
             <input
               type="password"
               placeholder="Old Password"
@@ -102,7 +102,7 @@ export default function UserProfile() {
               onChange={(e) => setOldPassword(e.target.value)}
               className="border rounded-lg p-3 w-full mb-4 focus:border-blue-400 focus:outline-none"
             />
-            
+
            <input
               type="password"
               placeholder="New Password"
@@ -110,7 +110,7 @@ export default function UserProfile() {
               onChange={(e) => setNewPassword(e.target.value)}
               className="border rounded-lg p-3 w-full mb-4 focus:border-blue-400 focus:outline-none"
             />
-            
+
             <input
               type="password"
               placeholder="Confirm New Password"
@@ -118,14 +118,14 @@ export default function UserProfile() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="border rounded-lg p-3 w-full mb-4 focus:border-blue-400 focus:outline-none"
             />
-            
+
             <button
               onClick={handleChangePassword}
               className="bg-[#d05c23] text-white py-2 px-4 rounded-lg hover:bg-[#a73904] transition duration-200 w-full"
             >
               Update Password
             </button>
-            
+
             {message && <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>{message}</p>}
           </div>
         )}

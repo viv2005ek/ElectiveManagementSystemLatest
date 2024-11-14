@@ -7,5 +7,9 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    "src/**/*.ts",    // Include all your TypeScript files
+    "src/types/**/*.d.ts"  // Include your custom type declarations
+  ]
 }

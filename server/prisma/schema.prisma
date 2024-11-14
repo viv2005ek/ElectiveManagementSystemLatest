@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StudentCredentials {
+  id                 String @id @default(uuid())
+  registrationNumber String @unique
+  email              String @unique
+  passwordHash       String
+}
+
+model FacultyCredentials {
+  id                 String @id @default(uuid())
+  registrationNumber String @unique
+  email              String @unique
+  passwordHash       String
+}
+
+model AdminCredentials {
+  id                 String @id @default(uuid())
+  registrationNumber String @unique
+  email              String @unique
+  passwordHash       String
+}
+
+model StudentDetails {
+  id                 String @id @default(uuid())
+  registrationNumber String @unique
+  email              String @unique
+  semester           Int
+  DepartmentId       String
+  DepartmentName     String
+  BranchId           String
+  BranchName         String
+}
+
+model FacultyDetails {
+  id                 String @id @default(uuid())
+  registrationNumber String @unique
+  email              String @unique
+}
+
+model Department {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  branches Branch[] @relation("DepartmentBranches")
+}
+
+model Branch {
+  id           String     @id @default(uuid())
+  name         String     @unique
+  departmentId String
+  department   Department @relation("DepartmentBranches", fields: [departmentId], references: [id])
+}
+
+model ProgrammeElective {
+  id         String @id @default(uuid())
+  courseCode String @unique
+  name       String @unique
+  semester   Int
+}
+
+model ProgrammeElectiveAllotment {
+  id                 String @id @default(uuid())
+  studentId          String
+  electiveId         String
+  electiveName       String
+  electiveCourseCode String
+  allotmentSemester  Int
+}
+
+model FacultyElectiveAllotment {
+  id                 String @id @default(uuid())
+  facultyId          String
+  electiveId         String
+  electiveName       String
+  electiveCourseCode String
+  allotmentSemester  Int
+}
+
+model SemesterBranchPermissions {
+  id                   String  @id
+  branchId             String
+  semester             Int
+  enrollmentIsActive   Boolean
+  changePeriodIsActive Boolean
+}
+
+model ChangeRequests {
+  id   String @id
+  bran
+}
