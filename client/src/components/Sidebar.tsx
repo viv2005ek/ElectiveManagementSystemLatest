@@ -1,4 +1,4 @@
-import { HomeIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, BookOpenIcon } from "@heroicons/react/24/outline";
 import { FaWpforms } from "react-icons/fa";
 import { PiStudentBold } from "react-icons/pi";
 
@@ -8,7 +8,7 @@ const navigation = [
   { name: "Home", href: "/home", icon: HomeIcon, count: "5", current: true },
   {
     name: "Programme electives",
-    href: "/open-electives",
+    href: "/programme-electives",
     icon: FaWpforms,
     count: "5",
     current: false,
@@ -17,6 +17,13 @@ const navigation = [
     name: "Student List",
     href: "/student-list",
     icon: PiStudentBold,
+    count: "5",
+    current: false,
+  },
+  {
+    name: "Minor Specializations",
+    href: "/minor-specializations",
+    icon: BookOpenIcon,
     count: "5",
     current: false,
   },
@@ -61,7 +68,7 @@ export default function Sidebar() {
                 />
                 <span className="flex-1">{item.name}</span>
 
-              
+
               </Link>
             </li>
           ))}

@@ -1,7 +1,16 @@
+import { useAuth } from '../hooks/useAuth.ts';
+import { Link } from 'react-router-dom';
+
 export default function LoginPage() {
+
+  const {email, password, setPassword, setEmail, login, isLoading} = useAuth()
+
+  const handleSubmit = async () => {
+    await login()
+  }
+
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Form */}
       <div className="flex w-full flex-col justify-center px-8 py-8 lg:w-1/2 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-md lg:w-96">
           <div className="text-center">
@@ -19,7 +28,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-8">
-            <form action="#" method="POST" className="space-y-6">
+            <div className="space-y-6">
               <div>
                 <label
                   htmlFor="email"
@@ -29,6 +38,8 @@ export default function LoginPage() {
                 </label>
                 <div className="mt-2">
                   <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     id="email"
                     name="email"
                     type="email"
@@ -48,6 +59,8 @@ export default function LoginPage() {
                 </label>
                 <div className="mt-2">
                   <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     id="password"
                     name="password"
                     type="password"
@@ -75,24 +88,25 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <Link
+                    to="#"
                     className="font-semibold text-indigo-600 hover:text-indigo-500"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
 
               <div>
                 <button
+                  onClick={handleSubmit}
                   type="submit"
                   className="flex w-full justify-center rounded-md bg-muj-orange px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  Sign in
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>

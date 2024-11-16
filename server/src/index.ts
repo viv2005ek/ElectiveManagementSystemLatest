@@ -1,21 +1,40 @@
-import express, { Application, Request, Response } from 'express';
-import authRoute from './routes/authRoute';
+import express, {Request, Response} from 'express'
+import dotenv from 'dotenv'
+import adminRoute from './routes/AdminRoute';
+import authRoute from './routes/AuthRoute';
+import AuthRoute from './routes/AuthRoute';
+import cors from 'cors'
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
-const app: Application = express();
-const PORT = process.env.PORT || 8080;
+dotenv.config()
 
-// Middleware
-app.use(express.json());
+const app  = express()
 
-// Routes
-app.use('/auth', authRoute)
+const port = process.env.PORT || 8080
+app.use(cors({
+  origin: '*'
+}));
 
-// Health Check Route
-app.get('/', (req: Request, res: Response) => {
-  res.send('API is running');
+
+//middleware
+app.use(express.json())
+app.use(morgan('dev'))
+app.use(cookieParser());
+
+
+//routes
+app.use('/auth', AuthRoute)
+app.use('/admin', adminRoute)
+
+
+app.get('/health-check', async (req: Request, res: Response) => {
+  res.status(200).json({ msg: 'Server is online.' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+
+app.listen( port, () => {
+  console.log("Server listening on port", port );
+})
+
+
