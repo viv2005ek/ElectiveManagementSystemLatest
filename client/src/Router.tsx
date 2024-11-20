@@ -6,6 +6,7 @@ import ProgrammeElectivesPage from "./pages/ProgrammeElectivesPage.tsx";
 import AllStudentList from "./pages/AllStudentListPage.tsx";
 import UserProfilePage from "./pages/UserProfilePage.tsx";
 import MinorSpecializationsPage from './pages/MinorSpecializationsPage.tsx';
+import AdminPage from "./pages/AdminPage.tsx";
 
 export default function Router() {
   return (
@@ -18,6 +19,9 @@ export default function Router() {
         <Route path="/minor-specializations" element={<MinorSpecializationsPage />} />
         <Route path="/student-list" element={<AllStudentList />} />
         <Route path="/user-profile" element={<UserProfilePage />} />
+        <Route path="/admin" element={<AdminPage />} />
+
+
       </Routes>
     </BrowserRouter>
   );

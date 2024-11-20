@@ -1,6 +1,7 @@
 import { HomeIcon, BookOpenIcon } from "@heroicons/react/24/outline";
 import { FaWpforms } from "react-icons/fa";
 import { PiStudentBold } from "react-icons/pi";
+import { RiAdminLine } from "react-icons/ri";
 
 import { Link } from "react-router-dom";
 
@@ -24,6 +25,13 @@ const navigation = [
     name: "Minor Specializations",
     href: "/minor-specializations",
     icon: BookOpenIcon,
+    count: "5",
+    current: false,
+  },
+  {
+    name: "Admin",
+    href: "/admin",
+    icon: RiAdminLine,
     count: "5",
     current: false,
   },
