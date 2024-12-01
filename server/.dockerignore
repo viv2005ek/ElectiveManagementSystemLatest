@@ -21,7 +21,7 @@
 **/*.jfm
 **/charts
 **/docker-compose*
-**/compose.y*ml
+../compose.yaml
 **/Dockerfile*
 **/node_modules
 **/npm-debug.log

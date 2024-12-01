@@ -24,10 +24,8 @@ const verifyAdmin = async (req: CustomRequest, res: Response, next: NextFunction
       return res.status(403).json({ message: 'Forbidden: Not an admin user' });
     }
 
-    // Attach the admin info to the request object
     req.user = admin;
 
-    // Proceed to the next middleware
     next();
   } catch (error) {
     console.error('JWT verification or database error:', error);

@@ -20,19 +20,20 @@ export function useAuth(): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const {setRole} = useUser()
+  const {setRole } = useUser()
 
   const login = async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await axiosInstance.post("/auth/admin/login", {
+      const response = await axiosInstance.post("/auth/login", {
         email: email,
         password: password,
       });
 
       setRole(response.data.role)
+
       console.log(response.data.role);
       navigate('/home')
 

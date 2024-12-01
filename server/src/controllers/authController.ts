@@ -2,11 +2,10 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prismaClient';
-import { UserRole } from '../types/UserTypes';
+import { UserRole } from '../types/UserTypes'; // Define roles: Admin, Faculty, Student
 
 const authController = {
-
-  adminLoginController: async (req: Request, res: Response): Promise<any> => {
+  loginController: async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -14,27 +13,50 @@ const authController = {
     }
 
     try {
-      const admin = await prisma.adminCredential.findUnique({
-        where: { email },
-      });
+      let user = null;
+      let role: UserRole | null = null;
 
-      if (!admin) {
+      // Check Admin table
+      user = await prisma.adminCredential.findUnique({ where: { email } });
+      if (user) {
+        role = UserRole.Admin;
+      }
+
+      // Check Faculty table if not found in Admin
+      if (!user) {
+        user = await prisma.facultyCredential.findUnique({ where: { email } });
+        if (user) {
+          role = UserRole.Faculty;
+        }
+      }
+
+      // Check Student table if not found in Admin or Faculty
+      if (!user) {
+        user = await prisma.studentCredential.findUnique({ where: { email } });
+        if (user) {
+          role = UserRole.Student;
+        }
+      }
+
+      // If no user is found
+      if (!user) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
-
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
+      // Generate JWT
       const token = jwt.sign(
-        { id: admin.id, email: admin.email },
+        { id: user.id, email: user.email, role },
         process.env.JWT_SECRET as string,
         { expiresIn: '1d' }
       );
 
-      // Set the JWT cookie using the res.cookie() method.
+      // Set the JWT cookie
       res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -44,10 +66,10 @@ const authController = {
 
       return res.status(200).json({
         message: 'Login successful',
-        role: UserRole.Admin
+        role,
       });
     } catch (error) {
-      console.error('Error during admin login:', error);
+      console.error('Error during login:', error);
       return res.status(500).json({ message: 'An error occurred during login' });
     }
   },
