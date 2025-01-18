@@ -7,6 +7,7 @@ import AllStudentList from "./pages/AllStudentListPage.tsx";
 import UserProfilePage from "./pages/UserProfilePage.tsx";
 import MinorSpecializationsPage from './pages/MinorSpecializationsPage.tsx';
 import AdminPage from "./pages/AdminPage.tsx";
+import ElectiveManagementSystem from "./pages/ElectiveManagementSystem.tsx"
 
 export default function Router() {
   return (
@@ -20,6 +21,7 @@ export default function Router() {
         <Route path="/student-list" element={<AllStudentList />} />
         <Route path="/user-profile" element={<UserProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/ems" element = {<ElectiveManagementSystem/>}/>
 
 
       </Routes>

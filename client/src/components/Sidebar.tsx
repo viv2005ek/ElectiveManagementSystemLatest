@@ -2,6 +2,7 @@ import { HomeIcon, BookOpenIcon } from "@heroicons/react/24/outline";
 import { FaWpforms } from "react-icons/fa";
 import { PiStudentBold } from "react-icons/pi";
 import { RiAdminLine } from "react-icons/ri";
+import { GrSystem } from "react-icons/gr";
 
 import { Link } from "react-router-dom";
 
@@ -32,6 +33,13 @@ const navigation = [
     name: "Admin",
     href: "/admin",
     icon: RiAdminLine,
+    count: "5",
+    current: false,
+  },
+  {
+    name: "EMS",
+    href: "/ems",
+    icon: GrSystem,
     count: "5",
     current: false,
   },
