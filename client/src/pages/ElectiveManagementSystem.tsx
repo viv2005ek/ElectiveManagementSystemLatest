@@ -1,7 +1,13 @@
 import MainLayout from "../layouts/MainLayout.tsx";
+import { useNavigate } from 'react-router-dom';
 import img from "../assets/back.png"
 
 export default function ElectiveManagementSystem() {
+    {/* route /ems */}
+    const navigate = useNavigate();
+    const handleClick = ()=>{
+        navigate('/oe');
+    }
     return (
         <MainLayout>
             <div className={"py-0 px-0"}
@@ -20,7 +26,7 @@ export default function ElectiveManagementSystem() {
                         <div className="p-6 space-y-4">
                             <button
                                 className="w-full bg-white rounded-lg shadow p-4 text-center font-medium hover:bg-orange-200 transition"
-                                onClick={() => console.log("helo")}
+                                onClick={handleClick}
                             >
                                 Select an Open Elective
                             </button>
