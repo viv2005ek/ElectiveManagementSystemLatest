@@ -7,8 +7,10 @@ import AllStudentList from "./pages/AllStudentListPage.tsx";
 import UserProfilePage from "./pages/UserProfilePage.tsx";
 import MinorSpecializationsPage from './pages/MinorSpecializationsPage.tsx';
 import AdminPage from "./pages/AdminPage.tsx";
-import ElectiveManagementSystem from "./pages/ElectiveManagementSystem.tsx"
-import OpenElective from "./pages/Openelective.tsx";
+import ElectiveManagementSystem from "./pages/ElectiveManagementSystemPage.tsx"
+import OpenElective from "./pages/OpenelectivePage.tsx";
+import ManageOEPage from "./pages/ManageOEPage.tsx";
+import EMSAdmin from "./pages/EMSAdminPage.tsx";
 
 export default function Router() {
   return (
@@ -23,7 +25,10 @@ export default function Router() {
         <Route path="/user-profile" element={<UserProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/ems" element = {<ElectiveManagementSystem/>}/>
-        <Route path="/oe" element = {<OpenElective/>} />       
+        <Route path="/oe" element = {<OpenElective/>} />   
+        <Route path="/oemanage" element = {<ManageOEPage/>} />  
+        <Route path="/emsadmin" element = {<EMSAdmin/>} />     
+    
 
 
       </Routes>

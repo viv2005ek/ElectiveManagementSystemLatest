@@ -1,0 +1,36 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const OEsub = [
+    { courseCode: "CSE0826", name: "Elective 1", seatsRemaining: 50 },
+    { courseCode: "CSE0823", name: "Elective 2", seatsRemaining: 40 },
+    { courseCode: "CSE0827", name: "Elective 3", seatsRemaining: 30 },
+    { courseCode: "CSE0830", name: "Data Structures", seatsRemaining: 45 },
+    { courseCode: "CSE0831", name: "Operating Systems", seatsRemaining: 35 },
+    { courseCode: "CSE0832", name: "Database Management Systems", seatsRemaining: 60 },
+    { courseCode: "CSE0833", name: "Computer Networks", seatsRemaining: 25 },
+    { courseCode: "CSE0834", name: "Software Engineering", seatsRemaining: 40 },
+    { courseCode: "CSE0835", name: "Artificial Intelligence", seatsRemaining: 20 },
+    { courseCode: "CSE0836", name: "Machine Learning", seatsRemaining: 30 },
+    { courseCode: "CSE0837", name: "Deep Learning", seatsRemaining: 15 },
+    { courseCode: "CSE0838", name: "Cybersecurity", seatsRemaining: 50 },
+    { courseCode: "CSE0839", name: "Blockchain Technology", seatsRemaining: 25 },
+    { courseCode: "CSE0840", name: "Cloud Computing", seatsRemaining: 35 },
+    { courseCode: "CSE0841", name: "Internet of Things", seatsRemaining: 40 },
+    { courseCode: "CSE0842", name: "Web Development", seatsRemaining: 55 },
+    { courseCode: "CSE0843", name: "Mobile App Development", seatsRemaining: 30 },
+    { courseCode: "CSE0844", name: "Big Data Analytics", seatsRemaining: 45 },
+    { courseCode: "CSE0845", name: "Natural Language Processing", seatsRemaining: 20 },
+    { courseCode: "CSE0846", name: "Ethical Hacking", seatsRemaining: 25 },
+    { courseCode: "CSE0847", name: "DevOps", seatsRemaining: 35 },
+    { courseCode: "CSE0848", name: "Embedded Systems", seatsRemaining: 40 },
+    { courseCode: "CSE0849", name: "Computer Graphics", seatsRemaining: 50 },
+    { courseCode: "CSE0850", name: "Human-Computer Interaction", seatsRemaining: 45 },
+    { courseCode: "CSE0851", name: "Robotics", seatsRemaining: 15 },
+    { courseCode: "CSE0852", name: "Augmented Reality", seatsRemaining: 30 },
+    { courseCode: "CSE0853", name: "Virtual Reality", seatsRemaining: 25 },
+    { courseCode: "CSE0854", name: "Game Development", seatsRemaining: 35 },
+    { courseCode: "CSE0855", name: "Quantum Computing", seatsRemaining: 0 },
+    { courseCode: "CSE0856", name: "Bioinformatics", seatsRemaining: 0 }
+  ];
+  
+  export default OEsub;
+  

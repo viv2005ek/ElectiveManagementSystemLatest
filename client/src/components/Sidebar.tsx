@@ -43,6 +43,13 @@ const navigation = [
     count: "5",
     current: false,
   },
+  {
+    name: "EMS Admin",
+    href: "/emsadmin",
+    icon: RiAdminLine,
+    count: "5",
+    current: false,
+  },
 ];
 
 function classNames(...classes: string[]) {

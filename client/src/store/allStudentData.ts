@@ -1,6 +1,6 @@
 const allUsers = [
   {
-    name: "John Doe",
+    name: "Jake Paul",
     registrationNo: "BTECH1234",
     mobileNo1: "+1234567890",
     mobileNo2: "+0987654321",
@@ -8,7 +8,7 @@ const allUsers = [
     branchName: "Software Engineering",
     semester: "5",
     classCoordinator: true,
-    profilePic: null, // Placeholder or URL
+    profilePic:"https://randomuser.me/api/portraits/men/43.jpg",
     classCoordinatorName: "Dr. Jane Smith",
     mailId: "john.doe@example.com",
     section: "A",
