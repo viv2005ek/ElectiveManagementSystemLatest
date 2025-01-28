@@ -8,8 +8,6 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 
 dotenv.config()
-//hellooo
-//rgerg
 
 const app  = express()
 
