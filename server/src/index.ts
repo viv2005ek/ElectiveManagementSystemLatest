@@ -10,7 +10,6 @@ import cookieParser from 'cookie-parser';
 dotenv.config()
 
 const app  = express()
-// chill
 
 const port = process.env.PORT || 8080
 app.use(cors({
