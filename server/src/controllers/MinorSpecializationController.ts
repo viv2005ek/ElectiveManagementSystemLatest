@@ -8,7 +8,7 @@ const minorSpecializationController = {
     try {
       const minorSpecializations = await prisma.minorSpecialization.findMany({
         include: {
-          ProgrammeElectives: true,
+          department: true,
         },
       });
 

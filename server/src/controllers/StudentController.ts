@@ -4,7 +4,7 @@ import { prisma } from '../prismaClient';
 
 const studentController = {
 
-  createUser: async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  createStudent: async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const { registrationNumber, email, password } = req.body;
 
     if (!registrationNumber || !email || !password) {

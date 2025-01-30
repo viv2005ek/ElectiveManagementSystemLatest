@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.3.0",
     "@types/cookie-parser": "^1.4.7",
     "@types/morgan": "^1.9.9",
     "bcrypt": "^5.1.1",
@@ -32,8 +32,8 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.9.0",
     "nodemon": "^3.1.7",
+    "prisma": "^6.3.0",
     "ts-node": "^10.9.2",
-    "prisma": "^5.22.0",
     "typescript": "^5.6.3"
   }
 }

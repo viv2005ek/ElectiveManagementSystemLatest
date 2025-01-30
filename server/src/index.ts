@@ -1,12 +1,12 @@
 import express, {Request, Response} from 'express'
 import dotenv from 'dotenv'
-import adminRoute from './routes/AdminRoute';
-import authRoute from './routes/AuthRoute';
+import AdminRoute from './routes/AdminRoute';
 import AuthRoute from './routes/AuthRoute';
 import cors from 'cors'
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-
+import StudentRoute from './routes/StudentRoute';
+import MinorSpecializationRoute from './routes/MinorSpecializationRoute';
 dotenv.config()
 
 const app  = express()
@@ -25,7 +25,9 @@ app.use(cookieParser());
 
 //routes
 app.use('/auth', AuthRoute)
-app.use('/admin', adminRoute)
+app.use('/admin', AdminRoute)
+app.use('/students', StudentRoute)
+app.use('/minor-specializations', MinorSpecializationRoute)
 
 
 app.get('/health-check', async (req: Request, res: Response) => {

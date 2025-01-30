@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres: EMS_PROD@db:5432/EMS _PROD"
+  url      = env("DATABASE_URL")
 }
 
 model StudentCredential {
@@ -32,26 +32,32 @@ model Student {
   id                            String                         @id @default(uuid())
   registrationNumber            String                         @unique
   email                         String                         @unique
+  firstName                     String
+  lastName                      String?
   semester                      Int
   DepartmentId                  String
   DepartmentName                String
   BranchId                      String
   BranchName                    String
   MinorSpecializationPreference MinorSpecializationPreference?
+  ProgrammeElectivePreferences  ProgrammeElectivePreference[]
 }
 
 model Faculty {
-  id                       String                     @id @default(uuid())
-  registrationNumber       String                     @unique
-  email                    String                     @unique
-  FacultyElectiveAllotment FacultyElectiveAllotment[]
+  id                       String                              @id @default(uuid())
+  registrationNumber       String                              @unique
+  email                    String                              @unique
+  firstName                String
+  lastName                 String?
+  FacultyElectiveAllotment FacultyProgrammeElectiveAllotment[]
 }
 
 model Admin {
-  id                 String          @id @default(uuid())
-  registrationNumber String          @unique
-  email              String          @unique
-  ChangeRequest      ChangeRequest[]
+  id                 String  @id @default(uuid())
+  registrationNumber String  @unique
+  email              String  @unique
+  firstName          String
+  lastName           String?
 }
 
 model Department {
@@ -69,27 +75,28 @@ model Branch {
 }
 
 model ProgrammeElective {
-  id                    String               @id @default(uuid())
-  courseCode            String               @unique
-  name                  String               @unique
-  semester              Int
-  changeFromRequests    ChangeRequest[]      @relation("CurrentProgrammeElective")
-  changeToRequests      ChangeRequest[]      @relation("RequestedProgrammeElective")
-  MinorSpecialization   MinorSpecialization? @relation(fields: [minorSpecializationId], references: [id])
-  minorSpecializationId String?
+  id                                String                        @id @default(uuid())
+  courseCode                        String                        @unique
+  name                              String                        @unique
+  semester                          Int
+  isStandalone                      Boolean                       @default(false)
+  minorSpecializationId             String?
+  MinorSpecialization               MinorSpecialization?          @relation(fields: [minorSpecializationId], references: [id])
+  ProgrammeElectiveFirstPreference  ProgrammeElectivePreference[] @relation("FirstPreference")
+  ProgrammeElectiveSecondPreference ProgrammeElectivePreference[] @relation("SecondPreference")
+  ProgrammeElectiveThirdPreference  ProgrammeElectivePreference[] @relation("ThirdPreference")
 }
 
 model ProgrammeElectiveAllotment {
-  id                 String          @id @default(uuid())
+  id                 String @id @default(uuid())
   studentId          String
   electiveId         String
   electiveName       String
   electiveCourseCode String
   allotmentSemester  Int
-  ChangeRequest      ChangeRequest[]
 }
 
-model FacultyElectiveAllotment {
+model FacultyProgrammeElectiveAllotment {
   id                 String  @id @default(uuid())
   facultyId          String
   faculty            Faculty @relation(fields: [facultyId], references: [id])
@@ -97,31 +104,6 @@ model FacultyElectiveAllotment {
   electiveName       String
   electiveCourseCode String
   allotmentSemester  Int
-}
-
-model SemesterBranchPermission {
-  id                   String   @id @default(uuid())
-  branchId             String
-  semester             Int
-  enrollmentIsActive   Boolean  @default(false)
-  changePeriodIsActive Boolean  @default(false)
-  updatedAt            DateTime @updatedAt
-}
-
-model ChangeRequest {
-  id                           String                      @id @default(uuid())
-  studentId                    String
-  semester                     Int
-  status                       Boolean
-  currentProgrammeElectiveId   String
-  currentProgrammeElective     ProgrammeElective           @relation("CurrentProgrammeElective", fields: [currentProgrammeElectiveId], references: [id])
-  requestedProgrammeElectiveId String
-  requestedProgrammeElective   ProgrammeElective           @relation("RequestedProgrammeElective", fields: [requestedProgrammeElectiveId], references: [id])
-  programmeElectiveAllotment   ProgrammeElectiveAllotment? @relation(fields: [programmeElectiveAllotmentId], references: [id])
-  programmeElectiveAllotmentId String?
-  createdAt                    DateTime                    @default(now())
-  approvedByAdminId            String
-  approvedByAdmin              Admin                       @relation(fields: [approvedByAdminId], references: [id])
 }
 
 model MinorSpecializationPreference {
@@ -137,19 +119,27 @@ model MinorSpecializationPreference {
   createdAt          DateTime            @default(now())
 }
 
+model ProgrammeElectivePreference {
+  id                 String             @id @default(uuid())
+  studentId          String
+  student            Student            @relation(fields: [studentId], references: [id])
+  semester           Int
+  firstPreferenceId  String?
+  firstPreference    ProgrammeElective? @relation("FirstPreference", fields: [firstPreferenceId], references: [id])
+  secondPreferenceId String?
+  secondPreference   ProgrammeElective? @relation("SecondPreference", fields: [secondPreferenceId], references: [id])
+  thirdPreferenceId  String?
+  thirdPreference    ProgrammeElective? @relation("ThirdPreference", fields: [thirdPreferenceId], references: [id])
+  createdAt          DateTime           @default(now())
+}
+
 model MinorSpecialization {
   id                                  String                          @id @default(uuid())
   name                                String                          @unique
-  ProgrammeElectives                  ProgrammeElective[]
   departmentId                        String
   department                          Department                      @relation(fields: [departmentId], references: [id])
+  ProgrammeElectives                  ProgrammeElective[]
   MinorSpecializationFirstPreference  MinorSpecializationPreference[] @relation("FirstPreference")
   MinorSpecializationSecondPreference MinorSpecializationPreference[] @relation("SecondPreference")
   MinorSpecializationThirdPreference  MinorSpecializationPreference[] @relation("ThirdPreference")
-}
-
-enum PreferenceLevel {
-  FIRST
-  SECOND
-  THIRD
 }
