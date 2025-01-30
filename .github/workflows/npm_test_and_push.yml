@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: shreshthpurohit/ElectiveManagementSystem:dev
+          tags: shreshthpurohit/elective_management_system:dev
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
 
