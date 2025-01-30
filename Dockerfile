@@ -25,8 +25,8 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=cache,target=/root/.npm \
     npm ci
 
-COPY . .
-COPY prisma ./prisma
+COPY server .
+COPY server/prisma ./prisma
 
 RUN npx prisma generates
 
@@ -44,7 +44,7 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/prisma ./prisma
 COPY --from=build /usr/src/app/node_modules/.prisma ./node_modules/.prisma
-COPY package.json .
+COPY server/package.json .
 
 EXPOSE 8080
 
