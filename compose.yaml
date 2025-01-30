@@ -23,8 +23,8 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=EMS_PROD
-      - POSTGRES_PASSWORD=EMS_PROD
+      - POSTGRES_DB=EMS_DEV
+      - POSTGRES_PASSWORD=EMS_DEV
     expose:
       - 5432
     healthcheck:
