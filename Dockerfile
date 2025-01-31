@@ -28,7 +28,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 COPY server .
 COPY server/prisma ./prisma
 
-RUN npx prisma generates
+RUN npx prisma migrate deploy
 
 RUN npm run build
 
