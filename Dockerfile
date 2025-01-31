@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=20.11.1
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 
 ################################################################################
 FROM node:${NODE_VERSION}-alpine as base
