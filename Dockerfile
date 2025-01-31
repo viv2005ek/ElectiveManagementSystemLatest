@@ -24,16 +24,12 @@ ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 
 
-COPY package.json package-lock.json
+COPY server .
+COPY server/prisma ./prisma
 
 RUN --mount=type=cache,target=/root/.npm \
     npm install
 
-
-RUN npm install -g typescript
-
-COPY server .
-COPY server/prisma ./prisma
 
 RUN npx prisma migrate deploy
 
