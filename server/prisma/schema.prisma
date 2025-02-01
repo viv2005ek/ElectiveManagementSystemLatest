@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_DB")
+  url      = env("EMS_DEV")
 }
 
 model StudentCredential {
