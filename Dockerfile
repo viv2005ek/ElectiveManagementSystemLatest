@@ -50,4 +50,4 @@ COPY server/package.json .
 
 EXPOSE 8080
 
-CMD ["sh", "./entrypoint.sh"]
+CMD ["sh", "server/entrypoint.sh"]
