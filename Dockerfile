@@ -31,7 +31,6 @@ RUN --mount=type=cache,target=/root/.npm \
     npm install
 
 
-RUN npx prisma migrate deploy
 
 RUN npm run build
 
@@ -51,4 +50,4 @@ COPY server/package.json .
 
 EXPOSE 8080
 
-CMD npm start
+CMD ["sh", "./entrypoint.sh"]
