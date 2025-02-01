@@ -50,4 +50,11 @@ COPY server/package.json .
 
 EXPOSE 8080
 
+# Copy entrypoint.sh to the container
+COPY server/entrypoint.sh ./entrypoint.sh
+
+# Ensure entrypoint.sh has execute permissions
+RUN chmod +x ./entrypoint.sh
+
+# Set the entrypoint
 CMD ["sh", "./entrypoint.sh"]
