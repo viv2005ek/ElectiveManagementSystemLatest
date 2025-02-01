@@ -34,13 +34,20 @@ model Student {
   email                         String                         @unique
   firstName                     String
   lastName                      String?
+  gender                        String
+  minorSpecializationId         String?
+  minorSpecialization           MinorSpecialization?           @relation(fields: [minorSpecializationId], references: [id])
   semester                      Int
-  DepartmentId                  String
-  DepartmentName                String
-  BranchId                      String
-  BranchName                    String
-  MinorSpecializationPreference MinorSpecializationPreference?
-  ProgrammeElectivePreferences  ProgrammeElectivePreference[]
+  section                       String
+  batch                         Int
+  departmentId                  String
+  department                    Department                     @relation(fields: [departmentId], references: [id])
+  branchId                      String
+  branch                        Branch                         @relation(fields: [branchId], references: [id])
+  contactNumber                 String
+  minorSpecializationPreference MinorSpecializationPreference?
+  programmeElectivePreferences  ProgrammeElectivePreference[]
+  profilePictureId              String?
 }
 
 model Faculty {
@@ -49,7 +56,7 @@ model Faculty {
   email                    String                              @unique
   firstName                String
   lastName                 String?
-  FacultyElectiveAllotment FacultyProgrammeElectiveAllotment[]
+  facultyElectiveAllotment FacultyProgrammeElectiveAllotment[]
 }
 
 model Admin {
@@ -61,10 +68,11 @@ model Admin {
 }
 
 model Department {
-  id                  String                @id @default(uuid())
-  name                String                @unique
-  branches            Branch[]              @relation("DepartmentBranches")
-  MinorSpecialization MinorSpecialization[]
+  id                   String                @id @default(uuid())
+  name                 String                @unique
+  branches             Branch[]              @relation("DepartmentBranches")
+  minorSpecializations MinorSpecialization[]
+  Student              Student[]
 }
 
 model Branch {
@@ -72,6 +80,8 @@ model Branch {
   name         String     @unique
   departmentId String
   department   Department @relation("DepartmentBranches", fields: [departmentId], references: [id])
+
+  Student Student[]
 }
 
 model ProgrammeElective {
@@ -81,10 +91,10 @@ model ProgrammeElective {
   semester                          Int
   isStandalone                      Boolean                       @default(false)
   minorSpecializationId             String?
-  MinorSpecialization               MinorSpecialization?          @relation(fields: [minorSpecializationId], references: [id])
-  ProgrammeElectiveFirstPreference  ProgrammeElectivePreference[] @relation("FirstPreference")
-  ProgrammeElectiveSecondPreference ProgrammeElectivePreference[] @relation("SecondPreference")
-  ProgrammeElectiveThirdPreference  ProgrammeElectivePreference[] @relation("ThirdPreference")
+  minorSpecialization               MinorSpecialization?          @relation(fields: [minorSpecializationId], references: [id])
+  programmeElectiveFirstPreference  ProgrammeElectivePreference[] @relation("FirstPreference")
+  programmeElectiveSecondPreference ProgrammeElectivePreference[] @relation("SecondPreference")
+  programmeElectiveThirdPreference  ProgrammeElectivePreference[] @relation("ThirdPreference")
 }
 
 model ProgrammeElectiveAllotment {
@@ -94,6 +104,9 @@ model ProgrammeElectiveAllotment {
   electiveName       String
   electiveCourseCode String
   allotmentSemester  Int
+  totalSeats         Int
+  allotedSeats       Int
+  batch              Int
 }
 
 model FacultyProgrammeElectiveAllotment {
@@ -138,8 +151,17 @@ model MinorSpecialization {
   name                                String                          @unique
   departmentId                        String
   department                          Department                      @relation(fields: [departmentId], references: [id])
-  ProgrammeElectives                  ProgrammeElective[]
-  MinorSpecializationFirstPreference  MinorSpecializationPreference[] @relation("FirstPreference")
-  MinorSpecializationSecondPreference MinorSpecializationPreference[] @relation("SecondPreference")
-  MinorSpecializationThirdPreference  MinorSpecializationPreference[] @relation("ThirdPreference")
+  programmeElectives                  ProgrammeElective[]
+  minorSpecializationFirstPreference  MinorSpecializationPreference[] @relation("FirstPreference")
+  minorSpecializationSecondPreference MinorSpecializationPreference[] @relation("SecondPreference")
+  minorSpecializationThirdPreference  MinorSpecializationPreference[] @relation("ThirdPreference")
+  students                            Student[]
+  MinorSpecializationAllotment        MinorSpecializationAllotment[]
+}
+
+model MinorSpecializationAllotment {
+  id                    String              @id @default(uuid())
+  facultyId             String
+  minorSpecializationId String
+  minorSpecialization   MinorSpecialization @relation(fields: [minorSpecializationId], references: [id])
 }

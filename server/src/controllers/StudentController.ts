@@ -4,41 +4,97 @@ import { prisma } from '../prismaClient';
 
 const studentController = {
 
-  createStudent: async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    const { registrationNumber, email, password } = req.body;
-
-    if (!registrationNumber || !email || !password) {
-      return res.status(400).json({ msg: 'Missing required fields' });
-    }
-
+  getAllStudents: async (req: Request, res: Response): Promise<any> => {
     try {
-      const passwordHash = await bcrypt.hash(password, 10);
-      const newStudentCredential = await prisma.studentCredential.create({
-        data: {
-          registrationNumber,
-          email,
-          passwordHash,
+      const students = await prisma.student.findMany({
+        include: {
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          branch: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
+        // Remove select from top level and include fields in `select`
+      }).then((students) => {
+        const selectedStudents = students.map(student => ({
+          id: student.id,
+          firstName: student.firstName,
+          lastName: student.lastName,
+          registrationNumber: student.registrationNumber,
+          semester: student.semester,
+          department: student.department,
+          branch: student.branch,
+        }));
+
+        res.status(200).json(selectedStudents);
       });
-
-      res.status(201).json({
-        msg: 'Student created successfully',
-        studentCredential: newStudentCredential,
-      });
-
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ msg: 'Internal Server Error' });
-    }
-  },
-
-  getAllStudents: async (req: Request, res: Response): Promise<void> => {
-    try {
-      const students = await prisma.student.findMany();
-      res.status(200).json(students);
     } catch (error) {
       console.error("Error fetching students:", error);
       res.status(500).json({ message: "Unable to fetch students" });
+    }
+  },
+
+  getStudentDetails: async (req: Request, res: Response): Promise<any> => {
+    const { id } = req.params; // Get student id from route parameters
+
+    try {
+      const student = await prisma.student.findUnique({
+        where: {
+          id, // Use the provided id to find the student
+        },
+        include: {
+          department: { // Include the department relation
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          branch: { // Include the branch relation
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          minorSpecialization: { // Include the minor specialization relation
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (!student) {
+        return res.status(404).json({ message: 'Student not found' });
+      }
+
+      const studentDetails = {
+        firstName: student.firstName,
+        lastName: student.lastName,
+        registrationNumber: student.registrationNumber,
+        contactNumber: student.contactNumber,
+        department: student.department,
+        branch: student.branch,
+        semester: student.semester,
+        email: student.email,
+        section: student.section,
+        batch: student.batch,
+        gender: student.gender,
+        minorSpecialization: student.minorSpecialization,
+        profilePictureId: student.profilePictureId,
+      };
+
+      res.status(200).json(studentDetails);
+    } catch (error) {
+      console.error('Error fetching student details:', error);
+      res.status(500).json({ message: 'Unable to fetch student details' });
     }
   },
 
@@ -57,10 +113,8 @@ const studentController = {
           registrationNumber,
           email,
           semester,
-          DepartmentId,
-          DepartmentName,
-          BranchId,
-          BranchName,
+          department: { connect: { id: DepartmentId } }, // Fixing department update
+          branch: { connect: { id: BranchId } }, // Fixing branch update
         },
       });
 

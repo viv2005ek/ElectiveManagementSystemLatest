@@ -41,7 +41,7 @@ const minorSpecializationController = {
               id: departmentId,
             },
           },
-          ProgrammeElectives: {
+          programmeElectives: {
             connect: programmeElectiveIds.map((electiveId: string) => ({ id: electiveId })),
           },
         },

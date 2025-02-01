@@ -6,7 +6,7 @@ const programmeElectiveController = {
     try {
       const programmeElectives = await prisma.programmeElective.findMany({
         include: {
-          MinorSpecialization: true,
+          minorSpecialization: true,
         },
       });
 

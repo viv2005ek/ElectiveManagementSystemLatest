@@ -11,16 +11,28 @@ async function populateDepartments() {
       'Chemical Engineering',
     ];
 
-    // Create the departments
+    // Create departments and branches
     const departments = await Promise.all(
-      departmentNames.map((name) =>
+      departmentNames.map((name, index) =>
         prisma.department.create({
-          data: { name },
+          data: {
+            name,
+            branches: {
+              create: [
+                {
+                  name: `${name} - Branch 1`, // Create Branch 1 for each department
+                },
+                {
+                  name: `${name} - Branch 2`, // Create Branch 2 for each department
+                },
+              ],
+            },
+          },
         })
       )
     );
 
-    console.log('Departments created successfully:', departments);
+    console.log('Departments and branches created successfully:', departments);
   } catch (error: any) {
     console.error('Error populating departments:', error.message);
   } finally {

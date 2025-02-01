@@ -3,26 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 import {Request, Response} from 'express'
+import StudentController from '../controllers/StudentController';
 
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    const students = await prisma.student.findMany({
-      select: {
-        firstName: true,
-        lastName: true,
-        registrationNumber: true,
-        semester: true,
-        DepartmentName: true,
-      },
-    });
+router.get('/', StudentController.getAllStudents);
 
-
-
-    res.json(students);
-  } catch (error) {
-    console.error('Error fetching students:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
+router.get('/:id', StudentController.getStudentDetails);
 
 export default router;

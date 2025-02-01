@@ -8,10 +8,7 @@ const deleteAllData = async () => {
     console.log('Starting to delete all data...');
 
     // Delete records from many-to-many relationships or dependent models first
-    await prisma.changeRequest.deleteMany({});
-    await prisma.facultyElectiveAllotment.deleteMany({});
     await prisma.programmeElectiveAllotment.deleteMany({});
-    await prisma.semesterBranchPermission.deleteMany({});
     await prisma.minorSpecializationPreference.deleteMany({});
 
     // Then, delete records from the "many" side of one-to-many relationships

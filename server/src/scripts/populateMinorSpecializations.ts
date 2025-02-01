@@ -1,39 +1,26 @@
-import { prisma } from '../prismaClient'; // Import your Prisma client instance
+import { prisma } from '../prismaClient'; // Adjust the import path to your Prisma client
 
-async function populateMinorSpecializations() {
+const createMinorSpecializations = async () => {
   try {
-    // Ensure the department exists; use an existing departmentId or create one
-    const department = await prisma.department.findFirst();
-    if (!department) {
-      throw new Error("No department found. Please create a department first.");
-    }
+    // Define 5 minor specializations to be created
+    const minorSpecializations = [
+      { name: 'Data Science' },
+      { name: 'Artificial Intelligence' },
+      { name: 'Cybersecurity' },
+      { name: 'Blockchain Technology' },
+      { name: 'Cloud Computing' },
+    ];
 
-    // Create 5 minor specializations, each with 5 electives
-    const minorSpecializations = await Promise.all(
-      Array.from({ length: 5 }, (_, index) => {
-        return prisma.minorSpecialization.create({
-          data: {
-            name: `Minor Specialization ${index + 1}`,
-            departmentId: department.id, // Associate with an existing department
-            ProgrammeElectives: {
-              create: Array.from({ length: 5 }, (_, idx) => ({
-                courseCode: `Elective-${index + 1}-${idx + 1}`,
-                name: `Elective ${idx + 1} for Minor ${index + 1}`,
-                semester: idx + 1, // Assign semesters incrementally
-              })),
-            },
-          },
-        });
-      })
-    );
+    // Create each minor specialization in the database
+    const createdMinorSpecializations = await prisma.minorSpecialization.createMany({
+      data: minorSpecializations,
+    });
 
-    console.log('Minor Specializations created successfully:', minorSpecializations);
-  } catch (error: any) {
-    console.error('Error creating Minor Specializations:', error.message);
-  } finally {
-    await prisma.$disconnect(); // Disconnect Prisma client
+    console.log(`Successfully created ${createdMinorSpecializations.count} minor specializations.`);
+  } catch (error) {
+    console.error('Error creating minor specializations:', error);
   }
-}
+};
 
 // Run the script
-populateMinorSpecializations();
+createMinorSpecializations();

@@ -8,7 +8,6 @@ const router = Router()
 
 router.use(verifyAdmin)
 
-router.get('/create-student', studentController.createStudent)
 
 router.get('/minor-specializations', minorSpecializationController.getAllMinorSpecializations)
 
