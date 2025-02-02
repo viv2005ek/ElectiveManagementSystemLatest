@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronDownIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
-
+import {MinorSpecialization} from '../hooks/useMinorSpecializations.ts'
 const specializations = [
   {
     name: 'Cloud Computing',
@@ -41,7 +41,7 @@ function Notification({ message, onClose }: { message: string; onClose: () => vo
   );
 }
 
-export default function MinorSpecializationsList() {
+export default function MinorSpecializationsList({list}: {list: MinorSpecialization[] | null}) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<
     { subject: string; department: string }[]
@@ -124,7 +124,7 @@ export default function MinorSpecializationsList() {
           </li>
         ))}
       </ul>
-  
+
       <div className="overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
         <div className="px-2 py-4 sm:px-6">
           <h2 className="text-lg font-semibold text-gray-900">Preference Table</h2>
@@ -200,7 +200,7 @@ export default function MinorSpecializationsList() {
           </div>
         </div>
       </div>
-  
+
       {notification && (
         <Notification
           message={notification}
@@ -209,5 +209,5 @@ export default function MinorSpecializationsList() {
       )}
     </div>
   );
-  
+
 }
