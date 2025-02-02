@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/root/.npm \
     npm install
 
 
-
+RUN prisma migrate deploy
 RUN npm run build
 
 
@@ -51,13 +51,4 @@ COPY server/package.json .
 EXPOSE 8080
 
 # Copy entrypoint.sh to the container
-COPY server/entrypoint.sh ./entrypoint.sh
-
-# Ensure we are using the root user to change file permissions
-USER root
-
-# Ensure entrypoint.sh has execute permissions
-RUN chmod +x ./entrypoint.sh
-
-# Set the entrypoint
-CMD ["sh", "./entrypoint.sh"]
+CMD npm run start
