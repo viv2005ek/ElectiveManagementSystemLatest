@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/root/.npm \
     npm install
 
 
-RUN prisma migrate deploy
+RUN npx prisma migrate deploy
 RUN npm run build
 
 
