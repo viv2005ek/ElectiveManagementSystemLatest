@@ -1,6 +1,5 @@
-import {Request, Response} from 'express'
+import { Request, Response } from 'express';
 import { prisma } from '../prismaClient';
-
 
 const minorSpecializationController = {
 
@@ -9,6 +8,7 @@ const minorSpecializationController = {
       const minorSpecializations = await prisma.minorSpecialization.findMany({
         include: {
           department: true,
+          programmeElectives: true,
         },
       });
 
@@ -19,41 +19,26 @@ const minorSpecializationController = {
     }
   },
 
-  createMinorSpecialization: async (req: Request, res: Response): Promise<any> => {
-    const { name, departmentId, programmeElectiveIds } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ msg: 'Missing required field: name' });
-    }
-    if (!departmentId) {
-      return res.status(400).json({ msg: 'Missing required field: departmentId' });
-    }
-    if (!programmeElectiveIds || programmeElectiveIds.length === 0) {
-      return res.status(400).json({ msg: 'Missing required field: programmeElectiveIds' });
-    }
-
+  getMinorSpecializationById: async (req: Request, res: Response): Promise<any> => {
     try {
-      const newMinorSpecialization = await prisma.minorSpecialization.create({
-        data: {
-          name,
-          department: {
-            connect: {
-              id: departmentId,
-            },
-          },
-          programmeElectives: {
-            connect: programmeElectiveIds.map((electiveId: string) => ({ id: electiveId })),
-          },
+      const { id } = req.params;
+
+      const minorSpecialization = await prisma.minorSpecialization.findUnique({
+        where: { id },
+        include: {
+          department: true,
+          programmeElectives: true,
         },
       });
 
-      res.status(201).json({
-        msg: 'Minor Specialization created successfully',
-        minorSpecialization: newMinorSpecialization,
-      });
+      if (!minorSpecialization) {
+        return res.status(404).json({ message: "Minor Specialization not found" });
+      }
+
+      res.status(200).json(minorSpecialization);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ msg: 'Unable to create Minor Specialization' });
+      console.error("Error fetching Minor Specialization by ID:", error);
+      res.status(500).json({ message: "Unable to fetch Minor Specialization" });
     }
   },
 };

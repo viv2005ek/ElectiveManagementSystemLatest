@@ -97,18 +97,6 @@ model ProgrammeElective {
   programmeElectiveThirdPreference  ProgrammeElectivePreference[] @relation("ThirdPreference")
 }
 
-model ProgrammeElectiveAllotment {
-  id                 String @id @default(uuid())
-  studentId          String
-  electiveId         String
-  electiveName       String
-  electiveCourseCode String
-  allotmentSemester  Int
-  totalSeats         Int
-  allotedSeats       Int
-  batch              Int
-}
-
 model FacultyProgrammeElectiveAllotment {
   id                 String  @id @default(uuid())
   facultyId          String
@@ -156,12 +144,22 @@ model MinorSpecialization {
   minorSpecializationSecondPreference MinorSpecializationPreference[] @relation("SecondPreference")
   minorSpecializationThirdPreference  MinorSpecializationPreference[] @relation("ThirdPreference")
   students                            Student[]
-  MinorSpecializationAllotment        MinorSpecializationAllotment[]
 }
 
-model MinorSpecializationAllotment {
-  id                    String              @id @default(uuid())
-  facultyId             String
-  minorSpecializationId String
-  minorSpecialization   MinorSpecialization @relation(fields: [minorSpecializationId], references: [id])
+model MinorSpecializationAllotmentWindow {
+  id         String  @id @default(uuid())
+  semester   Int
+  batch      Int
+  isOpen     Boolean
+  totalSeats Int?
+}
+
+model ProgrammeElectiveAllotmentWindow {
+  id                 String @id @default(uuid())
+  semester           Int
+  batch              Int
+  electiveName       String
+  electiveCourseCode String
+  allotmentSemester  Int
+  totalSeats         Int?
 }

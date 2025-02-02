@@ -1,44 +1,29 @@
-import { prisma } from '../prismaClient'; // Adjust the import path to your Prisma client
+import { prisma } from '../prismaClient';
 
-async function populateDepartments() {
-  try {
-    // Define the department names
-    const departmentNames = [
-      'Computer Science and Engineering',
-      'Mechanical Engineering',
-      'Electrical Engineering',
-      'Civil Engineering',
-      'Chemical Engineering',
-    ];
+async function main() {
+  const departments = [
+    { name: 'Computer Science' },
+    { name: 'Mechanical Engineering' },
+    { name: 'Electrical Engineering' },
+    { name: 'Civil Engineering' },
+    { name: 'Biotechnology' },
+  ];
 
-    // Create departments and branches
-    const departments = await Promise.all(
-      departmentNames.map((name, index) =>
-        prisma.department.create({
-          data: {
-            name,
-            branches: {
-              create: [
-                {
-                  name: `${name} - Branch 1`, // Create Branch 1 for each department
-                },
-                {
-                  name: `${name} - Branch 2`, // Create Branch 2 for each department
-                },
-              ],
-            },
-          },
-        })
-      )
-    );
-
-    console.log('Departments and branches created successfully:', departments);
-  } catch (error: any) {
-    console.error('Error populating departments:', error.message);
-  } finally {
-    await prisma.$disconnect(); // Disconnect Prisma client
+  for (const department of departments) {
+    await prisma.department.upsert({
+      where: { name: department.name },
+      update: {},
+      create: department,
+    });
   }
+
+  console.log('✅ Departments seeded successfully');
 }
 
-// Run the script
-populateDepartments();
+main()
+  .catch((e) => {
+    console.error('❌ Error seeding departments:', e);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
