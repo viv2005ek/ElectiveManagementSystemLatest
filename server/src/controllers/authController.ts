@@ -73,6 +73,45 @@ const authController = {
       return res.status(500).json({ message: 'An error occurred during login' });
     }
   },
+
+  registerController: async (req: Request, res: Response): Promise<any> => {
+    const { registrationNumber, email, password, firstName, lastName } = req.body;
+
+    if (!registrationNumber || !email || !password || !firstName) {
+      return res.status(400).json({ message: 'All required fields must be provided' });
+    }
+
+    try {
+      const existingAdmin = await prisma.adminCredential.findUnique({ where: { email } });
+      if (existingAdmin) {
+        return res.status(400).json({ message: 'Admin with this email already exists' });
+      }
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const newAdmin = await prisma.adminCredential.create({
+        data: {
+          registrationNumber,
+          email,
+          passwordHash: hashedPassword,
+        },
+      });
+      await prisma.admin.create({
+        data: {
+          id: newAdmin.id,
+          registrationNumber,
+          email,
+          firstName,
+          lastName,
+        },
+      });
+
+      return res.status(201).json({ message: 'Admin registered successfully' });
+    } catch (error) {
+      console.error('Error during registration:', error);
+      return res.status(500).json({ message: 'An error occurred during registration' });
+    }
+  },
 };
 
 export default authController;
