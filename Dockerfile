@@ -51,4 +51,4 @@ COPY server/package.json .
 EXPOSE 8080
 
 # Copy entrypoint.sh to the container
-CMD npm run start
+CMD npm start
