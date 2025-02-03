@@ -1,5 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import { prisma } from '../prismaClient';
 
 const studentController = {
