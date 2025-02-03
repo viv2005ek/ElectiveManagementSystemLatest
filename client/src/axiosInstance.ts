@@ -7,7 +7,7 @@ const getJwtFromCookies = (): string | null => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: `http://${import.meta.env.VITE_BASE}`,
+  baseURL: `https://${import.meta.env.VITE_BASE}`,
   headers: {
     'Content-Type': 'application/json',
   },
