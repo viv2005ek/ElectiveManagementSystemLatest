@@ -1,44 +1,21 @@
-import express, {Request, Response} from 'express'
-import dotenv from 'dotenv'
-import AdminRoute from './routes/AdminRoute';
-import AuthRoute from './routes/AuthRoute';
-import cors from 'cors'
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import StudentRoute from './routes/StudentRoute';
-import MinorSpecializationRoute from './routes/MinorSpecializationRoute';
-import DepartmentRoute from './routes/DepartmentRoute';
-dotenv.config()
+import express, { Request, Response } from 'express';
+import { env } from './config/env';
+import logger from './utils/logger';
+import { setupMiddleware } from './middleware';
+import { setupRoutes } from './routes';
+import swaggerDocs from './utils/swagger';
 
-const app  = express()
+const app = express();
+const port = env.PORT;
 
-const port = process.env.PORT || 8080
-app.use(cors({
-  origin: '*'
-}));
-
-
-//middleware
-app.use(express.json())
-app.use(morgan('dev'))
-app.use(cookieParser());
-
-
-//routes
-app.use('/auth', AuthRoute)
-app.use('/admin', AdminRoute)
-app.use('/students', StudentRoute)
-app.use('/minor-specializations', MinorSpecializationRoute)
-app.use('/departments', DepartmentRoute)
-
+setupMiddleware(app);
+setupRoutes(app);
+swaggerDocs(app, 8080)
 
 app.get('/health-check', async (req: Request, res: Response) => {
-  res.status(200).json({ msg: 'Server is online.' });
+  res.status(200).json({ msg: 'Server is online.', timestamp: new Date().toISOString() });
 });
 
-
-app.listen( port, () => {
-  console.log("Server listening on port", port );
-})
-
-
+app.listen(port, () => {
+  logger.info(`🚀 Server is running on port ${port}`);
+});
