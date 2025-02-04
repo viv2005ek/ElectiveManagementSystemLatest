@@ -1,145 +1,76 @@
-import { useState } from "react"
-import { Search } from "lucide-react"
-import type { Course, PreferenceSelection } from "../types/course"
-import { CourseCard } from "./course-card"
-import { SelectedPreferences } from "./selected-preferences"
+import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import type { Course, PreferenceSelection } from "../types/course";
+import { CourseCard } from "./course-card";
+import { SelectedPreferences } from "./selected-preferences";
 
-// Sample data with more courses
-const courses: Course[] = [
-    {
-      id: "123",
-      courseCode: "CS101",
-      name: "Introduction to Programming",
-      semester: 1,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "124",
-      courseCode: "CS102",
-      name: "Data Structures",
-      semester: 2,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "125",
-      courseCode: "CS201",
-      name: "Database Management Systems",
-      semester: 3,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "126",
-      courseCode: "CS202",
-      name: "Operating Systems",
-      semester: 3,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "127",
-      courseCode: "CS301",
-      name: "Software Engineering",
-      semester: 4,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "128",
-      courseCode: "CS302",
-      name: "Computer Networks",
-      semester: 4,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "129",
-      courseCode: "CS401",
-      name: "Artificial Intelligence",
-      semester: 5,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "130",
-      courseCode: "CS402",
-      name: "Machine Learning",
-      semester: 5,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "131",
-      courseCode: "CS403",
-      name: "Cloud Computing",
-      semester: 6,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "132",
-      courseCode: "CS404",
-      name: "Cybersecurity",
-      semester: 6,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "133",
-      courseCode: "CS405",
-      name: "Web Development",
-      semester: 7,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-    {
-      id: "134",
-      courseCode: "CS406",
-      name: "Mobile App Development",
-      semester: 7,
-      isStandalone: true,
-      minorSpecializationId: "12345",
-    },
-  ]
+const API_URL = "https://apiems.shreshth.tech/programme-electives/standalone";
 
 export function PreferenceSelection() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [preferences, setPreferences] = useState<PreferenceSelection[]>([])
-  const [isRegistered, setIsRegistered] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [preferences, setPreferences] = useState<PreferenceSelection[]>([]);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("Failed to fetch courses");
+        const data: Course[] = await response.json();
+        setCourses(data);
+      } catch (err) {
+        setError("Error fetching courses. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Handle course selection
   const handleSelect = (course: Course) => {
-    if (preferences.length >= 4) return
+    if (preferences.length >= 4) return;
     if (preferences.some((p) => p.course.id === course.id)) {
-      handleRemove(course.id)
+      handleRemove(course.id);
     } else {
-      setPreferences((prev) => [...prev, { preference: prev.length + 1, course }])
+      setPreferences((prev) => [...prev, { preference: prev.length + 1, course }]);
     }
-  }
+  };
 
+  // Remove selected course
   const handleRemove = (courseId: string) => {
-    setPreferences((prev) => prev.filter((p) => p.course.id !== courseId).map((p, index) => ({ ...p, preference: index + 1 })))
-  }
+    setPreferences((prev) =>
+      prev.filter((p) => p.course.id !== courseId).map((p, index) => ({ ...p, preference: index + 1 }))
+    );
+  };
 
+  // Register preferences
   const handleRegister = () => {
     if (preferences.length === 4) {
-      setIsRegistered(true)
-      console.log("Registered preferences:", preferences)
+      setIsRegistered(true);
+      console.log("Registered preferences:", preferences);
     }
-  }
+  };
 
+  // Filter courses based on search
   const filteredCourses = courses.filter(
-    (course) => course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) || course.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+    (course) =>
+      course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isRegistered) {
-    return <SelectedPreferences preferences={preferences} />
+    return <SelectedPreferences preferences={preferences} />;
   }
 
   return (
     <div className="max-w-7xl mx-auto bg-orange-300 p-6 rounded-lg shadow">
-      <h2 className="text-lg font-bold mb-4">Select Your Programme elective Preferences</h2>
+      <h2 className="text-lg font-bold mb-4">Select Your Programme Elective Preferences</h2>
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="relative flex-1 max-w-sm z-1">
@@ -155,9 +86,12 @@ export function PreferenceSelection() {
         <span className="text-sm text-black-500 font-medium">Selected: {preferences.length} of 4</span>
       </div>
 
+      {loading && <p className="text-center text-gray-600 mt-4">Loading courses...</p>}
+      {error && <p className="text-center text-red-500 mt-4">{error}</p>}
+
       {preferences.length > 0 && (
         <div className="mt-4">
-          <h3 className="font-medium p-2  text-xl">Your Preferences</h3>
+          <h3 className="font-medium p-2 text-xl">Your Preferences</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {preferences.map((preference) => (
               <div key={preference.course.id} className="bg-amber-100 p-4 rounded-lg flex justify-between">
@@ -166,7 +100,12 @@ export function PreferenceSelection() {
                   <div className="text-sm">{preference.course.courseCode}</div>
                   <div className="text-sm text-gray-500">{preference.course.name}</div>
                 </div>
-                <button className="text-red-500 font-bold text-sm" onClick={() => handleRemove(preference.course.id)}>Remove</button>
+                <button
+                  className="text-red-500 font-bold text-sm"
+                  onClick={() => handleRemove(preference.course.id)}
+                >
+                  Remove
+                </button>
               </div>
             ))}
           </div>
@@ -177,8 +116,8 @@ export function PreferenceSelection() {
         <h3 className="font-medium p-3 text-xl">Available Courses</h3>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {filteredCourses.map((course) => {
-            const isSelected = preferences.some((p) => p.course.id === course.id)
-            const preferenceNumber = preferences.find((p) => p.course.id === course.id)?.preference
+            const isSelected = preferences.some((p) => p.course.id === course.id);
+            const preferenceNumber = preferences.find((p) => p.course.id === course.id)?.preference;
 
             return (
               <CourseCard
@@ -189,7 +128,7 @@ export function PreferenceSelection() {
                 onSelect={() => handleSelect(course)}
                 disabled={preferences.length >= 4 && !isSelected}
               />
-            )
+            );
           })}
         </div>
       </div>
@@ -209,5 +148,5 @@ export function PreferenceSelection() {
         </button>
       </div>
     </div>
-  )
+  );
 }
