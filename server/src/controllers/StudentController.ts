@@ -3,9 +3,14 @@ import { prisma } from '../prismaClient';
 
 const studentController = {
 
+  // Get all students with related department and branch
   getAllStudents: async (req: Request, res: Response): Promise<any> => {
     try {
       const students = await prisma.student.findMany({
+        where: {
+          isDeleted: false, // Filter out deleted students
+        },
+
         include: {
           department: {
             select: {
@@ -20,48 +25,47 @@ const studentController = {
             },
           },
         },
-        // Remove select from top level and include fields in `select`
-      }).then((students) => {
-        const selectedStudents = students.map(student => ({
-          id: student.id,
-          firstName: student.firstName,
-          lastName: student.lastName,
-          registrationNumber: student.registrationNumber,
-          semester: student.semester,
-          department: student.department,
-          branch: student.branch,
-        }));
-
-        res.status(200).json(selectedStudents);
       });
+
+      // Map through the result to return the necessary fields
+      const selectedStudents = students.map(student => ({
+        id: student.id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        registrationNumber: student.registrationNumber,
+        semester: student.semester,
+        department: student.department,
+        branch: student.branch,
+      }));
+
+      res.status(200).json(selectedStudents);
     } catch (error) {
       console.error("Error fetching students:", error);
       res.status(500).json({ message: "Unable to fetch students" });
     }
   },
 
+  // Get student details by ID
   getStudentDetails: async (req: Request, res: Response): Promise<any> => {
-    const { id } = req.params; // Get student id from route parameters
+    const { id } = req.params;
 
     try {
       const student = await prisma.student.findUnique({
-        where: {
-          id, // Use the provided id to find the student
-        },
+        where: { id },
         include: {
-          department: { // Include the department relation
+          department: {
             select: {
               id: true,
               name: true,
             },
           },
-          branch: { // Include the branch relation
+          branch: {
             select: {
               id: true,
               name: true,
             },
           },
-          minorSpecialization: { // Include the minor specialization relation
+          minorSpecialization: {
             select: {
               id: true,
               name: true,
@@ -70,8 +74,8 @@ const studentController = {
         },
       });
 
-      if (!student) {
-        return res.status(404).json({ message: 'Student not found' });
+      if (!student || student.isDeleted) {
+        return res.status(404).json({ message: 'Student not found or has been deleted' });
       }
 
       const studentDetails = {
@@ -97,11 +101,12 @@ const studentController = {
     }
   },
 
+  // Update student details
   updateStudent: async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
-    const { registrationNumber, email, semester, DepartmentId, DepartmentName, BranchId, BranchName } = req.body;
+    const { registrationNumber, email, semester, departmentId, branchId } = req.body;
 
-    if (!registrationNumber || !email || !semester || !DepartmentId || !DepartmentName || !BranchId || !BranchName) {
+    if (!registrationNumber || !email || !semester || !departmentId || !branchId) {
       return res.status(400).json({ msg: 'Missing required fields' });
     }
 
@@ -112,8 +117,8 @@ const studentController = {
           registrationNumber,
           email,
           semester,
-          department: { connect: { id: DepartmentId } }, // Fixing department update
-          branch: { connect: { id: BranchId } }, // Fixing branch update
+          department: { connect: { id: departmentId } }, // Update department reference
+          branch: { connect: { id: branchId } }, // Update branch reference
         },
       });
 
@@ -121,26 +126,28 @@ const studentController = {
         msg: 'Student updated successfully',
         student: updatedStudent,
       });
-
     } catch (error) {
       console.error(error);
       res.status(500).json({ msg: 'Unable to update student' });
     }
   },
 
+  // Soft delete student (mark as deleted)
   deleteStudent: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
     try {
-      const deletedStudent = await prisma.student.delete({
+      const deletedStudent = await prisma.student.update({
         where: { id },
+        data: {
+          isDeleted: true, // Mark as deleted instead of physical deletion
+        },
       });
 
       res.status(200).json({
         msg: 'Student deleted successfully',
         student: deletedStudent,
       });
-
     } catch (error) {
       console.error(error);
       res.status(500).json({ msg: 'Unable to delete student' });

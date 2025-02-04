@@ -3,12 +3,16 @@ import { prisma } from '../prismaClient';
 
 const minorSpecializationController = {
 
+  // Get all minor specializations
   getAllMinorSpecializations: async (req: Request, res: Response): Promise<any> => {
     try {
       const minorSpecializations = await prisma.minorSpecialization.findMany({
+        where: {
+          isDeleted: false, // Filter out deleted minor specializations
+        },
         include: {
-          department: true,
-          programmeElectives: true,
+          department: true, // Include related department
+          programmeElectives: true, // Include related programme electives
         },
       });
 
@@ -19,15 +23,19 @@ const minorSpecializationController = {
     }
   },
 
+  // Get minor specialization by ID
   getMinorSpecializationById: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;
 
       const minorSpecialization = await prisma.minorSpecialization.findUnique({
-        where: { id },
+        where: {
+          isDeleted: false, // Filter out deleted minor specialization
+          id
+        },
         include: {
-          department: true,
-          programmeElectives: true,
+          department: true, // Include related department
+          programmeElectives: true, // Include related programme electives
         },
       });
 

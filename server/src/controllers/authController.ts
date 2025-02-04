@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prismaClient';
-import { UserRole } from '../types/UserTypes'; // Define roles: Admin, Faculty, Student
+import { UserRole } from '../types/UserTypes'; // Ensure UserRole includes ADMIN, FACULTY, STUDENT
 
 const authController = {
   loginController: async (req: Request, res: Response): Promise<any> => {
@@ -13,45 +13,40 @@ const authController = {
     }
 
     try {
-      let user = null;
-      let role: UserRole | null = null;
+      // Find the credential
+      const credential = await prisma.credential.findUnique({
+        where: { email },
+      });
 
-      // Check Admin table
-      user = await prisma.adminCredential.findUnique({ where: { email } });
-      if (user) {
-        role = UserRole.Admin;
-      }
-
-      // Check Faculty table if not found in Admin
-      if (!user) {
-        user = await prisma.facultyCredential.findUnique({ where: { email } });
-        if (user) {
-          role = UserRole.Faculty;
-        }
-      }
-
-      // Check Student table if not found in Admin or Faculty
-      if (!user) {
-        user = await prisma.studentCredential.findUnique({ where: { email } });
-        if (user) {
-          role = UserRole.Student;
-        }
-      }
-
-      // If no user is found
-      if (!user) {
+      if (!credential) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
       // Verify password
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      const isPasswordValid = await bcrypt.compare(password, credential.passwordHash);
       if (!isPasswordValid) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
+      // Determine the role by checking linked tables
+      let role: UserRole | null = null;
+
+      const admin = await prisma.admin.findUnique({ where: { credentialId: credential.id } });
+      if (admin) role = UserRole.ADMIN;
+
+      const faculty = await prisma.faculty.findUnique({ where: { credentialId: credential.id } });
+      if (faculty) role = UserRole.FACULTY;
+
+      const student = await prisma.student.findUnique({ where: { credentialId: credential.id } });
+      if (student) role = UserRole.STUDENT;
+
+      if (!role) {
+        return res.status(401).json({ message: 'Invalid user role' });
+      }
+
       // Generate JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email, role },
+        { id: credential.id, email: credential.email, role },
         process.env.JWT_SECRET as string,
         { expiresIn: '1d' }
       );
@@ -61,7 +56,7 @@ const authController = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 60 * 60 * 1000,
+        maxAge: 60 * 60 * 1000, // 1 hour
       });
 
       return res.status(200).json({
@@ -82,33 +77,40 @@ const authController = {
     }
 
     try {
-      const existingAdmin = await prisma.adminCredential.findUnique({ where: { email } });
-      if (existingAdmin) {
+      // Check if the email already exists
+      const existingCredential = await prisma.credential.findUnique({ where: { email } });
+      if (existingCredential) {
         return res.status(400).json({ message: 'Admin with this email already exists' });
       }
+
+      // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const newAdmin = await prisma.adminCredential.create({
+      // Create credential for Admin
+      const newCredential = await prisma.credential.create({
         data: {
-          registrationNumber,
           email,
           passwordHash: hashedPassword,
+          registrationNumber,
+          role: UserRole.ADMIN, // Explicitly set role as ADMIN
         },
       });
+
+      // Create Admin linked to Credential
       await prisma.admin.create({
         data: {
-          id: newAdmin.id,
           registrationNumber,
           email,
           firstName,
           lastName,
+          credentialId: newCredential.id,
         },
       });
 
       return res.status(201).json({ message: 'Admin registered successfully' });
     } catch (error) {
-      console.error('Error during registration:', error);
+      console.error('Error during admin registration:', error);
       return res.status(500).json({ message: 'An error occurred during registration' });
     }
   },
