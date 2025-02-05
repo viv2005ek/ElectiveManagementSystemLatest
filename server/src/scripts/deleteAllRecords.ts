@@ -1,37 +1,27 @@
-import { PrismaClient } from '@prisma/client';
-import { prisma } from '../prismaClient';
+import { PrismaClient } from "@prisma/client";
 
-const prismaClient = new PrismaClient();
+const prisma = new PrismaClient();
 
-const deleteAllData = async () => {
+async function clearDatabase() {
   try {
-    console.log('Starting to delete all data...');
+    console.log("Deleting all records...");
 
-    // Delete records from many-to-many relationships or dependent models first
-    await prisma.programmeElectiveAllotment.deleteMany({});
-    await prisma.minorSpecializationPreference.deleteMany({});
+    // Disable foreign key constraints temporarily
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE 
+      "ProgrammeElectiveAllotment", "ProgrammeElectiveChoice", "ProgrammeElectiveCourse",
+      "MinorSpecializationChoice", "MinorSpecializationAllotmentWindow",
+      "ProgrammeElective", "MinorSpecialization",
+      "Student", "Faculty", "Admin",
+      "Credential", "Branch", "Department"
+      RESTART IDENTITY CASCADE;`);
 
-    // Then, delete records from the "many" side of one-to-many relationships
-    await prisma.programmeElective.deleteMany({});
-    await prisma.minorSpecialization.deleteMany({});
-    await prisma.branch.deleteMany({});
-    await prisma.department.deleteMany({});
-    await prisma.admin.deleteMany({});
-    await prisma.faculty.deleteMany({});
-    await prisma.student.deleteMany({});
-
-    // Finally, delete the "root" models (those without foreign dependencies)
-    await prisma.studentCredential.deleteMany({});
-    await prisma.facultyCredential.deleteMany({});
-    await prisma.adminCredential.deleteMany({});
-
-    console.log('All data has been deleted successfully.');
+    console.log("All records deleted successfully ✅");
   } catch (error) {
-    console.error('Error deleting data:', error);
+    console.error("Error clearing database:", error);
   } finally {
-    await prismaClient.$disconnect(); // Disconnect after operation
+    await prisma.$disconnect();
   }
-};
+}
 
-// Execute the delete script
-deleteAllData();
+// Run the script
+clearDatabase();

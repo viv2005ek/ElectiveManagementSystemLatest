@@ -2,14 +2,17 @@ import { Request, Response } from 'express';
 import { prisma } from '../prismaClient';
 
 const programmeElectiveController = {
+
+  // Get all standalone (independent) programme electives
   getAllProgrammeStandaloneElectives: async (req: Request, res: Response): Promise<any> => {
     try {
       const programmeElectives = await prisma.programmeElective.findMany({
         where: {
-          isStandalone: true,
+          isIndependentCourse: true,
+          isDeleted: false, // Ensure only non-deleted programme electives
         },
         include: {
-          minorSpecialization: true,
+          minorSpecialization: true, // Include associated minor specialization details
         },
       });
 
@@ -20,14 +23,16 @@ const programmeElectiveController = {
     }
   },
 
+  // Get all programme electives under minor specializations
   getAllProgrammeElectivesUnderMinorSpecializations: async (req: Request, res: Response): Promise<any> => {
     try {
       const programmeElectives = await prisma.programmeElective.findMany({
         where: {
           minorSpecializationId: { not: null },
+          isDeleted: false, // Ensure only non-deleted programme electives
         },
         include: {
-          minorSpecialization: true,
+          minorSpecialization: true, // Include associated minor specialization details
         },
       });
 

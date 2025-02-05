@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prismaClient';
-import { AdminCredential } from '@prisma/client';
+import { Credential, UserRole } from '@prisma/client';
 
 export interface CustomRequest extends Request {
-  user?: AdminCredential;
+  user?: Credential;
 }
 
 const verifyAdmin = async (req: CustomRequest, res: Response, next: NextFunction): Promise<any> => {
@@ -16,15 +16,21 @@ const verifyAdmin = async (req: CustomRequest, res: Response, next: NextFunction
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
-    const admin = await prisma.adminCredential.findUnique({
+
+    // Fetch the credential by decoded ID
+    const credential = await prisma.credential.findUnique({
       where: { id: decoded.id },
+      include: {
+        admin: true, // Ensure we include the Admin relation
+      },
     });
 
-    if (!admin) {
+    if (!credential || credential.role !== UserRole.ADMIN) {
       return res.status(403).json({ message: 'Forbidden: Not an admin user' });
     }
 
-    req.user = admin;
+    // Assign the full credential (admin data is embedded in it) to the request object
+    req.user = credential;
 
     next();
   } catch (error) {
