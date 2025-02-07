@@ -1,5 +1,5 @@
-import express from 'express';
-import departmentController from '../controllers/DepartmentController';
+import express from "express";
+import departmentController from "../controllers/DepartmentController";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/', departmentController.getAllDepartments);
+router.get("/", departmentController.getAllDepartments);
 
 /**
  * @swagger
@@ -55,6 +55,50 @@ router.get('/', departmentController.getAllDepartments);
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', departmentController.getDepartmentById);
+router.get("/:id", departmentController.getDepartmentById);
+
+/**
+ * @swagger
+ * /departments/bulk-add:
+ *   post:
+ *     summary: Add multiple departments
+ *     tags: [Departments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - departments
+ *             properties:
+ *               departments:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - name
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: The name of the department
+ *     responses:
+ *       201:
+ *         description: Departments added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: integer
+ *       400:
+ *         description: Invalid input (missing or incorrect fields)
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/bulk-add", departmentController.addDepartments);
 
 export default router;

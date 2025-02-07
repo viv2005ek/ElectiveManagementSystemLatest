@@ -1,5 +1,5 @@
-import express from 'express';
-import programmeElectiveController from '../controllers/ProgrammeElectiveController';
+import express from "express";
+import programmeElectiveController from "../controllers/ProgrammeElectiveController";
 
 const router = express.Router();
 
@@ -28,7 +28,10 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/standalone', programmeElectiveController.getAllProgrammeStandaloneElectives);
+router.get(
+  "/standalone",
+  programmeElectiveController.getAllProgrammeStandaloneElectives,
+);
 
 /**
  * @swagger
@@ -48,6 +51,76 @@ router.get('/standalone', programmeElectiveController.getAllProgrammeStandaloneE
  *       500:
  *         description: Internal server error
  */
-router.get('/under-minor-specializations', programmeElectiveController.getAllProgrammeElectivesUnderMinorSpecializations);
+router.get(
+  "/under-minor-specializations",
+  programmeElectiveController.getAllProgrammeElectivesUnderMinorSpecializations,
+);
+
+/**
+ * @swagger
+ * /programme-electives/bulk-add:
+ *   post:
+ *     summary: Bulk add programme electives
+ *     tags: [ProgrammeElectives]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/IndependentProgrammeElective'
+ *     responses:
+ *       201:
+ *         description: Programme electives created successfully
+ *       400:
+ *         description: Invalid input, expected an array of programme electives
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  "/independent/bulk-add",
+  programmeElectiveController.bulkCreateProgrammeElectives,
+);
+
+/**
+ * @swagger
+ * /programme-electives/under-minor-specializations/bulk-add:
+ *   post:
+ *     summary: Bulk add programme electives to a minor specialization
+ *     tags: [ProgrammeElectives]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - minorSpecializationId
+ *               - programmeElectives
+ *             properties:
+ *               minorSpecializationId:
+ *                 type: string
+ *                 description: ID of the minor specialization to which electives will be added
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               programmeElectives:
+ *                 type: array
+ *                 description: List of programme electives to be added
+ *                 items:
+ *                   $ref: '#/components/schemas/ProgrammeElective'
+ *     responses:
+ *       201:
+ *         description: Programme electives added successfully
+ *       400:
+ *         description: Invalid input, missing required fields
+ *       404:
+ *         description: Minor specialization not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  "/under-minor-specializations/bulk-add",
+  programmeElectiveController.bulkAddProgrammeElectivesToMinorSpecialization,
+);
 
 export default router;

@@ -1,9 +1,15 @@
-const logger = {
-  info: (message: string) =>
-    console.log(`\x1b[32m[INFO]\x1b[0m ${new Date().toLocaleString()} - ${message}`),
+import pino from "pino";
 
-  error: (message: string) =>
-    console.error(`\x1b[31m[ERROR]\x1b[0m ${new Date().toLocaleString()} - ${message}`),
-};
+const logger = pino({
+  level: "info", // Default log level
+  transport: {
+    target: "pino-pretty", // Pretty-print logs for development
+    options: {
+      colorize: true,
+      translateTime: "HH:MM:ss Z", // Adds timestamp
+      ignore: "pid,hostname", // Hides unnecessary fields
+    },
+  },
+});
 
 export default logger;

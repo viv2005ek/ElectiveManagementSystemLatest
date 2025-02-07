@@ -1,5 +1,5 @@
-import express from 'express';
-import minorSpecializationController from '../controllers/MinorSpecializationController';
+import express from "express";
+import minorSpecializationController from "../controllers/MinorSpecializationController";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/', minorSpecializationController.getAllMinorSpecializations);
+router.get("/", minorSpecializationController.getAllMinorSpecializations);
 
 /**
  * @swagger
@@ -55,6 +55,52 @@ router.get('/', minorSpecializationController.getAllMinorSpecializations);
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', minorSpecializationController.getMinorSpecializationById);
+router.get("/:id", minorSpecializationController.getMinorSpecializationById);
+
+/**
+ * @swagger
+ * /minor-specializations/bulk-add:
+ *   post:
+ *     summary: Bulk add minor specializations
+ *     tags: [MinorSpecializations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               minorSpecializations:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     departmentId:
+ *                       type: string
+ *                 example:
+ *                   - name: "Data Science"
+ *                     departmentId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   - name: "AI & ML"
+ *                     departmentId: "123e4567-e89b-12d3-a456-426614174001"
+ *     responses:
+ *       201:
+ *         description: Minor specializations added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: integer
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/bulk-add", minorSpecializationController.addMinorSpecializations);
 
 export default router;

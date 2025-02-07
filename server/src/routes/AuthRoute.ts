@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import authController from '../controllers/authController';
+import { Router } from "express";
+import authController from "../controllers/authController";
 
 const router = Router();
 
@@ -45,7 +45,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/login', authController.loginController);
+router.post("/login", authController.loginController);
 
 /**
  * @swagger
@@ -83,7 +83,7 @@ router.post('/login', authController.loginController);
  *       500:
  *         description: Internal server error
  */
-router.post('/register', authController.registerController);
+router.post("/register", authController.registerController);
 
 // Uncomment this route if needed in the future
 // router.post('/admin/logout', authController.logoutController);

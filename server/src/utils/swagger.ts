@@ -1,27 +1,27 @@
-import { Express, Request, Response } from 'express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import { version } from '../../package.json';
-import log from './logger';
-import { schemas } from './swaggerSchema';
-import path from 'node:path';
+import { Express, Request, Response } from "express";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { version } from "../../package.json";
+import log from "./logger";
+import { schemas } from "./swaggerSchema";
+import path from "node:path";
 
 const options: swaggerJsdoc.Options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'REST API Docs',
+      title: "REST API Docs",
       version,
     },
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
-      schemas,  // Use the imported schemas here
+      schemas, // Use the imported schemas here
     },
     security: [
       {
@@ -29,22 +29,25 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: [path.resolve(__dirname, '../routes/*.ts'), path.resolve(__dirname, '../routes/*.js')],
+  apis: [
+    path.resolve(__dirname, "../routes/*.ts"),
+    path.resolve(__dirname, "../routes/*.js"),
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
 function swaggerDocs(app: Express, port: number) {
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-  const host = process.env.HOST || 'localhost';
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const host = process.env.HOST || "localhost";
   const serverUrl = `${protocol}://${host}:${port}`;
 
   // Swagger page
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   // Swagger JSON endpoint
-  app.get('docs.json', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'application/json');
+  app.get("docs.json", (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "application/json");
     res.send(swaggerSpec);
   });
 

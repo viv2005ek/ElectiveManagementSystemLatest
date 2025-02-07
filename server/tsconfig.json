@@ -13,7 +13,5 @@
     "skipLibCheck": true,
     "rootDir": "./src"
   },
-  "exclude": [
-    "src/scripts"
-  ]
+  "exclude": ["src/scripts"]
 }
