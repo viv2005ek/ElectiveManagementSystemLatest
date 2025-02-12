@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -7,13 +7,14 @@ async function clearDatabase() {
     console.log("Deleting all records...");
 
     // Disable foreign key constraints temporarily
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE 
-      "ProgrammeElectiveAllotment", "ProgrammeElectiveChoice", "ProgrammeElectiveCourse",
-      "MinorSpecializationChoice", "MinorSpecializationAllotmentWindow",
-      "ProgrammeElective", "MinorSpecialization",
+    await prisma.$executeRawUnsafe(`
+      TRUNCATE TABLE 
+      "CourseAllotment", "SubjectPreferences",
+      "CourseBucket", "CourseCategory", "Course",
       "Student", "Faculty", "Admin",
-      "Credential", "Branch", "Department"
-      RESTART IDENTITY CASCADE;`);
+      "Credential", "Branch", "Department", "SubjectAllotmentWindow"
+      RESTART IDENTITY CASCADE;
+    `);
 
     console.log("All records deleted successfully ✅");
   } catch (error) {

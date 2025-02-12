@@ -1,5 +1,5 @@
-import express from "express";
-import BranchController from "../controllers/BranchController";
+import express from 'express';
+import BranchController from '../controllers/BranchController';
 
 const router = express.Router();
 
@@ -24,17 +24,7 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "brn001"
- *                   name:
- *                     type: string
- *                     example: "Computer Science"
- *                   departmentId:
- *                     type: string
- *                     example: "dep123"
+ *                 $ref: '#/components/schemas/Branch'
  *       500:
  *         description: Unable to fetch branches
  */
@@ -59,17 +49,7 @@ router.get("/", BranchController.getAllBranches);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   example: "brn001"
- *                 name:
- *                   type: string
- *                   example: "Computer Science"
- *                 departmentId:
- *                   type: string
- *                   example: "dep123"
+ *               $ref: '#/components/schemas/Branch'
  *       404:
  *         description: Branch not found
  *       500:
@@ -79,13 +59,13 @@ router.get("/:id", BranchController.getBranchByID);
 
 /**
  * @swagger
- * /branches/department/{id}:
+ * /branches/department/{departmentId}:
  *   get:
  *     summary: Get all branches under a specific department
  *     tags: [Branches]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: departmentId
  *         required: true
  *         schema:
  *           type: string
@@ -98,22 +78,12 @@ router.get("/:id", BranchController.getBranchByID);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     example: "brn001"
- *                   name:
- *                     type: string
- *                     example: "Computer Science"
- *                   departmentId:
- *                     type: string
- *                     example: "dep123"
+ *                 $ref: '#/components/schemas/Branch'
  *       404:
  *         description: No branches found for this department
  *       500:
  *         description: Unable to fetch branches
  */
-router.get("/department/:id", BranchController.getBranchesByDepartmentId);
+router.get("/department/:departmentId", BranchController.getBranchesByDepartmentId);
 
 export default router;

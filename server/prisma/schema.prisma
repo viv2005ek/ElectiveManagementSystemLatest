@@ -20,29 +20,27 @@ model Credential {
 }
 
 model Student {
-  id                         String                       @id @default(uuid())
-  createdAt                  DateTime                     @default(now())
-  updatedAt                  DateTime                     @updatedAt
-  registrationNumber         String                       @unique
-  email                      String                       @unique
-  firstName                  String
-  lastName                   String?
-  gender                     Gender
-  minorSpecializationId      String?
-  minorSpecialization        MinorSpecialization?         @relation(fields: [minorSpecializationId], references: [id])
-  semester                   Int
-  section                    String
-  batch                      Int
-  branchId                   String
-  branch                     Branch                       @relation(fields: [branchId], references: [id])
-  contactNumber              String                       @db.VarChar(15)
-  profilePictureId           String?
-  programmeElectiveAllotment ProgrammeElectiveAllotment[]
-  credentialId               String                       @unique
-  credential                 Credential                   @relation(fields: [credentialId], references: [id])
-  isDeleted                  Boolean                      @default(false)
-  minorSpecializationChoice  MinorSpecializationChoice[]
-  programmeElectiveChoice    ProgrammeElectiveChoice[]
+  id                    String               @id @default(uuid())
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  registrationNumber    String               @unique
+  email                 String               @unique
+  firstName             String
+  lastName              String?
+  gender                Gender
+  minorSpecializationId String?
+  semester              Int
+  section               String
+  batch                 Int
+  branchId              String
+  branch                Branch               @relation(fields: [branchId], references: [id])
+  contactNumber         String               @db.VarChar(15)
+  profilePictureId      String?
+  credentialId          String               @unique
+  credential            Credential           @relation(fields: [credentialId], references: [id])
+  isDeleted             Boolean              @default(false)
+  SubjectPreferences    SubjectPreferences[]
+  CourseAllotment       CourseAllotment[]
 }
 
 model Faculty {
@@ -74,113 +72,107 @@ model Admin {
 }
 
 model Department {
-  id                   String                @id @default(uuid())
-  name                 String                @unique
-  branches             Branch[]
-  minorSpecializations MinorSpecialization[]
-  faculty              Faculty[]
-  isDeleted            Boolean               @default(false)
-  ProgrammeElective    ProgrammeElective[]
-}
-
-model ProgrammeElectiveCourse {
-  id                         String                          @id @default(uuid())
-  name                       String
-  semester                   Int
-  batch                      Int
-  enrollmentIsActive         Boolean                         @default(false)
-  isDeleted                  Boolean                         @default(false)
-  deadline                   DateTime
-  programmeElectiveChoice    ProgrammeElectiveChoice[]
-  programmeElectiveAllotment ProgrammeElectiveAllotment[]
-  branches                   ProgrammeElectiveCourseBranch[] @relation("CourseToBranch")
+  id           String         @id @default(uuid())
+  name         String         @unique
+  branches     Branch[]
+  faculty      Faculty[]
+  isDeleted    Boolean        @default(false)
+  Course       Course[]
+  CourseBucket CourseBucket[]
 }
 
 model Branch {
-  id                       String                          @id @default(uuid())
-  name                     String                          @unique
-  departmentId             String
-  department               Department                      @relation(fields: [departmentId], references: [id])
-  students                 Student[]
-  programmeElectiveCourses ProgrammeElectiveCourseBranch[] @relation("BranchToCourse")
+  id                      String                   @id @default(uuid())
+  name                    String                   @unique
+  departmentId            String
+  department              Department               @relation(fields: [departmentId], references: [id])
+  students                Student[]
+  subjectAllotmentWindows SubjectAllotmentWindow[] @relation("SubjectAllotmentWindowToBranch")
+  isDeleted               Boolean                  @default(false)
 }
 
-model ProgrammeElectiveCourseBranch {
-  id                        String                  @id @default(uuid())
-  programmeElectiveCourseId String
-  programmeElectiveCourse   ProgrammeElectiveCourse @relation(fields: [programmeElectiveCourseId], references: [id], name: "CourseToBranch")
-  branchId                  String
-  branch                    Branch                  @relation(fields: [branchId], references: [id], name: "BranchToCourse")
-
-  @@unique([programmeElectiveCourseId, branchId])
+model Course {
+  id                 String               @id @default(uuid())
+  name               String
+  code               String               @unique
+  credits            Int
+  isDeleted          Boolean              @default(false)
+  departmentId       String
+  department         Department           @relation(fields: [departmentId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  courseCategories   CourseCategory[]
+  courseBuckets      CourseBucket[]
+  SubjectPreferences SubjectPreferences[]
+  CourseAllotment    CourseAllotment[]
 }
 
-model ProgrammeElective {
-  id                         String                       @id @default(uuid())
-  courseCode                 String                       @unique
-  name                       String                       @unique
-  isIndependentCourse        Boolean                      @default(false)
-  minorSpecializationId      String?
-  departmentId               String?
-  department                 Department?                  @relation(fields: [departmentId], references: [id])
-  minorSpecialization        MinorSpecialization?         @relation(fields: [minorSpecializationId], references: [id])
-  programmeElectiveAllotment ProgrammeElectiveAllotment[]
-  isDeleted                  Boolean                      @default(false)
-  programmeElectiveChoice    ProgrammeElectiveChoice[]
+model CourseCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  courses   Course[]
+  isDeleted Boolean  @default(false)
 }
 
-model MinorSpecializationChoice {
-  id                    String              @id @default(uuid())
-  minorSpecializationId String
-  minorSpecialization   MinorSpecialization @relation(fields: [minorSpecializationId], references: [id])
-  studentId             String
-  student               Student             @relation(fields: [studentId], references: [id])
-  preferenceRank        Int
-  createdAt             DateTime            @default(now())
+model CourseBucket {
+  id                 String               @id @default(uuid())
+  name               String
+  departmentId       String
+  department         Department           @relation(fields: [departmentId], references: [id])
+  courses            Course[]
+  SubjectPreferences SubjectPreferences[]
+  CourseAllotment    CourseAllotment[]
+  isDeleted          Boolean              @default(false)
 }
 
-model MinorSpecialization {
-  id                        String                      @id @default(uuid())
-  name                      String                      @unique
-  departmentId              String
-  department                Department                  @relation(fields: [departmentId], references: [id])
-  programmeElectives        ProgrammeElective[]
-  students                  Student[]
-  isDeleted                 Boolean                     @default(false)
-  minorSpecializationChoice MinorSpecializationChoice[]
+model SubjectAllotmentWindow {
+  id                 String               @id @default(uuid())
+  name               String
+  semester           Int
+  batch              Int
+  isActive           Boolean              @default(false)
+  branches           Branch[]             @relation("SubjectAllotmentWindowToBranch")
+  subjectPreferences SubjectPreferences[]
+  courseAllotments   CourseAllotment[]
+  isDeleted          Boolean              @default(false)
 }
 
-model MinorSpecializationAllotmentWindow {
-  id         String   @id @default(uuid())
-  semester   Int
-  batch      Int
-  isOpen     Boolean  @default(false)
-  totalSeats Int?
-  deadline   DateTime
+model SubjectPreferences {
+  id                String                 @id @default(uuid())
+  studentId         String
+  student           Student                @relation(fields: [studentId], references: [id])
+  courseId          String?
+  course            Course?                @relation(fields: [courseId], references: [id])
+  courseBucketId    String?
+  courseBucket      CourseBucket?          @relation(fields: [courseBucketId], references: [id])
+  allotmentWindowId String
+  allotmentWindow   SubjectAllotmentWindow @relation(fields: [allotmentWindowId], references: [id])
+  preferenceOrder   Int
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  isDeleted         Boolean                @default(false)
+
+  @@unique([studentId, courseId, courseBucketId, allotmentWindowId])
 }
 
-model ProgrammeElectiveChoice {
-  id                        String                  @id @default(uuid())
-  programmeElectiveCourseId String
-  programmeElectiveCourse   ProgrammeElectiveCourse @relation(fields: [programmeElectiveCourseId], references: [id])
-  studentId                 String
-  student                   Student                 @relation(fields: [studentId], references: [id])
-  semester                  Int
-  preferenceRank            Int
-  programmeElectiveId       String
-  programmeElective         ProgrammeElective       @relation(fields: [programmeElectiveId], references: [id])
-  createdAt                 DateTime                @default(now())
-}
+model CourseAllotment {
+  id                String                 @id @default(uuid())
+  studentId         String
+  student           Student                @relation(fields: [studentId], references: [id])
+  courseId          String?
+  course            Course?                @relation(fields: [courseId], references: [id])
+  semester          Int
+  courseBucketId    String?
+  courseBucket      CourseBucket?          @relation(fields: [courseBucketId], references: [id])
+  allotmentWindowId String
+  allotmentWindow   SubjectAllotmentWindow @relation(fields: [allotmentWindowId], references: [id])
+  type              AllotmentType
+  status            AllotmentStatus        @default(PENDING)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  isDeleted         Boolean                @default(false)
 
-model ProgrammeElectiveAllotment {
-  id                        String                  @id @default(uuid())
-  studentId                 String
-  student                   Student                 @relation(fields: [studentId], references: [id])
-  programmeElectiveCourseId String
-  programmeElectiveCourse   ProgrammeElectiveCourse @relation(fields: [programmeElectiveCourseId], references: [id])
-  programmeElectiveId       String
-  programmeElective         ProgrammeElective       @relation(fields: [programmeElectiveId], references: [id])
-  semester                  Int
+  @@unique([studentId, courseId, allotmentWindowId])
 }
 
 enum Gender {
@@ -193,4 +185,15 @@ enum UserRole {
   STUDENT
   FACULTY
   ADMIN
+}
+
+enum AllotmentType {
+  STANDALONE
+  BUCKET
+}
+
+enum AllotmentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
 }

@@ -1,9 +1,7 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { Department } from "@prisma/client";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
 
 const departmentController = {
-  // Get all departments
   getAllDepartments: async (req: Request, res: Response): Promise<any> => {
     try {
       const departments = await prisma.department.findMany({
@@ -22,20 +20,17 @@ const departmentController = {
     }
   },
 
-  // Get department by ID
   getDepartmentById: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;
 
       const department = await prisma.department.findUnique({
-        where: {
-          id,
-          isDeleted: false, // Ensure only non-deleted department is fetched
-        },
+        where: { id, isDeleted: false },
         include: {
-          branches: true, // Include associated branches
-          minorSpecializations: true, // Include associated minor specializations
-          faculty: true, // Include associated faculty
+          branches: true,
+          faculty: true,
+          Course: true,
+          CourseBucket: true,
         },
       });
 
@@ -52,7 +47,7 @@ const departmentController = {
 
   addDepartments: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { departments }: { departments: Department[] } = req.body;
+      const { departments } = req.body;
 
       if (!Array.isArray(departments) || departments.length === 0) {
         return res
@@ -61,7 +56,7 @@ const departmentController = {
       }
 
       const createdDepartments = await prisma.department.createMany({
-        data: departments.map((dept: Department) => ({
+        data: departments.map((dept) => ({
           name: dept.name,
         })),
         skipDuplicates: true,

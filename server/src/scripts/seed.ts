@@ -1,8 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import {v4} from 'uuid'
-const prisma = new PrismaClient();
+import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../prismaClient';
 
 async function main() {
+  // Create Course Categories
+  const categories = await Promise.all([
+    prisma.courseCategory.create({ data: { name: 'Flexi Core' } }),
+    prisma.courseCategory.create({ data: { name: 'MinorSpecialization' } }),
+    prisma.courseCategory.create({ data: { name: 'Programme Elective' } }),
+  ]);
+
   // Create Departments
   const departments = await Promise.all(
     Array.from({ length: 4 }, (_, i) =>
@@ -30,33 +37,18 @@ async function main() {
     )
   );
 
-  // Create Minor Specializations for each department
-  const minorSpecializations = await Promise.all(
+  // Create Courses for each Department
+  const courses = await Promise.all(
     departments.map((department) =>
       Promise.all(
-        Array.from({ length: 3 }, (_, i) => {
-          return prisma.minorSpecialization.create({
+        Array.from({ length: 5 }, (_, i) =>
+          prisma.course.create({
             data: {
-              name: `Minor Specialization ${i + 1} - ${v4()}`, // Ensures uniqueness
+              name: `Course ${i + 1} - ${department.name}`,
+              code: `C-${uuidv4().slice(0, 8)}`,
+              credits: Math.floor(Math.random() * 4) + 2,
               departmentId: department.id,
-            },
-          });
-        })
-      )
-    )
-  );
-
-  // Create Programme Electives for each Minor Specialization
-  const programmeElectives = await Promise.all(
-    minorSpecializations.flat().map((minorSpecialization) =>
-      Promise.all(
-        Array.from({ length: 4 }, (_, i) =>
-          prisma.programmeElective.create({
-            data: {
-              courseCode: `PE-${minorSpecialization.name}-${i + 1}`,
-              name: `${minorSpecialization.name} Programme Elective ${i + 1}`,
-              departmentId: minorSpecialization.departmentId,
-              minorSpecializationId: minorSpecialization.id,
+              courseCategories: { connect: { id: categories[i % categories.length].id } },
             },
           })
         )
@@ -64,14 +56,14 @@ async function main() {
     )
   );
 
-  // Create Independent Programme Electives
-  await Promise.all(
-    Array.from({ length: 5 }, (_, i) =>
-      prisma.programmeElective.create({
+  // Create Course Buckets
+  const courseBuckets = await Promise.all(
+    departments.map((department, index) =>
+      prisma.courseBucket.create({
         data: {
-          courseCode: `PE-IND-${i + 1}`,
-          name: `Independent Programme Elective ${i + 1}`,
-          isIndependentCourse: true,
+          name: `Course Bucket for ${department.name}`,
+          departmentId: department.id,
+          courses: { connect: courses[index].map(course => ({ id: course.id })) },
         },
       })
     )
@@ -83,7 +75,7 @@ async function main() {
       prisma.credential.create({
         data: {
           email: `student${i + 1}@example.com`,
-          passwordHash: `passwordHashForStudent${i + 1}`,
+          passwordHash: `hashedPassword${i + 1}`,
           role: 'STUDENT',
         },
       })
@@ -95,7 +87,7 @@ async function main() {
       prisma.credential.create({
         data: {
           email: `faculty${i + 1}@example.com`,
-          passwordHash: `passwordHashForFaculty${i + 1}`,
+          passwordHash: `hashedPassword${i + 1}`,
           role: 'FACULTY',
         },
       })
@@ -107,25 +99,23 @@ async function main() {
       prisma.credential.create({
         data: {
           email: `admin${i + 1}@example.com`,
-          passwordHash: `passwordHashForAdmin${i + 1}`,
+          passwordHash: `hashedPassword${i + 1}`,
           role: 'ADMIN',
         },
       })
     )
   );
 
-  // Create Students with associated Credentials
+  // Create Students
   await Promise.all(
     studentCredentials.map((credential, index) => {
-      const department = departments[index % departments.length];
-      const branch = branches[departments.indexOf(department)][index % 3]; // Assign a branch from the correct department
-
+      const branch = branches[index % branches.length][index % 3];
       return prisma.student.create({
         data: {
           registrationNumber: `S${index + 1}`,
-          email: `student${index + 1}@example.com`,
-          firstName: `Student First Name ${index + 1}`,
-          lastName: `Student Last Name ${index + 1}`,
+          email: credential.email,
+          firstName: `Student ${index + 1}`,
+          lastName: `Lastname ${index + 1}`,
           gender: index % 2 === 0 ? 'MALE' : 'FEMALE',
           semester: 1,
           section: 'A',
@@ -138,15 +128,15 @@ async function main() {
     })
   );
 
-  // Create Faculty with associated Credentials
+  // Create Faculty
   await Promise.all(
     facultyCredentials.map((credential, index) =>
       prisma.faculty.create({
         data: {
           registrationNumber: `F${index + 1}`,
-          email: `faculty${index + 1}@example.com`,
-          firstName: `Faculty First Name ${index + 1}`,
-          lastName: `Faculty Last Name ${index + 1}`,
+          email: credential.email,
+          firstName: `Faculty ${index + 1}`,
+          lastName: `Lastname ${index + 1}`,
           departmentId: departments[index % 4].id,
           credentialId: credential.id,
         },
@@ -154,15 +144,15 @@ async function main() {
     )
   );
 
-  // Create Admins with associated Credentials
+  // Create Admins
   await Promise.all(
     adminCredentials.map((credential, index) =>
       prisma.admin.create({
         data: {
           registrationNumber: `A${index + 1}`,
-          email: `admin${index + 1}@example.com`,
-          firstName: `Admin First Name ${index + 1}`,
-          lastName: `Admin Last Name ${index + 1}`,
+          email: credential.email,
+          firstName: `Admin ${index + 1}`,
+          lastName: `Lastname ${index + 1}`,
           credentialId: credential.id,
         },
       })
