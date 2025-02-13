@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import InfoStudentPopUp from "./InfoStudentPopUp";
+import { useEffect, useState } from 'react';
+import InfoStudentPopUp from './InfoStudentPopUp';
 
 interface Elective {
   subject: string;
@@ -55,8 +55,12 @@ export default function AllStudentList() {
     const matchesSearch =
       student.name.toLowerCase().includes(search.toLowerCase()) ||
       student.registrationNo.toLowerCase().includes(search.toLowerCase());
-    const matchesDepartment = filterDepartment ? student.departmentName === filterDepartment : true;
-    const matchesSemester = filterSemester ? student.semester === parseInt(filterSemester, 10) : true;
+    const matchesDepartment = filterDepartment
+      ? student.departmentName === filterDepartment
+      : true;
+    const matchesSemester = filterSemester
+      ? student.semester === parseInt(filterSemester, 10)
+      : true;
 
     return matchesSearch && matchesDepartment && matchesSemester;
   });
@@ -110,22 +114,20 @@ export default function AllStudentList() {
               {student.name} - {student.registrationNo}
             </p>
             <p className="text-sm">
-              Department: {student.departmentName} | Semester: {student.semester}
+              Department: {student.departmentName} | Semester:{" "}
+              {student.semester}
             </p>
             <p className="text-sm">
-              Elective: {student.elective.subject} ({student.elective.credits} Credits)
+              Elective: {student.elective.subject} ({student.elective.credits}{" "}
+              Credits)
             </p>
           </li>
         ))}
       </ul>
 
       {selectedid && (
-  <InfoStudentPopUp
-    id={selectedid}
-    onClose={() => setSelectedid(null)}
-  />
-)}
-
+        <InfoStudentPopUp id={selectedid} onClose={() => setSelectedid(null)} />
+      )}
     </div>
   );
 }

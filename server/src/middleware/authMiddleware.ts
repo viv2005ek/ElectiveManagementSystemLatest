@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { prisma } from "../prismaClient";
-import { Credential, UserRole } from "@prisma/client";
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../prismaClient';
+import { Credential, UserRole } from '@prisma/client';
 
 export interface CustomRequest extends Request {
   user?: Credential;

@@ -12,7 +12,6 @@ const statuses = {
   [Status.Pending]: "text-red-700 bg-red-50 ring-red-600/20", // Added Pending status
 };
 
-
 const projects = [
   {
     id: 1,

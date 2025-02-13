@@ -1,14 +1,20 @@
-import type { Course } from "../types/course"
+import type { Course } from '../types/course';
 
 interface CourseCardProps {
-  course: Course
-  isSelected: boolean
-  preferenceNumber?: number
-  onSelect: () => void
-  disabled: boolean
+  course: Course;
+  isSelected: boolean;
+  preferenceNumber?: number;
+  onSelect: () => void;
+  disabled: boolean;
 }
 
-export function CourseCard({ course, isSelected, preferenceNumber, onSelect, disabled }: CourseCardProps) {
+export function CourseCard({
+  course,
+  isSelected,
+  preferenceNumber,
+  onSelect,
+  disabled,
+}: CourseCardProps) {
   return (
     <div
       className={`p-4 bg-amber-100 border rounded-lg cursor-pointer transition-all relative 
@@ -27,5 +33,5 @@ export function CourseCard({ course, isSelected, preferenceNumber, onSelect, dis
         <div className="text-sm  font-medium">Semester {course.semester}</div>
       </div>
     </div>
-  )
+  );
 }

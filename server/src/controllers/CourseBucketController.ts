@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
 
 const CourseBucketsController = {
   getAllCourseBuckets: async (req: Request, res: Response): Promise<any> => {

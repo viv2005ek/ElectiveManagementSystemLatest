@@ -1,4 +1,3 @@
-
 const allUsers = [
   {
     name: "Jake Paul",
@@ -9,13 +8,13 @@ const allUsers = [
     branchName: "Software Engineering",
     semester: "5",
     classCoordinator: true,
-    profilePic:"https://randomuser.me/api/portraits/men/43.jpg",
+    profilePic: "https://randomuser.me/api/portraits/men/43.jpg",
     classCoordinatorName: "Dr. Jane Smith",
     mailId: "john.doe@example.com",
     section: "A",
     batchNo: "2021",
     gender: "Male",
-    elective: { subject: "Data Science", credits: 3 }
+    elective: { subject: "Data Science", credits: 3 },
   },
   {
     name: "Jane Smith",
@@ -32,7 +31,7 @@ const allUsers = [
     section: "B",
     batchNo: "2022",
     gender: "Female",
-    elective: { subject: "AI Basics", credits: 2 }
+    elective: { subject: "AI Basics", credits: 2 },
   },
   {
     name: "Mike Johnson",
@@ -49,7 +48,7 @@ const allUsers = [
     section: "C",
     batchNo: "2020",
     gender: "Male",
-    elective: { subject: "Robotics", credits: 4 }
+    elective: { subject: "Robotics", credits: 4 },
   },
   {
     name: "Sara Brown",
@@ -66,7 +65,7 @@ const allUsers = [
     section: "A",
     batchNo: "2023",
     gender: "Female",
-    elective: { subject: "Cybersecurity", credits: 3 }
+    elective: { subject: "Cybersecurity", credits: 3 },
   },
   {
     name: "Robert Green",
@@ -83,7 +82,7 @@ const allUsers = [
     section: "B",
     batchNo: "2021",
     gender: "Male",
-    elective: { subject: "Machine Learning", credits: 3 }
+    elective: { subject: "Machine Learning", credits: 3 },
   },
   {
     name: "Laura Black",
@@ -100,7 +99,7 @@ const allUsers = [
     section: "C",
     batchNo: "2023",
     gender: "Female",
-    elective: { subject: "Embedded Systems", credits: 2 }
+    elective: { subject: "Embedded Systems", credits: 2 },
   },
   {
     name: "Chris Adams",
@@ -117,7 +116,7 @@ const allUsers = [
     section: "D",
     batchNo: "2022",
     gender: "Male",
-    elective: { subject: "Thermodynamics", credits: 3 }
+    elective: { subject: "Thermodynamics", credits: 3 },
   },
   {
     name: "Amy Clark",
@@ -134,7 +133,7 @@ const allUsers = [
     section: "A",
     batchNo: "2019",
     gender: "Female",
-    elective: { subject: "Cloud Computing", credits: 4 }
+    elective: { subject: "Cloud Computing", credits: 4 },
   },
   {
     name: "David Lewis",
@@ -151,7 +150,7 @@ const allUsers = [
     section: "B",
     batchNo: "2020",
     gender: "Male",
-    elective: { subject: "Environmental Science", credits: 3 }
+    elective: { subject: "Environmental Science", credits: 3 },
   },
   {
     name: "Rachel Wilson",
@@ -168,7 +167,7 @@ const allUsers = [
     section: "A",
     batchNo: "2022",
     gender: "Female",
-    elective: { subject: "Web Development", credits: 2 }
+    elective: { subject: "Web Development", credits: 2 },
   },
   {
     name: "Brian Martinez",
@@ -185,7 +184,7 @@ const allUsers = [
     section: "C",
     batchNo: "2023",
     gender: "Male",
-    elective: { subject: "Digital Electronics", credits: 3 }
+    elective: { subject: "Digital Electronics", credits: 3 },
   },
   {
     name: "Olivia Scott",
@@ -202,7 +201,7 @@ const allUsers = [
     section: "A",
     batchNo: "2020",
     gender: "Female",
-    elective: { subject: "Fluid Mechanics", credits: 4 }
+    elective: { subject: "Fluid Mechanics", credits: 4 },
   },
   {
     name: "Jack Thomas",
@@ -219,7 +218,7 @@ const allUsers = [
     section: "B",
     batchNo: "2021",
     gender: "Male",
-    elective: { subject: "Data Privacy", credits: 3 }
+    elective: { subject: "Data Privacy", credits: 3 },
   },
   {
     name: "Sophia Turner",
@@ -236,7 +235,7 @@ const allUsers = [
     section: "A",
     batchNo: "2023",
     gender: "Female",
-    elective: { subject: "Geotechnical Engineering", credits: 2 }
+    elective: { subject: "Geotechnical Engineering", credits: 2 },
   },
   {
     name: "Liam Evans",
@@ -253,7 +252,7 @@ const allUsers = [
     section: "B",
     batchNo: "2021",
     gender: "Male",
-    elective: { subject: "Artificial Intelligence", credits: 3 }
+    elective: { subject: "Artificial Intelligence", credits: 3 },
   },
   {
     name: "Mia Roberts",
@@ -270,7 +269,7 @@ const allUsers = [
     section: "C",
     batchNo: "2022",
     gender: "Female",
-    elective: { subject: "Signal Processing", credits: 3 }
+    elective: { subject: "Signal Processing", credits: 3 },
   },
   {
     name: "Ethan Baker",
@@ -287,7 +286,7 @@ const allUsers = [
     section: "A",
     batchNo: "2019",
     gender: "Male",
-    elective: { subject: "Manufacturing Processes", credits: 4 }
+    elective: { subject: "Manufacturing Processes", credits: 4 },
   },
   {
     name: "Ava King",
@@ -304,7 +303,7 @@ const allUsers = [
     section: "B",
     batchNo: "2022",
     gender: "Female",
-    elective: { subject: "Network Security", credits: 2 }
+    elective: { subject: "Network Security", credits: 2 },
   },
   {
     name: "Benjamin Lee",
@@ -321,10 +320,8 @@ const allUsers = [
     section: "C",
     batchNo: "2023",
     gender: "Male",
-    elective: { subject: "Engineering Graphics", credits: 3 }
-  }
+    elective: { subject: "Engineering Graphics", credits: 3 },
+  },
 ];
 
 export default allUsers;
-
-

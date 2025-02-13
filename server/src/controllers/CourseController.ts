@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
 
 const CourseController = {
   // Get all courses (excluding deleted ones)

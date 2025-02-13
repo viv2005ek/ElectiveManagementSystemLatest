@@ -1,5 +1,5 @@
-import "./App.css";
-import Router from "./Router.tsx";
+import './App.css';
+import Router from './Router.tsx';
 import { UserProvider } from './contexts/UserContext.tsx';
 
 function App() {

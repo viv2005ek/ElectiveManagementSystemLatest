@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 // Define the types for MinorSpecializations and ProgrammeElectives
 export interface ProgrammeElective {
@@ -22,7 +22,9 @@ interface UseMinorSpecializationsReturn {
 }
 
 export const useMinorSpecializations = (): UseMinorSpecializationsReturn => {
-  const [minorSpecializations, setMinorSpecializations] = useState<MinorSpecialization[] | null>(null);
+  const [minorSpecializations, setMinorSpecializations] = useState<
+    MinorSpecialization[] | null
+  >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

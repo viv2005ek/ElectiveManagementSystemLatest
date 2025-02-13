@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { UserRole } from "../types/UserTypes";
-import { hash } from "bcrypt";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
+import { UserRole } from '../types/UserTypes';
+import { hash } from 'bcrypt';
 
 const studentController = {
   // Get all students (excluding deleted ones)

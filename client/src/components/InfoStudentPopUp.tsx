@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 type Elective = {
   subject: string;
@@ -38,12 +38,14 @@ export default function InfoStudentPopUp({
     if (id) {
       const fetchStudent = async () => {
         try {
-          const response = await fetch(`https://apiems.shreshth.tech/students/${id}`);
+          const response = await fetch(
+            `https://apiems.shreshth.tech/students/${id}`,
+          );
           if (!response.ok) {
             throw new Error("Failed to fetch student data");
           }
           const data = await response.json();
-          
+
           // Assuming the API response has the structure similar to the previous example
           const fetchedStudent: Student = {
             name: `${data.firstName} ${data.lastName}`,
@@ -65,7 +67,7 @@ export default function InfoStudentPopUp({
               credits: data.elective?.credits || 0,
             },
           };
-          
+
           setStudent(fetchedStudent);
         } catch (err) {
           console.error("Error fetching student:", err);

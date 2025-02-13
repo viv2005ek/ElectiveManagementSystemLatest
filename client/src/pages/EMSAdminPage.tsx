@@ -1,22 +1,22 @@
-import React, { useState } from "react";
-import { oeChangeRequests } from "../store/OEChangeRequests"; 
-import MainLayout from "../layouts/MainLayout.tsx";
-import InfoStudentPopUp from "../components/InfoStudentPopUp"; 
+import React, { useState } from 'react';
+import { oeChangeRequests } from '../store/OEChangeRequests';
+import MainLayout from '../layouts/MainLayout.tsx';
+import InfoStudentPopUp from '../components/InfoStudentPopUp';
 
 const EMSAdminPage: React.FC = () => {
   const [requests, setRequests] = useState(oeChangeRequests);
   const [filter, setFilter] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); 
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const handleApprove = (id: number) => {
     const updatedRequests = requests.map((req) => {
       if (req.id === id) {
         if (req.remainingSeats > 0) {
           req.status = "Approved";
-          req.remainingSeats -= 1; 
+          req.remainingSeats -= 1;
         } else {
           alert(
-            `Approval failed for ${req.requestedOE.OEName}. No remaining seats.`
+            `Approval failed for ${req.requestedOE.OEName}. No remaining seats.`,
           );
         }
       }
@@ -28,7 +28,7 @@ const EMSAdminPage: React.FC = () => {
 
   const handleReject = (id: number) => {
     const updatedRequests = requests.map((req) =>
-      req.id === id ? { ...req, status: "Rejected" } : req
+      req.id === id ? { ...req, status: "Rejected" } : req,
     );
     setRequests(updatedRequests);
     console.log(`Rejected request ID: ${id}`);
@@ -37,7 +37,7 @@ const EMSAdminPage: React.FC = () => {
   const filteredRequests = requests.filter(
     (req) =>
       req.name.toLowerCase().includes(filter.toLowerCase()) ||
-      req.registrationNo.toLowerCase().includes(filter.toLowerCase())
+      req.registrationNo.toLowerCase().includes(filter.toLowerCase()),
   );
 
   return (
@@ -80,7 +80,7 @@ const EMSAdminPage: React.FC = () => {
                   <tr key={req.id} className="text-center hover:bg-gray-100">
                     <td
                       className="border border-gray-300 px-4 py-2 cursor-pointer hover:text-blue-500"
-                      onClick={() => setSelectedUserId(req.userId ?? null)} 
+                      onClick={() => setSelectedUserId(req.userId ?? null)}
                     >
                       {req.name}
                     </td>
@@ -107,8 +107,8 @@ const EMSAdminPage: React.FC = () => {
                         req.status === "Approved"
                           ? "text-green-500"
                           : req.status === "Rejected"
-                          ? "text-red-500"
-                          : "text-yellow-500"
+                            ? "text-red-500"
+                            : "text-yellow-500"
                       }`}
                     >
                       {req.status}
@@ -143,7 +143,12 @@ const EMSAdminPage: React.FC = () => {
         </div>
       </div>
 
-      {selectedUserId && <InfoStudentPopUp id={selectedUserId} onClose={() => setSelectedUserId(null)} />}
+      {selectedUserId && (
+        <InfoStudentPopUp
+          id={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
     </MainLayout>
   );
 };

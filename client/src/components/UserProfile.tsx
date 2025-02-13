@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import currentUser from '../store/currentUserData';
 
 export default function UserProfile() {
@@ -18,7 +18,7 @@ export default function UserProfile() {
     batchNo,
     gender,
     password,
-    courseName
+    courseName,
   } = currentUser;
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -63,24 +63,48 @@ export default function UserProfile() {
         <p className="text-gray-500 mb-6">{mailId}</p>
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-          <p><span className="font-semibold">Registration No:</span> {registrationNo}</p>
-          <p><span className="font-semibold">Course:</span> {courseName}</p>
-
-          <p><span className="font-semibold">Department:</span> {departmentName}</p>
-          <p><span className="font-semibold">Branch:</span> {branchName}</p>
-          <p><span className="font-semibold">Semester:</span> {semester}</p>
-          <p><span className="font-semibold">Section:</span> {section}</p>
-          <p><span className="font-semibold">Batch No:</span> {batchNo}</p>
-          <p><span className="font-semibold">Gender:</span> {gender}</p>
-          <p><span className="font-semibold">Mobile 1:</span> {mobileNo1}</p>
-          <p><span className="font-semibold">Mobile 2:</span> {mobileNo2}</p>
-
+          <p>
+            <span className="font-semibold">Registration No:</span>{" "}
+            {registrationNo}
+          </p>
+          <p>
+            <span className="font-semibold">Course:</span> {courseName}
+          </p>
 
           <p>
-            <span className="font-semibold">Class Coordinator:</span> {classCoordinator ? 'Yes' : 'No'}
+            <span className="font-semibold">Department:</span> {departmentName}
+          </p>
+          <p>
+            <span className="font-semibold">Branch:</span> {branchName}
+          </p>
+          <p>
+            <span className="font-semibold">Semester:</span> {semester}
+          </p>
+          <p>
+            <span className="font-semibold">Section:</span> {section}
+          </p>
+          <p>
+            <span className="font-semibold">Batch No:</span> {batchNo}
+          </p>
+          <p>
+            <span className="font-semibold">Gender:</span> {gender}
+          </p>
+          <p>
+            <span className="font-semibold">Mobile 1:</span> {mobileNo1}
+          </p>
+          <p>
+            <span className="font-semibold">Mobile 2:</span> {mobileNo2}
+          </p>
+
+          <p>
+            <span className="font-semibold">Class Coordinator:</span>{" "}
+            {classCoordinator ? "Yes" : "No"}
           </p>
           {classCoordinator && (
-            <p><span className="font-semibold">Coordinator Name:</span> {classCoordinatorName}</p>
+            <p>
+              <span className="font-semibold">Coordinator Name:</span>{" "}
+              {classCoordinatorName}
+            </p>
           )}
         </div>
 
@@ -93,7 +117,9 @@ export default function UserProfile() {
 
         {showPasswordForm && (
           <div className="w-full mt-6 p-6 bg-gray-50 rounded-lg shadow-inner">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Change Password</h2>
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+              Change Password
+            </h2>
 
             <input
               type="password"
@@ -103,7 +129,7 @@ export default function UserProfile() {
               className="border rounded-lg p-3 w-full mb-4 focus:border-blue-400 focus:outline-none"
             />
 
-           <input
+            <input
               type="password"
               placeholder="New Password"
               value={newPassword}
@@ -126,7 +152,13 @@ export default function UserProfile() {
               Update Password
             </button>
 
-            {message && <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}>{message}</p>}
+            {message && (
+              <p
+                className={`mt-4 text-center ${message.includes("successfully") ? "text-green-500" : "text-red-500"}`}
+              >
+                {message}
+              </p>
+            )}
           </div>
         )}
       </div>

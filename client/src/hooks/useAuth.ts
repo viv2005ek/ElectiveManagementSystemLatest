@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import axiosInstance from '../axiosInstance.ts';
 import { useUser } from '../contexts/UserContext.tsx';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +14,13 @@ interface UseAuthReturn {
 }
 
 export function useAuth(): UseAuthReturn {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const {setRole } = useUser()
+  const { setRole } = useUser();
 
   const login = async (): Promise<void> => {
     setIsLoading(true);
@@ -32,11 +32,10 @@ export function useAuth(): UseAuthReturn {
         password: password,
       });
 
-      setRole(response.data.role)
+      setRole(response.data.role);
 
       console.log(response.data.role);
-      navigate('/home')
-
+      navigate("/home");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

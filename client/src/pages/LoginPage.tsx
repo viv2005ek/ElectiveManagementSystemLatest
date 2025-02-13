@@ -2,12 +2,12 @@ import { useAuth } from '../hooks/useAuth.ts';
 import { Link } from 'react-router-dom';
 
 export default function LoginPage() {
-
-  const {email, password, setPassword, setEmail, login, isLoading} = useAuth()
+  const { email, password, setPassword, setEmail, login, isLoading } =
+    useAuth();
 
   const handleSubmit = async () => {
-    await login()
-  }
+    await login();
+  };
 
   return (
     <div className="flex min-h-screen">

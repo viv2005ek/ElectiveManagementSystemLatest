@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
-import type { Course, PreferenceSelection } from "../types/course";
-import { CourseCard } from "./course-card";
-import { SelectedPreferences } from "./selected-preferences";
+import { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
+import type { Course, PreferenceSelection } from '../types/course';
+import { CourseCard } from './course-card';
+import { SelectedPreferences } from './selected-preferences';
 
 const API_URL = "https://apiems.shreshth.tech/programme-electives/standalone";
 
@@ -38,14 +38,19 @@ export function PreferenceSelection() {
     if (preferences.some((p) => p.course.id === course.id)) {
       handleRemove(course.id);
     } else {
-      setPreferences((prev) => [...prev, { preference: prev.length + 1, course }]);
+      setPreferences((prev) => [
+        ...prev,
+        { preference: prev.length + 1, course },
+      ]);
     }
   };
 
   // Remove selected course
   const handleRemove = (courseId: string) => {
     setPreferences((prev) =>
-      prev.filter((p) => p.course.id !== courseId).map((p, index) => ({ ...p, preference: index + 1 }))
+      prev
+        .filter((p) => p.course.id !== courseId)
+        .map((p, index) => ({ ...p, preference: index + 1 })),
     );
   };
 
@@ -61,7 +66,7 @@ export function PreferenceSelection() {
   const filteredCourses = courses.filter(
     (course) =>
       course.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.name.toLowerCase().includes(searchQuery.toLowerCase())
+      course.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (isRegistered) {
@@ -70,7 +75,9 @@ export function PreferenceSelection() {
 
   return (
     <div className="max-w-7xl mx-auto bg-orange-300 p-6 rounded-lg shadow">
-      <h2 className="text-lg font-bold mb-4">Select Your Programme Elective Preferences</h2>
+      <h2 className="text-lg font-bold mb-4">
+        Select Your Programme Elective Preferences
+      </h2>
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="relative flex-1 max-w-sm z-1">
@@ -83,10 +90,14 @@ export function PreferenceSelection() {
             className="pl-8 border p-2 rounded-lg w-full z-1"
           />
         </div>
-        <span className="text-sm text-black-500 font-medium">Selected: {preferences.length} of 4</span>
+        <span className="text-sm text-black-500 font-medium">
+          Selected: {preferences.length} of 4
+        </span>
       </div>
 
-      {loading && <p className="text-center text-gray-600 mt-4">Loading courses...</p>}
+      {loading && (
+        <p className="text-center text-gray-600 mt-4">Loading courses...</p>
+      )}
       {error && <p className="text-center text-red-500 mt-4">{error}</p>}
 
       {preferences.length > 0 && (
@@ -94,11 +105,18 @@ export function PreferenceSelection() {
           <h3 className="font-medium p-2 text-xl">Your Preferences</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {preferences.map((preference) => (
-              <div key={preference.course.id} className="bg-amber-100 p-4 rounded-lg flex justify-between">
+              <div
+                key={preference.course.id}
+                className="bg-amber-100 p-4 rounded-lg flex justify-between"
+              >
                 <div>
-                  <div className="font-medium">Preference {preference.preference}</div>
+                  <div className="font-medium">
+                    Preference {preference.preference}
+                  </div>
                   <div className="text-sm">{preference.course.courseCode}</div>
-                  <div className="text-sm text-gray-500">{preference.course.name}</div>
+                  <div className="text-sm text-gray-500">
+                    {preference.course.name}
+                  </div>
                 </div>
                 <button
                   className="text-red-500 font-bold text-sm"
@@ -116,8 +134,12 @@ export function PreferenceSelection() {
         <h3 className="font-medium p-3 text-xl">Available Courses</h3>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {filteredCourses.map((course) => {
-            const isSelected = preferences.some((p) => p.course.id === course.id);
-            const preferenceNumber = preferences.find((p) => p.course.id === course.id)?.preference;
+            const isSelected = preferences.some(
+              (p) => p.course.id === course.id,
+            );
+            const preferenceNumber = preferences.find(
+              (p) => p.course.id === course.id,
+            )?.preference;
 
             return (
               <CourseCard
@@ -136,7 +158,8 @@ export function PreferenceSelection() {
       <div className="mt-6">
         {preferences.length < 4 && (
           <div className="bg-yellow-100 p-3 rounded-md text-sm">
-            Please select {4 - preferences.length} more preference{preferences.length === 3 ? "" : "s"}.
+            Please select {4 - preferences.length} more preference
+            {preferences.length === 3 ? "" : "s"}.
           </div>
         )}
         <button

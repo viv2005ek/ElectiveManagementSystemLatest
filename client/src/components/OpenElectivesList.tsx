@@ -1,4 +1,4 @@
-import { electives } from "../data.ts";
+import { electives } from '../data.ts';
 
 export default function OpenElectivesList() {
   return (

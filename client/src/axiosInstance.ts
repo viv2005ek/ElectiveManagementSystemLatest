@@ -1,15 +1,17 @@
-import axios from 'axios'
+import axios from 'axios';
 
 const getJwtFromCookies = (): string | null => {
-  const name = 'jwt';
-  const cookie = document.cookie.split(';').find((cookie) => cookie.trim().startsWith(`${name}=`));
-  return cookie ? cookie.split('=')[1] : null;
+  const name = "jwt";
+  const cookie = document.cookie
+    .split(";")
+    .find((cookie) => cookie.trim().startsWith(`${name}=`));
+  return cookie ? cookie.split("=")[1] : null;
 };
 
 const axiosInstance = axios.create({
   baseURL: `https://${import.meta.env.VITE_BASE}`,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -21,7 +23,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export default axiosInstance;
