@@ -1,25 +1,62 @@
-import { useState } from "react";
-import allUsers from "../store/allStudentData";
+import { useState, useEffect } from "react";
 import InfoStudentPopUp from "./InfoStudentPopUp";
 
-export default function AllStudentList() {
-  const students = allUsers;
+interface Elective {
+  subject: string;
+  credits: string;
+}
 
+interface Student {
+  name: string;
+  registrationNo: string;
+  departmentName: string;
+  semester: number;
+  elective: Elective;
+  id: string;
+}
+
+export default function AllStudentList() {
+  const API = "https://apiems.shreshth.tech/students";
+  const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState<string>("");
   const [filterDepartment, setFilterDepartment] = useState<string>("");
   const [filterSemester, setFilterSemester] = useState<string>("");
-  const [selectedRegistrationNo, setSelectedRegistrationNo] = useState<string | null>(null);
+  const [selectedid, setSelectedid] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch(API);
+        if (!response.ok) {
+          throw new Error("Failed to fetch student data");
+        }
+        const data = await response.json();
+
+        // Transform API data to match expected structure
+        const formattedStudents: Student[] = data.map((student: any) => ({
+          name: `${student.firstName} ${student.lastName}`,
+          registrationNo: student.registrationNumber,
+          departmentName: student.branch?.department?.name || "Unknown",
+          semester: student.semester,
+          elective: student.elective || { subject: "N/A", credits: "N/A" },
+          id: student.id,
+        }));
+
+        setStudents(formattedStudents);
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      }
+    };
+
+    fetchStudents();
+  }, []);
 
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(search.toLowerCase()) ||
       student.registrationNo.toLowerCase().includes(search.toLowerCase());
-    const matchesDepartment = filterDepartment
-      ? student.departmentName === filterDepartment
-      : true;
-    const matchesSemester = filterSemester
-      ? student.semester === filterSemester
-      : true;
+    const matchesDepartment = filterDepartment ? student.departmentName === filterDepartment : true;
+    const matchesSemester = filterSemester ? student.semester === parseInt(filterSemester, 10) : true;
 
     return matchesSearch && matchesDepartment && matchesSemester;
   });
@@ -43,11 +80,9 @@ export default function AllStudentList() {
           className="p-2 border border-gray-300 rounded-lg w-full sm:w-auto flex-1"
         >
           <option value="">All Departments</option>
-          <option value="CSE">CSE</option>
-          <option value="ECE">ECE</option>
-          <option value="ME">Mechanical</option>
-          <option value="IT">IT</option>
-          <option value="CE">Civil</option>
+          <option value="Department 1">Department 1</option>
+          <option value="Department 2">Department 2</option>
+          <option value="Department 3">Department 3</option>
         </select>
 
         <select
@@ -56,14 +91,11 @@ export default function AllStudentList() {
           className="p-2 border border-gray-300 rounded-lg w-full sm:w-auto flex-1"
         >
           <option value="">All Semesters</option>
-          <option value="1">Semester 1</option>
-          <option value="2">Semester 2</option>
-          <option value="3">Semester 3</option>
-          <option value="4">Semester 4</option>
-          <option value="5">Semester 5</option>
-          <option value="6">Semester 6</option>
-          <option value="7">Semester 7</option>
-          <option value="8">Semester 8</option>
+          {[...Array(8)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              Semester {i + 1}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -71,7 +103,7 @@ export default function AllStudentList() {
         {filteredStudents.map((student, index) => (
           <li
             key={index}
-            onClick={() => setSelectedRegistrationNo(student.registrationNo)}
+            onClick={() => setSelectedid(student.id)}
             className="cursor-pointer p-4 border border-gray-200 rounded-lg shadow-md flex flex-col justify-between items-start"
           >
             <p className="text-lg font-semibold">
@@ -87,10 +119,13 @@ export default function AllStudentList() {
         ))}
       </ul>
 
-      <InfoStudentPopUp
-        registrationNo={selectedRegistrationNo}
-        onClose={() => setSelectedRegistrationNo(null)}
-      />
+      {selectedid && (
+  <InfoStudentPopUp
+    id={selectedid}
+    onClose={() => setSelectedid(null)}
+  />
+)}
+
     </div>
   );
 }

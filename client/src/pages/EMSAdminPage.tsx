@@ -6,7 +6,7 @@ import InfoStudentPopUp from "../components/InfoStudentPopUp";
 const EMSAdminPage: React.FC = () => {
   const [requests, setRequests] = useState(oeChangeRequests);
   const [filter, setFilter] = useState("");
-  const [selectedRegNo, setSelectedRegNo] = useState<string | null>(null); 
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null); 
 
   const handleApprove = (id: number) => {
     const updatedRequests = requests.map((req) => {
@@ -80,7 +80,7 @@ const EMSAdminPage: React.FC = () => {
                   <tr key={req.id} className="text-center hover:bg-gray-100">
                     <td
                       className="border border-gray-300 px-4 py-2 cursor-pointer hover:text-blue-500"
-                      onClick={() => setSelectedRegNo(req.registrationNo)} 
+                      onClick={() => setSelectedUserId(req.userId ?? null)} 
                     >
                       {req.name}
                     </td>
@@ -143,7 +143,7 @@ const EMSAdminPage: React.FC = () => {
         </div>
       </div>
 
-      {selectedRegNo && <InfoStudentPopUp registrationNo={selectedRegNo} onClose={() => setSelectedRegNo(null)} />}
+      {selectedUserId && <InfoStudentPopUp id={selectedUserId} onClose={() => setSelectedUserId(null)} />}
     </MainLayout>
   );
 };
