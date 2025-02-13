@@ -108,10 +108,11 @@ model Course {
 }
 
 model CourseCategory {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  courses   Course[]
-  isDeleted Boolean  @default(false)
+  id            String        @id @default(uuid())
+  name          String        @unique
+  courses       Course[]
+  isDeleted     Boolean       @default(false)
+  allotmentType AllotmentType
 }
 
 model CourseBucket {

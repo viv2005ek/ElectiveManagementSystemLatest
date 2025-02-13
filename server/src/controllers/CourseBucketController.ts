@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 const CourseBucketsController = {
   getAllCourseBuckets: async (req: Request, res: Response): Promise<any> => {
@@ -8,7 +8,7 @@ const CourseBucketsController = {
         where: { isDeleted: false },
         include: {
           courses: true,
-          department: true
+          department: true,
         },
       });
       res.status(200).json(courseBuckets);
@@ -25,7 +25,7 @@ const CourseBucketsController = {
         where: { id },
         include: {
           courses: true,
-          department: true
+          department: true,
         },
       });
 
@@ -53,7 +53,9 @@ const CourseBucketsController = {
       const createdBuckets = await prisma.$transaction(
         courseBuckets.map((bucket) => {
           if (!bucket.name || !bucket.departmentId) {
-            throw new Error("Each course bucket must have a name and departmentId.");
+            throw new Error(
+              "Each course bucket must have a name and departmentId.",
+            );
           }
           return prisma.courseBucket.create({
             data: {
@@ -61,7 +63,7 @@ const CourseBucketsController = {
               departmentId: bucket.departmentId,
             },
           });
-        })
+        }),
       );
 
       res.status(201).json({

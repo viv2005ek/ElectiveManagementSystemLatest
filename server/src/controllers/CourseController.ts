@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 const CourseController = {
   // Get all courses (excluding deleted ones)
@@ -48,17 +48,74 @@ const CourseController = {
     }
   },
 
+  getCoursesByCategory: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { categories } = req.query; // Expecting category IDs as a comma-separated string
+
+      if (!categories) {
+        return res
+          .status(400)
+          .json({ message: "Category IDs parameter is required" });
+      }
+
+      const categoryIds = (categories as string)
+        .split(",")
+        .map((id) => id.trim());
+
+      const courses = await prisma.course.findMany({
+        where: {
+          courseCategories: {
+            some: {
+              id: {
+                // Use the foreign key, not `id`
+                in: categoryIds,
+              },
+            },
+          },
+          isDeleted: false,
+        },
+        include: {
+          department: true,
+          courseCategories: true,
+          courseBuckets: true,
+          SubjectPreferences: true,
+          CourseAllotment: true,
+        },
+      });
+
+      if (courses.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No courses found for the given categories" });
+      }
+
+      res.status(200).json(courses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      res.status(500).json({ message: "Unable to fetch courses" });
+    }
+  },
+
   // Add a new course
   addCourse: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { name, code, credits, departmentId, courseCategories, courseBuckets } = req.body;
+      const {
+        name,
+        code,
+        credits,
+        departmentId,
+        courseCategories,
+        courseBuckets,
+      } = req.body;
 
       if (!name || !code || !credits || !departmentId) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
       // Check if course code already exists
-      const existingCourse = await prisma.course.findUnique({ where: { code } });
+      const existingCourse = await prisma.course.findUnique({
+        where: { code },
+      });
       if (existingCourse) {
         return res.status(400).json({ message: "Course code must be unique" });
       }
@@ -78,7 +135,9 @@ const CourseController = {
         },
       });
 
-      res.status(201).json({ message: "Course added successfully", data: newCourse });
+      res
+        .status(201)
+        .json({ message: "Course added successfully", data: newCourse });
     } catch (error) {
       console.error("Error adding course:", error);
       res.status(500).json({ message: "Unable to add course" });
@@ -91,7 +150,9 @@ const CourseController = {
       const { courses } = req.body;
 
       if (!Array.isArray(courses) || courses.length === 0) {
-        return res.status(400).json({ message: "Provide a valid array of courses" });
+        return res
+          .status(400)
+          .json({ message: "Provide a valid array of courses" });
       }
 
       // Validate department existence
@@ -103,7 +164,9 @@ const CourseController = {
       const validDepartmentIds = new Set(existingDepartments.map((d) => d.id));
 
       if (departmentIds.some((id) => !validDepartmentIds.has(id))) {
-        return res.status(400).json({ message: "Invalid departmentId(s) provided" });
+        return res
+          .status(400)
+          .json({ message: "Invalid departmentId(s) provided" });
       }
 
       // Check for duplicate course codes
@@ -115,10 +178,14 @@ const CourseController = {
       });
 
       const existingCourseCodes = new Set(existingCourses.map((c) => c.code));
-      const uniqueCourses = courses.filter((c) => !existingCourseCodes.has(c.code));
+      const uniqueCourses = courses.filter(
+        (c) => !existingCourseCodes.has(c.code),
+      );
 
       if (uniqueCourses.length === 0) {
-        return res.status(409).json({ message: "All provided courses already exist" });
+        return res
+          .status(409)
+          .json({ message: "All provided courses already exist" });
       }
 
       // Bulk insert courses
@@ -131,14 +198,20 @@ const CourseController = {
               credits: course.credits,
               departmentId: course.departmentId,
               courseCategories: course.courseCategories
-                ? { connect: course.courseCategories.map((id: string) => ({ id })) }
+                ? {
+                    connect: course.courseCategories.map((id: string) => ({
+                      id,
+                    })),
+                  }
                 : undefined,
               courseBuckets: course.courseBuckets
-                ? { connect: course.courseBuckets.map((id: string) => ({ id })) }
+                ? {
+                    connect: course.courseBuckets.map((id: string) => ({ id })),
+                  }
                 : undefined,
             },
-          })
-        )
+          }),
+        ),
       );
 
       res.status(201).json({
@@ -155,7 +228,14 @@ const CourseController = {
   updateCourse: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;
-      const { name, code, credits, departmentId, courseCategories, courseBuckets } = req.body;
+      const {
+        name,
+        code,
+        credits,
+        departmentId,
+        courseCategories,
+        courseBuckets,
+      } = req.body;
 
       const existingCourse = await prisma.course.findUnique({ where: { id } });
       if (!existingCourse || existingCourse.isDeleted) {
@@ -178,7 +258,9 @@ const CourseController = {
         },
       });
 
-      res.status(200).json({ message: "Course updated successfully", data: updatedCourse });
+      res
+        .status(200)
+        .json({ message: "Course updated successfully", data: updatedCourse });
     } catch (error) {
       console.error("Error updating course:", error);
       res.status(500).json({ message: "Unable to update course" });

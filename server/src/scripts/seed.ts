@@ -1,13 +1,25 @@
-import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '../prismaClient';
+import { AllotmentType, PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+import { prisma } from "../prismaClient";
 
 async function main() {
   // Create Course Categories
   const categories = await Promise.all([
-    prisma.courseCategory.create({ data: { name: 'Flexi Core' } }),
-    prisma.courseCategory.create({ data: { name: 'MinorSpecialization' } }),
-    prisma.courseCategory.create({ data: { name: 'Programme Elective' } }),
+    prisma.courseCategory.create({
+      data: { name: "Flexi Core", allotmentType: AllotmentType.STANDALONE },
+    }),
+    prisma.courseCategory.create({
+      data: {
+        name: "MinorSpecialization",
+        allotmentType: AllotmentType.BUCKET,
+      },
+    }),
+    prisma.courseCategory.create({
+      data: {
+        name: "Programme Elective",
+        allotmentType: AllotmentType.STANDALONE,
+      },
+    }),
   ]);
 
   // Create Departments
@@ -17,8 +29,8 @@ async function main() {
         data: {
           name: `Department ${i + 1}`,
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create Branches for each Department
@@ -31,10 +43,10 @@ async function main() {
               name: `Branch ${i + 1} of ${department.name}`,
               departmentId: department.id,
             },
-          })
-        )
-      )
-    )
+          }),
+        ),
+      ),
+    ),
   );
 
   // Create Courses for each Department
@@ -48,12 +60,14 @@ async function main() {
               code: `C-${uuidv4().slice(0, 8)}`,
               credits: Math.floor(Math.random() * 4) + 2,
               departmentId: department.id,
-              courseCategories: { connect: { id: categories[i % categories.length].id } },
+              courseCategories: {
+                connect: { id: categories[i % categories.length].id },
+              },
             },
-          })
-        )
-      )
-    )
+          }),
+        ),
+      ),
+    ),
   );
 
   // Create Course Buckets
@@ -63,10 +77,12 @@ async function main() {
         data: {
           name: `Course Bucket for ${department.name}`,
           departmentId: department.id,
-          courses: { connect: courses[index].map(course => ({ id: course.id })) },
+          courses: {
+            connect: courses[index].map((course) => ({ id: course.id })),
+          },
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create Credentials for Students, Faculty, and Admins
@@ -76,10 +92,10 @@ async function main() {
         data: {
           email: `student${i + 1}@example.com`,
           passwordHash: `hashedPassword${i + 1}`,
-          role: 'STUDENT',
+          role: "STUDENT",
         },
-      })
-    )
+      }),
+    ),
   );
 
   const facultyCredentials = await Promise.all(
@@ -88,10 +104,10 @@ async function main() {
         data: {
           email: `faculty${i + 1}@example.com`,
           passwordHash: `hashedPassword${i + 1}`,
-          role: 'FACULTY',
+          role: "FACULTY",
         },
-      })
-    )
+      }),
+    ),
   );
 
   const adminCredentials = await Promise.all(
@@ -100,10 +116,10 @@ async function main() {
         data: {
           email: `admin${i + 1}@example.com`,
           passwordHash: `hashedPassword${i + 1}`,
-          role: 'ADMIN',
+          role: "ADMIN",
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create Students
@@ -116,16 +132,16 @@ async function main() {
           email: credential.email,
           firstName: `Student ${index + 1}`,
           lastName: `Lastname ${index + 1}`,
-          gender: index % 2 === 0 ? 'MALE' : 'FEMALE',
+          gender: index % 2 === 0 ? "MALE" : "FEMALE",
           semester: 1,
-          section: 'A',
+          section: "A",
           batch: 2025,
           branchId: branch.id,
           contactNumber: `98765432${index + 1}`,
           credentialId: credential.id,
         },
       });
-    })
+    }),
   );
 
   // Create Faculty
@@ -140,8 +156,8 @@ async function main() {
           departmentId: departments[index % 4].id,
           credentialId: credential.id,
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create Admins
@@ -155,11 +171,11 @@ async function main() {
           lastName: `Lastname ${index + 1}`,
           credentialId: credential.id,
         },
-      })
-    )
+      }),
+    ),
   );
 
-  console.log('Database seeded successfully!');
+  console.log("Database seeded successfully!");
 }
 
 main()

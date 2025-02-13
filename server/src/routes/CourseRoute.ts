@@ -1,5 +1,5 @@
-import express from 'express';
-import CourseController from '../controllers/CourseController';
+import express from "express";
+import CourseController from "../controllers/CourseController";
 
 const router = express.Router();
 
@@ -45,6 +45,32 @@ router.get("/", CourseController.getAllCourses);
  *         description: Internal server error
  */
 router.get("/:id", CourseController.getCourseById);
+
+/**
+ * @swagger
+ * /courses/by-category:
+ *   get:
+ *     summary: Get courses by category IDs
+ *     description: Retrieve a list of courses filtered by one or more category IDs.
+ *     tags: [Courses]
+ *     parameters:
+ *       - in: query
+ *         name: categories
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Comma-separated list of category IDs
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved courses
+ *       400:
+ *         description: Bad request if categories parameter is missing
+ *       404:
+ *         description: No courses found for the given categories
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/courses/by-category", CourseController.getCoursesByCategory);
 
 /**
  * @swagger

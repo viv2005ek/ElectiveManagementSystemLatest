@@ -1,10 +1,9 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 const BranchController = {
-
   getAllBranches: async (req: Request, res: Response): Promise<any> => {
     try {
       const branches = await prisma.branch.findMany({
@@ -18,7 +17,6 @@ const BranchController = {
       res.status(500).json({ message: "Unable to fetch branches" });
     }
   },
-
 
   getBranchByID: async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;
@@ -41,7 +39,10 @@ const BranchController = {
     }
   },
 
-  getBranchesByDepartmentId: async (req: Request, res: Response): Promise<any> => {
+  getBranchesByDepartmentId: async (
+    req: Request,
+    res: Response,
+  ): Promise<any> => {
     const { departmentId } = req.params;
     try {
       const branches = await prisma.branch.findMany({
@@ -52,7 +53,9 @@ const BranchController = {
       });
 
       if (!branches.length) {
-        return res.status(404).json({ message: "No branches found for this department" });
+        return res
+          .status(404)
+          .json({ message: "No branches found for this department" });
       }
 
       res.status(200).json(branches);
@@ -80,7 +83,9 @@ const BranchController = {
       const validDepartmentIds = new Set(existingDepartments.map((d) => d.id));
 
       if (departmentIds.some((id) => !validDepartmentIds.has(id))) {
-        return res.status(400).json({ message: "Invalid departmentId(s) provided" });
+        return res
+          .status(400)
+          .json({ message: "Invalid departmentId(s) provided" });
       }
 
       // Check for duplicate branch names within the same department
@@ -98,7 +103,7 @@ const BranchController = {
       });
 
       const uniqueBranches = branches.filter(
-        (b) => !existingBranchMap.has(`${b.name}-${b.departmentId}`)
+        (b) => !existingBranchMap.has(`${b.name}-${b.departmentId}`),
       );
 
       if (uniqueBranches.length === 0) {
@@ -115,8 +120,8 @@ const BranchController = {
               name: branch.name,
               departmentId: branch.departmentId,
             },
-          })
-        )
+          }),
+        ),
       );
 
       res.status(201).json({

@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
-import { UserRole } from '../types/UserTypes';
-import { hash } from 'bcrypt';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
+import { UserRole } from "../types/UserTypes";
+import { hash } from "bcrypt";
 
 const studentController = {
   // Get all students (excluding deleted ones)
@@ -107,7 +107,7 @@ const studentController = {
           gender: student.gender,
           branchId: student.branchId,
           password: await hash(student.password, 10),
-        }))
+        })),
       );
 
       // Insert students in a transaction
@@ -133,8 +133,8 @@ const studentController = {
                 },
               },
             },
-          })
-        )
+          }),
+        ),
       );
 
       res.status(201).json({

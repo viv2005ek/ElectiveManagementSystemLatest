@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { prisma } from '../prismaClient';
-import { UserRole } from '../types/UserTypes';
-import bcrypt, { hash } from 'bcrypt';
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { prisma } from "../prismaClient";
+import { UserRole } from "../types/UserTypes";
+import bcrypt, { hash } from "bcrypt";
 
 const authController = {
   loginController: async (req: Request, res: Response): Promise<any> => {

@@ -1,5 +1,5 @@
-import express from 'express';
-import BranchController from '../controllers/BranchController';
+import express from "express";
+import BranchController from "../controllers/BranchController";
 
 const router = express.Router();
 
@@ -84,6 +84,9 @@ router.get("/:id", BranchController.getBranchByID);
  *       500:
  *         description: Unable to fetch branches
  */
-router.get("/department/:departmentId", BranchController.getBranchesByDepartmentId);
+router.get(
+  "/department/:departmentId",
+  BranchController.getBranchesByDepartmentId,
+);
 
 export default router;

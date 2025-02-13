@@ -1,5 +1,5 @@
-import express from 'express';
-import StudentController from '../controllers/StudentController';
+import express from "express";
+import StudentController from "../controllers/StudentController";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/', StudentController.getAllStudents);
+router.get("/", StudentController.getAllStudents);
 
 /**
  * @swagger
@@ -55,7 +55,7 @@ router.get('/', StudentController.getAllStudents);
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', StudentController.getStudentById);
+router.get("/:id", StudentController.getStudentById);
 
 /**
  * @swagger
@@ -164,6 +164,6 @@ router.get('/:id', StudentController.getStudentById);
  *       500:
  *         description: Internal server error
  */
-router.post('/bulk-add', StudentController.bulkAddStudents);
+router.post("/bulk-add", StudentController.bulkAddStudents);
 
 export default router;
