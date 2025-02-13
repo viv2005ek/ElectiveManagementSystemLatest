@@ -1,28 +1,41 @@
 import { useState, useEffect } from "react";
 import { ChevronDownIcon, TrashIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
-const API_BASE_URL = "https://apiems.shreshth.tech";
+const API_BASE_URL = "https://apiems.shreshth.tech/course-buckets";
 
 interface Department {
-  id: number;
+  id: string;
   name: string;
-  code: string;
-}
-
-interface MinorSpecialization {
-  id: number;
-  name: string;
-  departmentId: number;
 }
 
 interface ProgrammeElective {
-  id: number;
-  courseCode: string;
+  id: string;
   name: string;
-  semester: number;
-  isStandalone: boolean;
-  minorSpecializationId: number;
+  code: string;
+  credits: number;
+  departmentId: string;
 }
+
+interface CourseBucket {
+  id: string;
+  name: string;
+  departmentId: string;
+  department: Department; // Ensure department is typed correctly
+  courses: ProgrammeElective[];
+}
+
+const updateCourseBuckets = (prev: CourseBucket[]) => {
+  return [
+    ...prev,
+    {
+      id: "someId",
+      name: "someName",
+      departmentId: "someDeptId",
+      department: { id: "someDeptId", name: "someDepartment" }, // Ensure department property is included
+      courses: [],
+    }
+  ];
+};
 
 function Notification({ message, onClose }: { message: string; onClose: () => void }) {
   useEffect(() => {
@@ -39,51 +52,27 @@ function Notification({ message, onClose }: { message: string; onClose: () => vo
 }
 
 export default function MinorSpecializationsList() {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [minorSpecializations, setMinorSpecializations] = useState<MinorSpecialization[]>([]);
-  const [programmeElectives, setProgrammeElectives] = useState<ProgrammeElective[]>([]);
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [preferences, setPreferences] = useState<MinorSpecialization[]>([]);
+  const [courseBuckets, setCourseBuckets] = useState<CourseBucket[]>([]);
+  const [preferences, setPreferences] = useState<CourseBucket[]>([]);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/minor-specializations`)
+    fetch(API_BASE_URL)
       .then((res) => res.json())
       .then((data) => {
-        setMinorSpecializations(data);
-        data.forEach((spec: MinorSpecialization) => {
-          fetchDepartmentById(spec.departmentId);
-          fetchProgrammeElectives(spec.id); 
-        });
+        setCourseBuckets(data);
       })
-      .catch((err) => console.error("Error fetching minor specializations:", err));
+      .catch((err) => console.error("Error fetching course buckets:", err));
   }, []);
-  
-  const fetchDepartmentById = async (departmentId: number) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/departments/${departmentId}`);
-      const department = await response.json();
-      setDepartments((prev) => [...prev, department]);
-    } catch (error) {
-      console.error("Error fetching department:", error);
-    }
-  };
-  
-  const fetchProgrammeElectives = async (specializationId: number) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/programme-electives/under-minor-specializations`);
-      const data = await response.json();
-      setProgrammeElectives((prev) => [
-        ...prev,
-        ...data.filter((course: ProgrammeElective) => course.minorSpecializationId === specializationId),
-      ]);
-    } catch (error) {
-      console.error("Error fetching programme electives:", error);
-    }
-  };
-  
 
-  const handleSelectSpecialization = (id: number, name: string, departmentId: number) => {
+  const handleSelectSpecialization = (
+    id: string,
+    name: string,
+    departmentId: string,
+    department: Department, // Ensure department is of type `Department` object
+    courses: ProgrammeElective[] // Also ensure courses is typed as an array of ProgrammeElective
+  ) => {
     if (preferences.some((pref) => pref.id === id)) {
       setPreferences((prev) => prev.filter((pref) => pref.id !== id));
     } else {
@@ -91,8 +80,10 @@ export default function MinorSpecializationsList() {
         setNotification("You can select a maximum of 4 preferences.");
         return;
       }
-      setPreferences((prev) => [...prev, { id, name, departmentId }]);
-      fetchDepartmentById(departmentId);
+      setPreferences((prev) => [
+        ...prev,
+        { id, name, departmentId, department, courses }, // Properly pass the department and courses
+      ]);
     }
   };
 
@@ -103,49 +94,50 @@ export default function MinorSpecializationsList() {
   return (
     <div className="space-y-6 px-4 sm:px-6 bg-gray-50">
       <ul className="divide-y divide-gray-200 overflow-hidden bg-white shadow-md rounded-lg ring-1 ring-gray-900/5">
-        {minorSpecializations.map((spec) => (
-          <li key={spec.id} className="relative">
+        {courseBuckets.map((bucket) => (
+          <li key={bucket.id} className="relative">
             <div
               className="flex items-center justify-between px-4 py-3 sm:px-6 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-100 rounded-lg"
               onClick={() => {
-                setOpenDropdown(openDropdown === spec.id ? null : spec.id);
-                fetchProgrammeElectives(spec.id);
+                setOpenDropdown(openDropdown === bucket.id ? null : bucket.id);
               }}
             >
               <div className="flex flex-col">
-                <p className="text-sm font-semibold text-gray-800">{spec.name}</p>
-                <span className="text-xs text-gray-500">
-                  {departments.find((dept) => dept.id === spec.departmentId)?.name || "Loading..."} 
-                </span>
+                <p className="text-sm font-semibold text-gray-800">{bucket.name}</p>
+                <span className="text-xs text-gray-500">{bucket.department?.name}</span> {/* Safely access department.name */}
               </div>
               <div className="flex items-center">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSelectSpecialization(spec.id, spec.name, spec.departmentId);
+                    handleSelectSpecialization(
+                      bucket.id,
+                      bucket.name,
+                      bucket.departmentId,
+                      bucket.department, // Pass the entire department object
+                      bucket.courses // Pass the courses array
+                    );
                   }}
                   className={`ml-4 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                    preferences.some((pref) => pref.id === spec.id)
+                    preferences.some((pref) => pref.id === bucket.id)
                       ? "bg-[#df6039] text-white hover:bg-[#c8502f]"
                       : "bg-[#df6039] text-white hover:bg-[#c8502f]"
                   }`}
                 >
-                  {preferences.some((pref) => pref.id === spec.id)
-                    ? `Preference ${preferences.findIndex((pref) => pref.id === spec.id) + 1}`
+                  {preferences.some((pref) => pref.id === bucket.id)
+                    ? `Preference ${preferences.findIndex((pref) => pref.id === bucket.id) + 1}`
                     : "Select"}
                 </button>
                 <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-600" />
               </div>
             </div>
-            {openDropdown === spec.id && (
+            {openDropdown === bucket.id && (
               <ul className="bg-gray-50 px-4 py-2 sm:px-6 rounded-lg shadow-sm transition-all duration-200">
-                {programmeElectives
-                  .filter((course) => course.minorSpecializationId === spec.id)
-                  .map((course) => (
-                    <li key={course.id} className="py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-md transition-all duration-200">
-                      - {course.name} ({course.courseCode})
-                    </li>
-                  ))}
+                {bucket.courses.map((course) => (
+                  <li key={course.id} className="py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-md transition-all duration-200">
+                    - {course.name} ({course.code}) - {course.credits} Credits
+                  </li>
+                ))}
               </ul>
             )}
           </li>
@@ -163,9 +155,6 @@ export default function MinorSpecializationsList() {
                 <tr key={index}>
                   <td className="px-2 py-4 text-sm text-gray-900">{index + 1}</td>
                   <td className="px-2 py-4 text-sm text-gray-500">{preference.name}</td>
-                  <td className="px-2 py-4 text-sm text-gray-500">
-                    {departments.find((dept) => dept.id === preference.departmentId)?.name || "Loading..."}
-                  </td>
                   <td className="px-2 py-4">
                     <button onClick={() => handleRemovePreference(index)} className="text-red-600 hover:text-red-900">
                       <TrashIcon className="h-5 w-5" />
