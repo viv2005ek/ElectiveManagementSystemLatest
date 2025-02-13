@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import allUsers from "../store/allStudentData";
 
 type Elective = {
   subject: string;
@@ -25,26 +24,59 @@ type Student = {
 };
 
 type InfoStudentPopUpProps = {
-  registrationNo: string | null;
+  id: string | null;
   onClose: () => void;
 };
 
 export default function InfoStudentPopUp({
-  registrationNo,
+  id,
   onClose,
 }: InfoStudentPopUpProps) {
   const [student, setStudent] = useState<Student | null>(null);
 
   useEffect(() => {
-    if (registrationNo) {
-      const fetchedStudent = allUsers.find(
-        (user) => user.registrationNo === registrationNo
-      );
-      setStudent(fetchedStudent || null);
-    }
-  }, [registrationNo]);
+    if (id) {
+      const fetchStudent = async () => {
+        try {
+          const response = await fetch(`https://apiems.shreshth.tech/students/${id}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch student data");
+          }
+          const data = await response.json();
+          
+          // Assuming the API response has the structure similar to the previous example
+          const fetchedStudent: Student = {
+            name: `${data.firstName} ${data.lastName}`,
+            registrationNo: data.registrationNumber,
+            mobileNo1: data.mobileNumber1,
+            mobileNo2: data.mobileNumber2,
+            departmentName: data.branch?.department?.name || "Unknown",
+            branchName: data.branch?.name || "Unknown",
+            semester: data.semester,
+            classCoordinator: data.classCoordinator,
+            profilePic: data.profilePic || null,
+            classCoordinatorName: data.classCoordinatorName || "N/A",
+            mailId: data.email,
+            section: data.section || "N/A",
+            batchNo: data.batchNumber || "N/A",
+            gender: data.gender || "N/A",
+            elective: {
+              subject: data.elective?.subject || "N/A",
+              credits: data.elective?.credits || 0,
+            },
+          };
+          
+          setStudent(fetchedStudent);
+        } catch (err) {
+          console.error("Error fetching student:", err);
+        }
+      };
 
-  if (!registrationNo || !student) return null;
+      fetchStudent();
+    }
+  }, [id]);
+
+  if (!id || !student) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -115,8 +147,6 @@ export default function InfoStudentPopUp({
         <p>
           <strong>Credits:</strong> {student.elective.credits}
         </p>
-
-       
       </div>
     </div>
   );
