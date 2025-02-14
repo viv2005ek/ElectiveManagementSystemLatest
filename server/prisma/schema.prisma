@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 model Credential {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -14,9 +18,9 @@ model Credential {
   role         UserRole
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  student      Student? @relation(map: "Credential_Student_fkey")
-  faculty      Faculty? @relation(map: "Credential_Faculty_fkey")
-  admin        Admin?   @relation(map: "Credential_Admin_fkey")
+  student      Student?
+  faculty      Faculty?
+  admin        Admin?
 }
 
 model Student {
@@ -39,8 +43,8 @@ model Student {
   credentialId          String               @unique
   credential            Credential           @relation(fields: [credentialId], references: [id])
   isDeleted             Boolean              @default(false)
-  SubjectPreferences    SubjectPreferences[]
-  CourseAllotment       CourseAllotment[]
+  subjectPreferences    SubjectPreferences[]
+  courseAllotment       CourseAllotment[]
 }
 
 model Faculty {
@@ -77,18 +81,18 @@ model Department {
   branches     Branch[]
   faculty      Faculty[]
   isDeleted    Boolean        @default(false)
-  Course       Course[]
-  CourseBucket CourseBucket[]
+  course       Course[]
+  courseBucket CourseBucket[]
 }
 
 model Branch {
-  id                      String                   @id @default(uuid())
-  name                    String                   @unique
-  departmentId            String
-  department              Department               @relation(fields: [departmentId], references: [id])
-  students                Student[]
-  subjectAllotmentWindows SubjectAllotmentWindow[] @relation("SubjectAllotmentWindowToBranch")
-  isDeleted               Boolean                  @default(false)
+  id           String     @id @default(uuid())
+  name         String     @unique
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  students     Student[]
+  subjects     Subject[]  @relation("SubjectToBranch")
+  isDeleted    Boolean    @default(false)
 }
 
 model Course {
@@ -103,8 +107,10 @@ model Course {
   updatedAt          DateTime             @updatedAt
   courseCategories   CourseCategory[]
   courseBuckets      CourseBucket[]
-  SubjectPreferences SubjectPreferences[]
-  CourseAllotment    CourseAllotment[]
+  subjectPreferences SubjectPreferences[]
+  courseAllotment    CourseAllotment[]
+  subject            Subject[]            @relation("SubjectToCourse")
+  bucketCourseOrder  BucketCourseOrder[]
 }
 
 model CourseCategory {
@@ -113,6 +119,7 @@ model CourseCategory {
   courses       Course[]
   isDeleted     Boolean       @default(false)
   allotmentType AllotmentType
+  subjects      Subject[]
 }
 
 model CourseBucket {
@@ -121,59 +128,92 @@ model CourseBucket {
   departmentId       String
   department         Department           @relation(fields: [departmentId], references: [id])
   courses            Course[]
-  SubjectPreferences SubjectPreferences[]
-  CourseAllotment    CourseAllotment[]
+  subjectPreferences SubjectPreferences[]
+  courseAllotment    CourseAllotment[]
   isDeleted          Boolean              @default(false)
+  bucketCourseOrder  BucketCourseOrder[]
 }
 
-model SubjectAllotmentWindow {
-  id                 String               @id @default(uuid())
-  name               String
-  semester           Int
-  batch              Int
-  isActive           Boolean              @default(false)
-  branches           Branch[]             @relation("SubjectAllotmentWindowToBranch")
-  subjectPreferences SubjectPreferences[]
-  courseAllotments   CourseAllotment[]
-  isDeleted          Boolean              @default(false)
+model BucketCourseOrder {
+  id             String       @id @default(uuid())
+  courseBucketId String
+  courseBucket   CourseBucket @relation(fields: [courseBucketId], references: [id])
+  courseId       String
+  course         Course       @relation(fields: [courseId], references: [id])
+  allotmentOrder Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([courseBucketId, courseId, allotmentOrder])
+}
+
+model BucketSubjectSemesterMapping {
+  id        String   @id @default(uuid())
+  subjectId String
+  batch     Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  semester  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subjectId, semester])
+}
+
+model Subject {
+  id                           String                         @id @default(uuid())
+  name                         String
+  semester                     Int
+  batch                        Int
+  isEnrollOpen                 Boolean                        @default(false)
+  enrollmentDeadline           DateTime?
+  branches                     Branch[]                       @relation("SubjectToBranch")
+  subjectPreferences           SubjectPreferences[]
+  courseAllotments             CourseAllotment[]
+  courses                      Course[]                       @relation("SubjectToCourse")
+  isDeleted                    Boolean                        @default(false)
+  categoryId                   String
+  category                     CourseCategory                 @relation(fields: [categoryId], references: [id])
+  bucketSubjectSemesterMapping BucketSubjectSemesterMapping[]
 }
 
 model SubjectPreferences {
-  id                String                 @id @default(uuid())
-  studentId         String
-  student           Student                @relation(fields: [studentId], references: [id])
-  courseId          String?
-  course            Course?                @relation(fields: [courseId], references: [id])
-  courseBucketId    String?
-  courseBucket      CourseBucket?          @relation(fields: [courseBucketId], references: [id])
-  allotmentWindowId String
-  allotmentWindow   SubjectAllotmentWindow @relation(fields: [allotmentWindowId], references: [id])
-  preferenceOrder   Int
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  isDeleted         Boolean                @default(false)
+  id              String        @id @default(uuid())
+  studentId       String
+  student         Student       @relation(fields: [studentId], references: [id])
+  courseId        String?
+  course          Course?       @relation(fields: [courseId], references: [id])
+  courseBucketId  String?
+  courseBucket    CourseBucket? @relation(fields: [courseBucketId], references: [id])
+  subjectId       String
+  subject         Subject       @relation(fields: [subjectId], references: [id])
+  preferenceOrder Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDeleted       Boolean       @default(false)
 
-  @@unique([studentId, courseId, courseBucketId, allotmentWindowId])
+  @@unique([subjectId, studentId, courseId, courseBucketId, preferenceOrder])
+  @@index([studentId])
 }
 
 model CourseAllotment {
-  id                String                 @id @default(uuid())
-  studentId         String
-  student           Student                @relation(fields: [studentId], references: [id])
-  courseId          String?
-  course            Course?                @relation(fields: [courseId], references: [id])
-  semester          Int
-  courseBucketId    String?
-  courseBucket      CourseBucket?          @relation(fields: [courseBucketId], references: [id])
-  allotmentWindowId String
-  allotmentWindow   SubjectAllotmentWindow @relation(fields: [allotmentWindowId], references: [id])
-  type              AllotmentType
-  status            AllotmentStatus        @default(PENDING)
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  isDeleted         Boolean                @default(false)
+  id             String          @id @default(uuid())
+  studentId      String
+  student        Student         @relation(fields: [studentId], references: [id])
+  courseId       String?
+  course         Course?         @relation(fields: [courseId], references: [id])
+  semester       Int
+  courseBucketId String?
+  courseBucket   CourseBucket?   @relation(fields: [courseBucketId], references: [id])
+  subjectId      String
+  subject        Subject         @relation(fields: [subjectId], references: [id])
+  type           AllotmentType
+  status         AllotmentStatus @default(PENDING)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  isDeleted      Boolean         @default(false)
 
-  @@unique([studentId, courseId, allotmentWindowId])
+  @@unique([studentId, courseId, courseBucketId, semester])
+  @@index([studentId])
 }
 
 enum Gender {

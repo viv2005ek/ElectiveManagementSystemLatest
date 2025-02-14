@@ -12,7 +12,7 @@ async function clearDatabase() {
       "CourseAllotment", "SubjectPreferences",
       "CourseBucket", "CourseCategory", "Course",
       "Student", "Faculty", "Admin",
-      "Credential", "Branch", "Department", "SubjectAllotmentWindow"
+      "Credential", "Branch", "Department"
       RESTART IDENTITY CASCADE;
     `);
 

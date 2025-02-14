@@ -11,8 +11,8 @@ const CourseController = {
           department: true,
           courseCategories: true,
           courseBuckets: true,
-          SubjectPreferences: true,
-          CourseAllotment: true,
+          subjectPreferences: true,
+          courseAllotment: true,
         },
       });
       res.status(200).json(courses);
@@ -32,8 +32,8 @@ const CourseController = {
           department: true,
           courseCategories: true,
           courseBuckets: true,
-          SubjectPreferences: true,
-          CourseAllotment: true,
+          subjectPreferences: true,
+          courseAllotment: true,
         },
       });
 
@@ -50,27 +50,21 @@ const CourseController = {
 
   getCoursesByCategory: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { categories } = req.query; // Expecting category IDs as a comma-separated string
+      const { id } = req.params; // Extract category ID from URL params
+      console.log("Received request for getCoursesByCategory");
+      console.log("Path Params:", req.params);
+      console.log("Received category ID:", id);
 
-      if (!categories) {
+      if (!id || id.trim() === "") {
         return res
           .status(400)
-          .json({ message: "Category IDs parameter is required" });
+          .json({ message: "A valid category ID is required" });
       }
-
-      const categoryIds = (categories as string)
-        .split(",")
-        .map((id) => id.trim());
 
       const courses = await prisma.course.findMany({
         where: {
           courseCategories: {
-            some: {
-              id: {
-                // Use the foreign key, not `id`
-                in: categoryIds,
-              },
-            },
+            some: { id: id.trim() }, // ✅ Many-to-many relationship check
           },
           isDeleted: false,
         },
@@ -78,21 +72,15 @@ const CourseController = {
           department: true,
           courseCategories: true,
           courseBuckets: true,
-          SubjectPreferences: true,
-          CourseAllotment: true,
+          subjectPreferences: true,
+          courseAllotment: true,
         },
       });
 
-      if (courses.length === 0) {
-        return res
-          .status(404)
-          .json({ message: "No courses found for the given categories" });
-      }
-
-      res.status(200).json(courses);
+      res.status(200).json({ courses, count: courses.length });
     } catch (error) {
-      console.error("Error fetching courses:", error);
-      res.status(500).json({ message: "Unable to fetch courses" });
+      console.error("❌ Error fetching courses:", error);
+      res.status(500).json({ message: "Unable to fetch courses", error });
     }
   },
 
@@ -112,7 +100,6 @@ const CourseController = {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      // Check if course code already exists
       const existingCourse = await prisma.course.findUnique({
         where: { code },
       });

@@ -48,29 +48,75 @@ router.get("/:id", CourseController.getCourseById);
 
 /**
  * @swagger
- * /courses/by-category:
+ * /courses/by-category/{id}:
  *   get:
- *     summary: Get courses by category IDs
- *     description: Retrieve a list of courses filtered by one or more category IDs.
- *     tags: [Courses]
+ *     summary: Get courses by category ID
+ *     description: Retrieve a list of courses filtered by a single category ID.
+ *     tags:
+ *       - Courses
  *     parameters:
- *       - in: query
- *         name: categories
+ *       - in: path
+ *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: Comma-separated list of category IDs
+ *         description: A single category ID (UUID format)
  *     responses:
  *       200:
  *         description: Successfully retrieved courses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 courses:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Course'
+ *                 count:
+ *                   type: integer
+ *                   example: 5
  *       400:
- *         description: Bad request if categories parameter is missing
+ *         description: Bad request if category ID is missing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "A valid category ID is required"
  *       404:
- *         description: No courses found for the given categories
+ *         description: No courses found for the given category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No courses found for the given category"
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unable to fetch courses"
  */
-router.get("/courses/by-category", CourseController.getCoursesByCategory);
+
+router.get(
+  "/by-category/:id",
+  (req, res, next) => {
+    console.log("✅ Route handler reached!");
+    console.log("Path Params:", req.params);
+    next();
+  },
+  CourseController.getCoursesByCategory,
+);
 
 /**
  * @swagger

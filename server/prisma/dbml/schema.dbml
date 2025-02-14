@@ -1,0 +1,297 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Credential {
+  id String [pk]
+  email String [unique, not null]
+  passwordHash String [not null]
+  role UserRole [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  student Student
+  faculty Faculty
+  admin Admin
+}
+
+Table Student {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  registrationNumber String [unique, not null]
+  email String [unique, not null]
+  firstName String [not null]
+  lastName String
+  gender Gender [not null]
+  minorSpecializationId String
+  semester Int [not null]
+  section String [not null]
+  batch Int [not null]
+  branchId String [not null]
+  branch Branch [not null]
+  contactNumber String [not null]
+  profilePictureId String
+  credentialId String [unique, not null]
+  credential Credential [not null]
+  isDeleted Boolean [not null, default: false]
+  subjectPreferences SubjectPreferences [not null]
+  courseAllotment CourseAllotment [not null]
+}
+
+Table Faculty {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  registrationNumber String [unique, not null]
+  email String [unique, not null]
+  firstName String [not null]
+  lastName String
+  departmentId String [not null]
+  department Department [not null]
+  credentialId String [unique, not null]
+  credential Credential [not null]
+  isDeleted Boolean [not null, default: false]
+}
+
+Table Admin {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  registrationNumber String [unique, not null]
+  email String [unique, not null]
+  firstName String [not null]
+  lastName String
+  credentialId String [unique, not null]
+  credential Credential [not null]
+  isDeleted Boolean [not null, default: false]
+}
+
+Table Department {
+  id String [pk]
+  name String [unique, not null]
+  branches Branch [not null]
+  faculty Faculty [not null]
+  isDeleted Boolean [not null, default: false]
+  course Course [not null]
+  courseBucket CourseBucket [not null]
+}
+
+Table Branch {
+  id String [pk]
+  name String [unique, not null]
+  departmentId String [not null]
+  department Department [not null]
+  students Student [not null]
+  subjects Subject [not null]
+  isDeleted Boolean [not null, default: false]
+}
+
+Table Course {
+  id String [pk]
+  name String [not null]
+  code String [unique, not null]
+  credits Int [not null]
+  isDeleted Boolean [not null, default: false]
+  departmentId String [not null]
+  department Department [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  courseCategories CourseCategory [not null]
+  courseBuckets CourseBucket [not null]
+  subjectPreferences SubjectPreferences [not null]
+  courseAllotment CourseAllotment [not null]
+  subject Subject [not null]
+  bucketCourseOrder BucketCourseOrder [not null]
+}
+
+Table CourseCategory {
+  id String [pk]
+  name String [unique, not null]
+  courses Course [not null]
+  isDeleted Boolean [not null, default: false]
+  allotmentType AllotmentType [not null]
+  subjects Subject [not null]
+}
+
+Table CourseBucket {
+  id String [pk]
+  name String [not null]
+  departmentId String [not null]
+  department Department [not null]
+  courses Course [not null]
+  subjectPreferences SubjectPreferences [not null]
+  courseAllotment CourseAllotment [not null]
+  isDeleted Boolean [not null, default: false]
+  bucketCourseOrder BucketCourseOrder [not null]
+}
+
+Table BucketCourseOrder {
+  id String [pk]
+  courseBucketId String [not null]
+  courseBucket CourseBucket [not null]
+  courseId String [not null]
+  course Course [not null]
+  allotmentOrder Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (courseBucketId, courseId, allotmentOrder) [unique]
+  }
+}
+
+Table BucketSubjectSemesterMapping {
+  id String [pk]
+  subjectId String [not null]
+  batch Int [not null]
+  subject Subject [not null]
+  semester Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (subjectId, semester) [unique]
+  }
+}
+
+Table Subject {
+  id String [pk]
+  name String [not null]
+  semester Int [not null]
+  batch Int [not null]
+  isEnrollOpen Boolean [not null, default: false]
+  enrollmentDeadline DateTime
+  branches Branch [not null]
+  subjectPreferences SubjectPreferences [not null]
+  courseAllotments CourseAllotment [not null]
+  courses Course [not null]
+  isDeleted Boolean [not null, default: false]
+  categoryId String [not null]
+  category CourseCategory [not null]
+  bucketSubjectSemesterMapping BucketSubjectSemesterMapping [not null]
+}
+
+Table SubjectPreferences {
+  id String [pk]
+  studentId String [not null]
+  student Student [not null]
+  courseId String
+  course Course
+  courseBucketId String
+  courseBucket CourseBucket
+  subjectId String [not null]
+  subject Subject [not null]
+  preferenceOrder Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  isDeleted Boolean [not null, default: false]
+
+  indexes {
+    (subjectId, studentId, courseId, courseBucketId, preferenceOrder) [unique]
+  }
+}
+
+Table CourseAllotment {
+  id String [pk]
+  studentId String [not null]
+  student Student [not null]
+  courseId String
+  course Course
+  semester Int [not null]
+  courseBucketId String
+  courseBucket CourseBucket
+  subjectId String [not null]
+  subject Subject [not null]
+  type AllotmentType [not null]
+  status AllotmentStatus [not null, default: 'PENDING']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  isDeleted Boolean [not null, default: false]
+
+  indexes {
+    (studentId, courseId, courseBucketId, semester) [unique]
+  }
+}
+
+Table SubjectToBranch {
+  subjectsId String [ref: > Subject.id]
+  branchesId String [ref: > Branch.id]
+}
+
+Table CourseToCourseCategory {
+  coursecategoriesId String [ref: > CourseCategory.id]
+  coursesId String [ref: > Course.id]
+}
+
+Table CourseToCourseBucket {
+  coursebucketsId String [ref: > CourseBucket.id]
+  coursesId String [ref: > Course.id]
+}
+
+Table SubjectToCourse {
+  subjectId String [ref: > Subject.id]
+  coursesId String [ref: > Course.id]
+}
+
+Enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+Enum UserRole {
+  STUDENT
+  FACULTY
+  ADMIN
+}
+
+Enum AllotmentType {
+  STANDALONE
+  BUCKET
+}
+
+Enum AllotmentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+Ref: Student.branchId > Branch.id
+
+Ref: Student.credentialId - Credential.id
+
+Ref: Faculty.departmentId > Department.id
+
+Ref: Faculty.credentialId - Credential.id
+
+Ref: Admin.credentialId - Credential.id
+
+Ref: Branch.departmentId > Department.id
+
+Ref: Course.departmentId > Department.id
+
+Ref: CourseBucket.departmentId > Department.id
+
+Ref: BucketCourseOrder.courseBucketId > CourseBucket.id
+
+Ref: BucketCourseOrder.courseId > Course.id
+
+Ref: BucketSubjectSemesterMapping.subjectId > Subject.id
+
+Ref: Subject.categoryId > CourseCategory.id
+
+Ref: SubjectPreferences.studentId > Student.id
+
+Ref: SubjectPreferences.courseId > Course.id
+
+Ref: SubjectPreferences.courseBucketId > CourseBucket.id
+
+Ref: SubjectPreferences.subjectId > Subject.id
+
+Ref: CourseAllotment.studentId > Student.id
+
+Ref: CourseAllotment.courseId > Course.id
+
+Ref: CourseAllotment.courseBucketId > CourseBucket.id
+
+Ref: CourseAllotment.subjectId > Subject.id

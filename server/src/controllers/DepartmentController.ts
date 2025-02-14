@@ -29,8 +29,8 @@ const departmentController = {
         include: {
           branches: true,
           faculty: true,
-          Course: true,
-          CourseBucket: true,
+          course: true,
+          courseBucket: true,
         },
       });
 

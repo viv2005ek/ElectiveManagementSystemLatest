@@ -10,7 +10,7 @@ async function main() {
     }),
     prisma.courseCategory.create({
       data: {
-        name: "MinorSpecialization",
+        name: "Minor Specialization",
         allotmentType: AllotmentType.BUCKET,
       },
     }),
