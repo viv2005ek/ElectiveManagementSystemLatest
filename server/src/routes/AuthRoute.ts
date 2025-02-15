@@ -106,4 +106,90 @@ router.post("/register", authController.registerController);
  */
 router.post("/logout", authController.logoutController);
 
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get details of the authenticated user
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "user-id"
+ *                 email:
+ *                   type: string
+ *                   example: "user@example.com"
+ *                 role:
+ *                   type: string
+ *                   enum: ["ADMIN", "FACULTY", "STUDENT"]
+ *                 student:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     registrationNumber:
+ *                       type: string
+ *                     semester:
+ *                       type: integer
+ *                     batch:
+ *                       type: string
+ *                     branch:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                 faculty:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     registrationNumber:
+ *                       type: string
+ *                     department:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                 admin:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     registrationNumber:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized (missing or invalid token)
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/me", authController.getUserDetails)
+
 export default router;

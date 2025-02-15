@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { prisma } from "../prismaClient";
 import { UserRole } from "../types/UserTypes";
 import bcrypt, { hash } from "bcrypt";
@@ -148,6 +148,66 @@ const authController = {
         .json({ message: "An error occurred during logout" });
     }
   },
+
+  getUserDetails: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const token = req.cookies.jwt;
+      if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+      if (!decoded.id) {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+
+      const user = await prisma.credential.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              registrationNumber: true,
+              semester: true,
+              batch: true,
+              branch: { select: { id: true, name: true } },
+            },
+          },
+          faculty: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              registrationNumber: true,
+              department: { select: { id: true, name: true } },
+            },
+          },
+          admin: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              registrationNumber: true,
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 export default authController;
