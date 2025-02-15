@@ -88,4 +88,22 @@ router.post("/register", authController.registerController);
 // Uncomment this route if needed in the future
 // router.post('/admin/logout', authController.logoutController);
 
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Authentication]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/logout", authController.logoutController);
+
 export default router;

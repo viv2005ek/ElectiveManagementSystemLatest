@@ -62,7 +62,6 @@ const authController = {
         { expiresIn: "1d" },
       );
 
-      // Set the JWT cookie
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -93,7 +92,6 @@ const authController = {
     }
 
     try {
-      // Check if the email already exists
       const existingCredential = await prisma.credential.findUnique({
         where: { email },
       });
@@ -107,7 +105,6 @@ const authController = {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await hash(password, salt);
 
-      // Create credential for Admin
       const newCredential = await prisma.credential.create({
         data: {
           email,
@@ -116,7 +113,6 @@ const authController = {
         },
       });
 
-      // Create Admin linked to Credential
       await prisma.admin.create({
         data: {
           registrationNumber,
@@ -133,6 +129,23 @@ const authController = {
       return res
         .status(500)
         .json({ message: "An error occurred during registration" });
+    }
+  },
+
+  logoutController: async (req: Request, res: Response): Promise<any> => {
+    try {
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      return res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      return res
+        .status(500)
+        .json({ message: "An error occurred during logout" });
     }
   },
 };

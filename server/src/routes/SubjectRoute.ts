@@ -1,5 +1,7 @@
 import express from "express";
 import SubjectController from "../controllers/SubjectController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -26,7 +28,11 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Subject'
  */
-router.get("/", SubjectController.getSubjects);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  SubjectController.getSubjects,
+);
 
 /**
  * @swagger
@@ -40,38 +46,68 @@ router.get("/", SubjectController.getSubjects);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - batch
+ *               - categoryId
+ *               - branchIds
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Name of the subject
  *               semester:
  *                 type: integer
+ *                 nullable: true
+ *                 description: Semester for standalone subjects (required if category allotment type is standalone)
  *               batch:
  *                 type: integer
+ *                 description: Batch year of the subject
  *               categoryId:
  *                 type: string
+ *                 description: ID of the category the subject belongs to
  *               branchIds:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 description: List of branch IDs associated with the subject
  *               courseIds:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 nullable: true
+ *                 description: List of course IDs associated with the subject (for standalone or bucket-based subjects)
  *               courseBucketIds:
  *                 type: array
  *                 items:
  *                   type: string
+ *                 nullable: true
+ *                 description: List of course bucket IDs (required for bucket-based subjects)
  *               semesters:
  *                 type: array
  *                 items:
  *                   type: integer
+ *                 nullable: true
+ *                 description: List of semesters applicable for bucket-based subjects
+ *               departmentId:
+ *                 type: string
+ *                 description: ID of the department the subject belongs to
+ *               canOptOutsideDepartment:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Whether students outside the department can opt for this subject
  *     responses:
  *       201:
  *         description: Subject created successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request (e.g., missing required fields, invalid data)
+ *       500:
+ *         description: Internal server error
  */
-router.post("/", SubjectController.createSubject);
+router.post(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  SubjectController.createSubject,
+);
 
 /**
  * @swagger
@@ -112,7 +148,11 @@ router.post("/", SubjectController.createSubject);
  *       500:
  *         description: Internal server error
  */
-router.put("/", SubjectController.updateSubject);
+router.put(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  SubjectController.updateSubject,
+);
 
 /**
  * @swagger
@@ -145,7 +185,11 @@ router.put("/", SubjectController.updateSubject);
  *       404:
  *         description: Subject not found
  */
-router.patch("/enrollment", SubjectController.updateEnrollmentStatus);
+router.patch(
+  "/enrollment",
+  authorizeRoles([UserRole.ADMIN]),
+  SubjectController.updateEnrollmentStatus,
+);
 
 /**
  * @swagger
@@ -168,6 +212,10 @@ router.patch("/enrollment", SubjectController.updateEnrollmentStatus);
  *       500:
  *         description: Internal server error
  */
-router.delete("/", SubjectController.deleteSubject);
+router.delete(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  SubjectController.deleteSubject,
+);
 
 export default router;

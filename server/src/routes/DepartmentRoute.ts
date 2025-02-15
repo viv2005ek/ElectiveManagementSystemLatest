@@ -1,5 +1,7 @@
 import express from "express";
 import departmentController from "../controllers/DepartmentController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -28,7 +30,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", departmentController.getAllDepartments);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  departmentController.getAllDepartments,
+);
 
 /**
  * @swagger

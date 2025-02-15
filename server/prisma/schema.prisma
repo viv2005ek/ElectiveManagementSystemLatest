@@ -83,6 +83,7 @@ model Department {
   isDeleted    Boolean        @default(false)
   course       Course[]
   courseBucket CourseBucket[]
+  Subject      Subject[]
 }
 
 model Branch {
@@ -163,8 +164,11 @@ model Subject {
   id                           String                         @id @default(uuid())
   name                         String
   semester                     Int?
+  departmentId                 String?
+  Department                   Department?                    @relation(fields: [departmentId], references: [id])
   batch                        Int
   isEnrollOpen                 Boolean                        @default(false)
+  canOptOutsideDepartment      Boolean                        @default(false)
   enrollmentDeadline           DateTime?
   branches                     Branch[]                       @relation("SubjectToBranch")
   subjectPreferences           SubjectPreferences[]

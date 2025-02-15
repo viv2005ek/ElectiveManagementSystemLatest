@@ -1,5 +1,7 @@
 import express from "express";
 import BranchController from "../controllers/BranchController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -23,12 +25,15 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Branch'
+ *
  *       500:
  *         description: Unable to fetch branches
  */
-router.get("/", BranchController.getAllBranches);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  BranchController.getAllBranches,
+);
 
 /**
  * @swagger
@@ -48,14 +53,17 @@ router.get("/", BranchController.getAllBranches);
  *         description: Successfully retrieved the branch
  *         content:
  *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Branch'
+ *
  *       404:
  *         description: Branch not found
  *       500:
  *         description: Unable to fetch branch
  */
-router.get("/:id", BranchController.getBranchByID);
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  BranchController.getBranchByID,
+);
 
 /**
  * @swagger
@@ -77,8 +85,7 @@ router.get("/:id", BranchController.getBranchByID);
  *           application/json:
  *             schema:
  *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Branch'
+ *
  *       404:
  *         description: No branches found for this department
  *       500:
@@ -86,6 +93,7 @@ router.get("/:id", BranchController.getBranchByID);
  */
 router.get(
   "/department/:departmentId",
+  authorizeRoles([UserRole.ADMIN]),
   BranchController.getBranchesByDepartmentId,
 );
 

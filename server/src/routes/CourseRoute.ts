@@ -1,5 +1,7 @@
 import express from "express";
 import CourseController from "../controllers/CourseController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -22,7 +24,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", CourseController.getAllCourses);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseController.getAllCourses,
+);
 
 /**
  * @swagger
@@ -44,7 +50,11 @@ router.get("/", CourseController.getAllCourses);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", CourseController.getCourseById);
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseController.getCourseById,
+);
 
 /**
  * @swagger
@@ -110,11 +120,7 @@ router.get("/:id", CourseController.getCourseById);
 
 router.get(
   "/by-category/:id",
-  (req, res, next) => {
-    console.log("✅ Route handler reached!");
-    console.log("Path Params:", req.params);
-    next();
-  },
+  authorizeRoles([UserRole.ADMIN]),
   CourseController.getCoursesByCategory,
 );
 
@@ -132,7 +138,7 @@ router.get(
  *       500:
  *         description: Internal server error
  */
-router.post("/", CourseController.addCourse);
+router.post("/", authorizeRoles([UserRole.ADMIN]), CourseController.addCourse);
 
 /**
  * @swagger
@@ -148,7 +154,11 @@ router.post("/", CourseController.addCourse);
  *       500:
  *         description: Internal server error
  */
-router.post("/bulk-add", CourseController.bulkAddCourses);
+router.post(
+  "/bulk-add",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseController.bulkAddCourses,
+);
 
 /**
  * @swagger
@@ -170,7 +180,11 @@ router.post("/bulk-add", CourseController.bulkAddCourses);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", CourseController.updateCourse);
+router.put(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseController.updateCourse,
+);
 
 /**
  * @swagger
@@ -192,6 +206,10 @@ router.put("/:id", CourseController.updateCourse);
  *       500:
  *         description: Internal server error
  */
-router.delete("/:id", CourseController.deleteCourse);
+router.delete(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseController.deleteCourse,
+);
 
 export default router;

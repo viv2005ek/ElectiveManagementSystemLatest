@@ -1,5 +1,7 @@
 import express from "express";
 import StudentController from "../controllers/StudentController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -28,7 +30,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", StudentController.getAllStudents);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  StudentController.getAllStudents,
+);
 
 /**
  * @swagger
@@ -55,7 +61,11 @@ router.get("/", StudentController.getAllStudents);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", StudentController.getStudentById);
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  StudentController.getStudentById,
+);
 
 /**
  * @swagger
@@ -164,6 +174,10 @@ router.get("/:id", StudentController.getStudentById);
  *       500:
  *         description: Internal server error
  */
-router.post("/bulk-add", StudentController.bulkAddStudents);
+router.post(
+  "/bulk-add",
+  authorizeRoles([UserRole.ADMIN]),
+  StudentController.bulkAddStudents,
+);
 
 export default router;

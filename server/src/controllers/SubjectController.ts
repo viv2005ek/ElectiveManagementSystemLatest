@@ -10,10 +10,12 @@ const SubjectController = {
         semester,
         batch,
         branchIds,
-        courseIds,
+        courseIds = [],
         categoryId,
         semesters,
-        courseBucketIds,
+        courseBucketIds = [],
+        departmentId,
+        canOptOutsideDepartment = false,
       } = req.body;
 
       if (!name) {
@@ -28,49 +30,59 @@ const SubjectController = {
           .json({ message: "Batch is required for subject creation" });
       }
 
-      if (!branchIds || branchIds.length === 0) {
+      if (!branchIds || !Array.isArray(branchIds) || branchIds.length === 0) {
         return res
           .status(400)
-          .json({ message: "Branch Ids are required for subject creation" });
+          .json({ message: "Branch IDs are required for subject creation" });
       }
 
-      const subjectWithSameNameAndBatch = await prisma.subject.findFirst({
-        where: {
-          batch: batch,
-          name: name,
-          isDeleted: false,
-        },
+      const existingSubject = await prisma.subject.findFirst({
+        where: { batch, name, isDeleted: false },
       });
 
-      if (subjectWithSameNameAndBatch) {
+      if (existingSubject) {
         return res
           .status(400)
           .json({
-            message: "Subject with same name for same batch already exists.",
+            message:
+              "Subject with same name for the same batch already exists.",
           });
       }
 
-      const existingBranches = await prisma.branch.findMany({
+      // Validate branch existence and department consistency if canOptOutsideDepartment is false
+      const validBranches = await prisma.branch.findMany({
         where: { id: { in: branchIds } },
-        select: { id: true },
+        select: { id: true, departmentId: true },
       });
 
-      if (existingBranches.length !== branchIds.length) {
+      if (validBranches.length !== branchIds.length) {
         return res
           .status(400)
           .json({ message: "One or more Branch IDs are invalid" });
       }
+
+      if (
+        !canOptOutsideDepartment &&
+        validBranches.some((branch) => branch.departmentId !== departmentId)
+      ) {
+        return res
+          .status(400)
+          .json({
+            message: "All branches must belong to the specified department",
+          });
+      }
+
       // Validate category existence
-      const category = await prisma.courseCategory.findFirst({
+      const category = await prisma.courseCategory.findUnique({
         where: { id: categoryId },
       });
+
       if (!category) {
         return res.status(400).json({ message: "Invalid category ID" });
       }
 
       let newSubject = null;
 
-      // Handle standalone subject creation
       if (category.allotmentType === AllotmentType.STANDALONE) {
         if (!semester) {
           return res
@@ -78,15 +90,26 @@ const SubjectController = {
             .json({ message: "Semester is required for standalone subjects" });
         }
 
-        const existingCourses = await prisma.course.findMany({
+        const validCourses = await prisma.course.findMany({
           where: { id: { in: courseIds } },
-          select: { id: true },
+          select: { id: true, departmentId: true },
         });
 
-        if (existingCourses.length !== courseIds.length) {
+        if (validCourses.length !== courseIds.length) {
           return res
             .status(400)
             .json({ message: "One or more Course IDs are invalid" });
+        }
+
+        if (
+          !canOptOutsideDepartment &&
+          validCourses.some((course) => course.departmentId !== departmentId)
+        ) {
+          return res
+            .status(400)
+            .json({
+              message: "All courses must belong to the specified department",
+            });
         }
 
         newSubject = await prisma.subject.create({
@@ -95,17 +118,13 @@ const SubjectController = {
             semester,
             batch,
             categoryId,
-            branches: {
-              connect: branchIds.map((id: string) => ({ id })),
-            },
-            courses: {
-              connect: courseIds.map((id: string) => ({ id })),
-            },
+            canOptOutsideDepartment,
+            branches: { connect: branchIds.map((id) => ({ id })) },
+            courses: { connect: courseIds.map((id: string) => ({ id })) },
           },
         });
       }
 
-      // Handle bucket-based subject creation
       if (category.allotmentType === AllotmentType.BUCKET) {
         if (!semesters || !Array.isArray(semesters) || semesters.length === 0) {
           return res
@@ -115,15 +134,28 @@ const SubjectController = {
                 "Semesters mapping is required for bucket-based subjects",
             });
         }
-        const existingCourseBuckets = await prisma.courseBucket.findMany({
+
+        const validBuckets = await prisma.courseBucket.findMany({
           where: { id: { in: courseBucketIds } },
-          select: { id: true },
+          select: { id: true, departmentId: true },
         });
 
-        if (existingCourseBuckets.length !== courseBucketIds.length) {
+        if (validBuckets.length !== courseBucketIds.length) {
           return res
             .status(400)
             .json({ message: "One or more Course Bucket IDs are invalid" });
+        }
+
+        if (
+          !canOptOutsideDepartment &&
+          validBuckets.some((bucket) => bucket.departmentId !== departmentId)
+        ) {
+          return res
+            .status(400)
+            .json({
+              message:
+                "All course buckets must belong to the specified department",
+            });
         }
 
         newSubject = await prisma.subject.create({
@@ -131,27 +163,19 @@ const SubjectController = {
             name,
             batch,
             categoryId,
-            branches: {
-              connect: branchIds.map((id: string) => ({ id })),
-            },
-            courses: {
-              connect: courseIds.map((id: string) => ({ id })),
-            },
-            buckets: {
-              connect: courseBucketIds.map((id: string) => ({ id })),
-            },
+            canOptOutsideDepartment,
+            branches: { connect: branchIds.map((id) => ({ id })) },
+            courses: { connect: courseIds.map((id: string) => ({ id })) },
+            buckets: { connect: courseBucketIds.map((id: any) => ({ id })) },
           },
         });
 
-        await Promise.all(
-          semesters.map(async (semester: number) => {
-            await prisma.bucketSubjectSemesterMapping.create({
-              data: {
-                subjectId: newSubject!.id,
-                semester,
-              },
-            });
-          }),
+        await prisma.$transaction(
+          semesters.map((semester) =>
+            prisma.bucketSubjectSemesterMapping.create({
+              data: { subjectId: newSubject!.id, semester },
+            }),
+          ),
         );
       }
 

@@ -1,5 +1,7 @@
 import express from "express";
 import CourseCategoryController from "../controllers/CourseCategoryController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -41,7 +43,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post("/", CourseCategoryController.createCourseCategory);
+router.post(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseCategoryController.createCourseCategory,
+);
 
 /**
  * @swagger
@@ -55,7 +61,11 @@ router.post("/", CourseCategoryController.createCourseCategory);
  *       500:
  *         description: Internal server error
  */
-router.get("/", CourseCategoryController.getAllCourseCategories);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseCategoryController.getAllCourseCategories,
+);
 
 /**
  * @swagger
@@ -78,7 +88,11 @@ router.get("/", CourseCategoryController.getAllCourseCategories);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", CourseCategoryController.getCourseCategoryById);
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseCategoryController.getCourseCategoryById,
+);
 
 /**
  * @swagger
@@ -115,7 +129,11 @@ router.get("/:id", CourseCategoryController.getCourseCategoryById);
  *       500:
  *         description: Internal server error
  */
-router.put("/:id", CourseCategoryController.updateCourseCategory);
+router.put(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseCategoryController.updateCourseCategory,
+);
 
 /**
  * @swagger
@@ -138,6 +156,10 @@ router.put("/:id", CourseCategoryController.updateCourseCategory);
  *       500:
  *         description: Internal server error
  */
-router.delete("/:id", CourseCategoryController.deleteCourseCategory);
+router.delete(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseCategoryController.deleteCourseCategory,
+);
 
 export default router;

@@ -9,8 +9,8 @@ const app = express();
 const port = env.PORT;
 
 setupMiddleware(app);
-setupRoutes(app);
 swaggerDocs(app, 8080);
+setupRoutes(app);
 
 app.get("/health-check", async (req: Request, res: Response) => {
   res

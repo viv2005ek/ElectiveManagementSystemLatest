@@ -1,5 +1,7 @@
 import express from "express";
 import CourseBucketController from "../controllers/CourseBucketController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -28,7 +30,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/", CourseBucketController.getAllCourseBuckets);
+router.get(
+  "/",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseBucketController.getAllCourseBuckets,
+);
 
 /**
  * @swagger
@@ -55,7 +61,11 @@ router.get("/", CourseBucketController.getAllCourseBuckets);
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", CourseBucketController.getCourseBucketById);
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseBucketController.getCourseBucketById,
+);
 
 /**
  * @swagger
@@ -92,6 +102,10 @@ router.get("/:id", CourseBucketController.getCourseBucketById);
  *       500:
  *         description: Internal server error
  */
-router.post("/bulk-add", CourseBucketController.addCourseBuckets);
+router.post(
+  "/bulk-add",
+  authorizeRoles([UserRole.ADMIN]),
+  CourseBucketController.addCourseBuckets,
+);
 
 export default router;

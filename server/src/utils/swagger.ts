@@ -51,7 +51,7 @@ function swaggerDocs(app: Express, port: number) {
     res.send(swaggerSpec);
   });
 
-  log.info(`📄 API Docs available at ${serverUrl}/docs`);
+  log.info(`API Docs available at ${serverUrl}/docs`);
 }
 
 export default swaggerDocs;

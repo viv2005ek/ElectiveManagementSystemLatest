@@ -74,6 +74,7 @@ Table Department {
   isDeleted Boolean [not null, default: false]
   course Course [not null]
   courseBucket CourseBucket [not null]
+  Subject Subject [not null]
 }
 
 Table Branch {
@@ -158,8 +159,11 @@ Table Subject {
   id String [pk]
   name String [not null]
   semester Int
+  departmentId String
+  Department Department
   batch Int [not null]
   isEnrollOpen Boolean [not null, default: false]
+  canOptOutsideDepartment Boolean [not null, default: false]
   enrollmentDeadline DateTime
   branches Branch [not null]
   subjectPreferences SubjectPreferences [not null]
@@ -287,6 +291,8 @@ Ref: BucketCourseOrder.courseBucketId > CourseBucket.id
 Ref: BucketCourseOrder.courseId > Course.id
 
 Ref: BucketSubjectSemesterMapping.subjectId > Subject.id
+
+Ref: Subject.departmentId > Department.id
 
 Ref: Subject.categoryId > CourseCategory.id
 
