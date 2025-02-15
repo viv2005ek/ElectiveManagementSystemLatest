@@ -1,5 +1,5 @@
-import express from 'express';
-import CourseCategoryController from '../controllers/CourseCategoryController';
+import express from "express";
+import CourseCategoryController from "../controllers/CourseCategoryController";
 
 const router = express.Router();
 

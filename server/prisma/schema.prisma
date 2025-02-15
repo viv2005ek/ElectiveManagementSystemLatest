@@ -129,6 +129,7 @@ model CourseBucket {
   department         Department           @relation(fields: [departmentId], references: [id])
   courses            Course[]
   subjectPreferences SubjectPreferences[]
+  subjects           Subject[]            @relation("SubjectToCourseBucket")
   courseAllotment    CourseAllotment[]
   isDeleted          Boolean              @default(false)
   bucketCourseOrder  BucketCourseOrder[]
@@ -150,7 +151,6 @@ model BucketCourseOrder {
 model BucketSubjectSemesterMapping {
   id        String   @id @default(uuid())
   subjectId String
-  batch     Int
   subject   Subject  @relation(fields: [subjectId], references: [id])
   semester  Int
   createdAt DateTime @default(now())
@@ -162,7 +162,7 @@ model BucketSubjectSemesterMapping {
 model Subject {
   id                           String                         @id @default(uuid())
   name                         String
-  semester                     Int
+  semester                     Int?
   batch                        Int
   isEnrollOpen                 Boolean                        @default(false)
   enrollmentDeadline           DateTime?
@@ -170,10 +170,13 @@ model Subject {
   subjectPreferences           SubjectPreferences[]
   courseAllotments             CourseAllotment[]
   courses                      Course[]                       @relation("SubjectToCourse")
+  buckets                      CourseBucket[]                 @relation("SubjectToCourseBucket")
   isDeleted                    Boolean                        @default(false)
   categoryId                   String
   category                     CourseCategory                 @relation(fields: [categoryId], references: [id])
   bucketSubjectSemesterMapping BucketSubjectSemesterMapping[]
+
+  @@unique([batch, name])
 }
 
 model SubjectPreferences {

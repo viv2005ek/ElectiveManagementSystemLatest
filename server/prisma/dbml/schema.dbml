@@ -120,6 +120,7 @@ Table CourseBucket {
   department Department [not null]
   courses Course [not null]
   subjectPreferences SubjectPreferences [not null]
+  subjects Subject [not null]
   courseAllotment CourseAllotment [not null]
   isDeleted Boolean [not null, default: false]
   bucketCourseOrder BucketCourseOrder [not null]
@@ -143,7 +144,6 @@ Table BucketCourseOrder {
 Table BucketSubjectSemesterMapping {
   id String [pk]
   subjectId String [not null]
-  batch Int [not null]
   subject Subject [not null]
   semester Int [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -157,7 +157,7 @@ Table BucketSubjectSemesterMapping {
 Table Subject {
   id String [pk]
   name String [not null]
-  semester Int [not null]
+  semester Int
   batch Int [not null]
   isEnrollOpen Boolean [not null, default: false]
   enrollmentDeadline DateTime
@@ -165,10 +165,15 @@ Table Subject {
   subjectPreferences SubjectPreferences [not null]
   courseAllotments CourseAllotment [not null]
   courses Course [not null]
+  buckets CourseBucket [not null]
   isDeleted Boolean [not null, default: false]
   categoryId String [not null]
   category CourseCategory [not null]
   bucketSubjectSemesterMapping BucketSubjectSemesterMapping [not null]
+
+  indexes {
+    (batch, name) [unique]
+  }
 }
 
 Table SubjectPreferences {
@@ -231,6 +236,11 @@ Table CourseToCourseBucket {
 Table SubjectToCourse {
   subjectId String [ref: > Subject.id]
   coursesId String [ref: > Course.id]
+}
+
+Table SubjectToCourseBucket {
+  subjectsId String [ref: > Subject.id]
+  bucketsId String [ref: > CourseBucket.id]
 }
 
 Enum Gender {
