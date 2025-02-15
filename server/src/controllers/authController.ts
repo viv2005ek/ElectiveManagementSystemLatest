@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../prismaClient";
 import { UserRole } from "../types/UserTypes";
 import bcrypt, { hash } from "bcrypt";
@@ -156,7 +156,10 @@ const authController = {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET as string,
+      ) as JwtPayload;
       if (!decoded.id) {
         return res.status(401).json({ message: "Invalid token" });
       }
@@ -207,7 +210,7 @@ const authController = {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 };
 
 export default authController;

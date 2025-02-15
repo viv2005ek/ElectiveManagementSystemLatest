@@ -190,6 +190,6 @@ router.post("/logout", authController.logoutController);
  *       500:
  *         description: Internal server error
  */
-router.get("/me", authController.getUserDetails)
+router.get("/me", authController.getUserDetails);
 
 export default router;

@@ -41,12 +41,9 @@ const SubjectController = {
       });
 
       if (existingSubject) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Subject with same name for the same batch already exists.",
-          });
+        return res.status(400).json({
+          message: "Subject with same name for the same batch already exists.",
+        });
       }
 
       // Validate branch existence and department consistency if canOptOutsideDepartment is false
@@ -65,11 +62,9 @@ const SubjectController = {
         !canOptOutsideDepartment &&
         validBranches.some((branch) => branch.departmentId !== departmentId)
       ) {
-        return res
-          .status(400)
-          .json({
-            message: "All branches must belong to the specified department",
-          });
+        return res.status(400).json({
+          message: "All branches must belong to the specified department",
+        });
       }
 
       // Validate category existence
@@ -105,11 +100,9 @@ const SubjectController = {
           !canOptOutsideDepartment &&
           validCourses.some((course) => course.departmentId !== departmentId)
         ) {
-          return res
-            .status(400)
-            .json({
-              message: "All courses must belong to the specified department",
-            });
+          return res.status(400).json({
+            message: "All courses must belong to the specified department",
+          });
         }
 
         newSubject = await prisma.subject.create({
@@ -127,12 +120,9 @@ const SubjectController = {
 
       if (category.allotmentType === AllotmentType.BUCKET) {
         if (!semesters || !Array.isArray(semesters) || semesters.length === 0) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "Semesters mapping is required for bucket-based subjects",
-            });
+          return res.status(400).json({
+            message: "Semesters mapping is required for bucket-based subjects",
+          });
         }
 
         const validBuckets = await prisma.courseBucket.findMany({
@@ -150,12 +140,10 @@ const SubjectController = {
           !canOptOutsideDepartment &&
           validBuckets.some((bucket) => bucket.departmentId !== departmentId)
         ) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "All course buckets must belong to the specified department",
-            });
+          return res.status(400).json({
+            message:
+              "All course buckets must belong to the specified department",
+          });
         }
 
         newSubject = await prisma.subject.create({
