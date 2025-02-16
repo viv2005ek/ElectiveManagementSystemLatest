@@ -64,8 +64,8 @@ const authController = {
 
       res.cookie("jwt", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: false,
+        sameSite: "lax",
         maxAge: 60 * 60 * 1000, // 1 hour
       });
 
@@ -136,8 +136,8 @@ const authController = {
     try {
       res.clearCookie("jwt", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: false,
+        sameSite: "lax",
       });
 
       return res.status(200).json({ message: "Logout successful" });
