@@ -1,44 +1,35 @@
 import { useEffect, useState } from "react";
 import InfoStudentPopUp from "./InfoStudentPopUp";
+import axiosInstance from "../axiosInstance.ts";
 
-interface Elective {
-  subject: string;
-  credits: string;
-}
+
 
 interface Student {
   name: string;
   registrationNo: string;
   departmentName: string;
   semester: number;
-  elective: Elective;
   id: string;
 }
 
 export default function AllStudentList() {
-  const API = "https://apiems.shreshth.tech/students";
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState<string>("");
   const [filterDepartment, setFilterDepartment] = useState<string>("");
   const [filterSemester, setFilterSemester] = useState<string>("");
-  const [selectedid, setSelectedid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(API);
-        if (!response.ok) {
-          throw new Error("Failed to fetch student data");
-        }
-        const data = await response.json();
+        const response = await axiosInstance.get("/students");
+        const data = response.data;
 
-        // Transform API data to match expected structure
         const formattedStudents: Student[] = data.map((student: any) => ({
           name: `${student.firstName} ${student.lastName}`,
           registrationNo: student.registrationNumber,
           departmentName: student.branch?.department?.name || "Unknown",
           semester: student.semester,
-          elective: student.elective || { subject: "N/A", credits: "N/A" },
           id: student.id,
         }));
 
@@ -84,9 +75,9 @@ export default function AllStudentList() {
           className="p-2 border border-gray-300 rounded-lg w-full sm:w-auto flex-1"
         >
           <option value="">All Departments</option>
-          <option value="Department 1">Department 1</option>
-          <option value="Department 2">Department 2</option>
-          <option value="Department 3">Department 3</option>
+          {[...new Set(students.map((s) => s.departmentName))].map((dept) => (
+            <option key={dept} value={dept}>{dept}</option>
+          ))}
         </select>
 
         <select
@@ -104,29 +95,25 @@ export default function AllStudentList() {
       </div>
 
       <ul className="space-y-4">
-        {filteredStudents.map((student, index) => (
+        {filteredStudents.map((student) => (
           <li
-            key={index}
-            onClick={() => setSelectedid(student.id)}
-            className="cursor-pointer p-4 border border-gray-200 rounded-lg shadow-md flex flex-col justify-between items-start"
+            key={student.id}
+            onClick={() => setSelectedId(student.id)}
+            className="cursor-pointer p-4 border border-gray-200 rounded-lg shadow-md flex flex-col justify-between items-start transition-all hover:bg-gray-100 hover:shadow-lg"
           >
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-semibold text-gray-800">
               {student.name} - {student.registrationNo}
             </p>
-            <p className="text-sm">
-              Department: {student.departmentName} | Semester:{" "}
-              {student.semester}
-            </p>
-            <p className="text-sm">
-              Elective: {student.elective.subject} ({student.elective.credits}{" "}
-              Credits)
+            <p className="text-sm text-gray-600">
+              Department: <span className="font-medium">{student.departmentName}</span> | Semester: <span
+              className="font-medium">{student.semester}</span>
             </p>
           </li>
         ))}
       </ul>
 
-      {selectedid && (
-        <InfoStudentPopUp id={selectedid} onClose={() => setSelectedid(null)} />
+      {selectedId && (
+        <InfoStudentPopUp id={selectedId} onClose={() => setSelectedId(null)} />
       )}
     </div>
   );

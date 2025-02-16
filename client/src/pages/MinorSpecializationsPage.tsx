@@ -4,7 +4,6 @@ import { useMinorSpecializations } from "../hooks/useMinorSpecializations.ts";
 
 export default function MinorSpecializationsPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { minorSpecializations, isLoading, error } = useMinorSpecializations();
 
   return (
     <MainLayout>

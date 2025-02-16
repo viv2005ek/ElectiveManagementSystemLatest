@@ -58,12 +58,7 @@ export default function TopBar() {
           <div className="ml-4">
             <div className="text-xl">
               <span className="font-thin">Welcome back, </span>
-              <span className="font-semibold">{name.split(" ")[0]}</span>
-            </div>
-            <div className="text-xl">
-              <span className="font-semibold">{courseName} </span>
-              <span>in </span>
-              <span className="font-semibold">{branchName} </span>
+              <span className="font-semibold">{user?.firstName}</span>
             </div>
           </div>
         </div>

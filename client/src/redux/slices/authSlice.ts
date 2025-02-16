@@ -3,31 +3,9 @@ import axios from "axios";
 import axiosInstance from "../../axiosInstance.ts";
 
 interface User {
-  id: string;
-  email: string;
-  role: string;
-  student?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    registrationNumber: string;
-    semester: number;
-    batch: string;
-    branch: { id: string; name: string };
-  };
-  faculty?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    registrationNumber: string;
-    department: { id: string; name: string };
-  };
-  admin?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    registrationNumber: string;
-  };
+  firstName: string
+  lastName: string
+  role: string
 }
 
 interface UserState {
