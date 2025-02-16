@@ -1,5 +1,5 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import UserProfile from '../components/UserProfile.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import UserProfile from "../components/UserProfile.tsx";
 
 export default function UserProfilePage() {
   return (

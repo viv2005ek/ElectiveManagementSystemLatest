@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import InfoStudentPopUp from './InfoStudentPopUp';
+import { useEffect, useState } from "react";
+import InfoStudentPopUp from "./InfoStudentPopUp";
 
 interface Elective {
   subject: string;

@@ -64,7 +64,7 @@ const authController = {
 
       res.cookie("jwt", token, {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === "production", // true on production
         sameSite: "lax",
         maxAge: 60 * 60 * 1000, // 1 hour
       });
@@ -136,7 +136,7 @@ const authController = {
     try {
       res.clearCookie("jwt", {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === "production", // true on production
         sameSite: "lax",
       });
 

@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
-import { ChevronDownIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from "react";
+import {
+  ChevronDownIcon,
+  TrashIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const API_BASE_URL = "https://apiems.shreshth.tech/course-buckets";
 

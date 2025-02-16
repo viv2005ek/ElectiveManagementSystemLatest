@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 // Define the types for MinorSpecializations and ProgrammeElectives
 export interface ProgrammeElective {

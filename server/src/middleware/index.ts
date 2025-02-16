@@ -6,7 +6,10 @@ import express, { Express } from "express";
 export const setupMiddleware = (app: Express) => {
   app.use(
     cors({
-      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      origin: [
+        process.env.FRONTEND_URL || "http://localhost:3000",
+        "https://elective-management-system.vercel.app",
+      ],
       credentials: true, // Allow cookies
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "DELETE"],

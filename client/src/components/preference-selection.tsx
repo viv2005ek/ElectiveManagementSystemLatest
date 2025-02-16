@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
-import type { Course, PreferenceSelection } from '../types/course';
-import { CourseCard } from './course-card';
-import { SelectedPreferences } from './selected-preferences';
+import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
+import type { Course, PreferenceSelection } from "../types/course";
+import { CourseCard } from "./course-card";
+import { SelectedPreferences } from "./selected-preferences";
 
 const API_URL = "https://apiems.shreshth.tech/programme-electives/standalone";
 

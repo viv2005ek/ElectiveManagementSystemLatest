@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { oeChangeRequests } from '../store/OEChangeRequests';
-import MainLayout from '../layouts/MainLayout.tsx';
-import InfoStudentPopUp from '../components/InfoStudentPopUp';
+import React, { useState } from "react";
+import { oeChangeRequests } from "../store/OEChangeRequests";
+import MainLayout from "../layouts/MainLayout.tsx";
+import InfoStudentPopUp from "../components/InfoStudentPopUp";
 
 const EMSAdminPage: React.FC = () => {
   const [requests, setRequests] = useState(oeChangeRequests);

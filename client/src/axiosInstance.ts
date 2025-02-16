@@ -1,29 +1,11 @@
-import axios from 'axios';
-
-const getJwtFromCookies = (): string | null => {
-  const name = "jwt";
-  const cookie = document.cookie
-    .split(";")
-    .find((cookie) => cookie.trim().startsWith(`${name}=`));
-  return cookie ? cookie.split("=")[1] : null;
-};
+import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: `https://${import.meta.env.VITE_BASE}`,
+  baseURL: `${import.meta.env.VITE_BASE}`,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = getJwtFromCookies();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 export default axiosInstance;

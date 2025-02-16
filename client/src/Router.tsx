@@ -1,16 +1,16 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage.tsx';
-import StudentsLandingPage from './pages/StudentsLandingPage.tsx';
-import ElectiveChoicePage from './pages/ElectiveChoicePage.tsx';
-import ProgrammeElectivesPage from './pages/ProgrammeElectivesPage.tsx';
-import AllStudentList from './pages/AllStudentListPage.tsx';
-import UserProfilePage from './pages/UserProfilePage.tsx';
-import MinorSpecializationsPage from './pages/MinorSpecializationsPage.tsx';
-import AdminPage from './pages/AdminPage.tsx';
-import ElectiveManagementSystem from './pages/ElectiveManagementSystemPage.tsx';
-import OpenElective from './pages/OpenelectivePage.tsx';
-import ManageOEPage from './pages/ManageOEPage.tsx';
-import EMSAdmin from './pages/EMSAdminPage.tsx';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage.tsx";
+import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
+import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
+import ProgrammeElectivesPage from "./pages/ProgrammeElectivesPage.tsx";
+import AllStudentList from "./pages/AllStudentListPage.tsx";
+import UserProfilePage from "./pages/UserProfilePage.tsx";
+import MinorSpecializationsPage from "./pages/MinorSpecializationsPage.tsx";
+import AdminPage from "./pages/AdminPage.tsx";
+import ElectiveManagementSystem from "./pages/ElectiveManagementSystemPage.tsx";
+import OpenElective from "./pages/OpenelectivePage.tsx";
+import ManageOEPage from "./pages/ManageOEPage.tsx";
+import EMSAdmin from "./pages/EMSAdminPage.tsx";
 
 export default function Router() {
   return (

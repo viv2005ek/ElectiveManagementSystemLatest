@@ -1,10 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import currentUser from '../store/currentUserData';
-import { FaList } from 'react-icons/fa';
-import { ImCross } from 'react-icons/im';
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import currentUser from "../store/currentUserData";
+import { FaList } from "react-icons/fa";
+import { ImCross } from "react-icons/im";
 
-import Sidebar from './Sidebar'; // import Sidebar if it's a separate component
+import Sidebar from "./Sidebar";
+import { RootState, store } from "../redux/store.ts";
+import { useSelector } from "react-redux"; // import Sidebar if it's a separate component
 
 export default function TopBar() {
   const { name, profilePic, mailId, mobileNo1, branchName, courseName } =
@@ -13,7 +15,10 @@ export default function TopBar() {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const { user, loading } = useSelector((state: RootState) => state.auth);
+
   const handleProfileClick = () => {
+    console.log("User state from Redux:", user); // Logs the current user state
     navigate("/user-profile");
   };
 
