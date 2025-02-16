@@ -64,6 +64,35 @@ const CourseController = {
       const courses = await prisma.course.findMany({
         where: {
           courseCategories: {
+            some: { id: id.trim() },
+          },
+          isDeleted: false,
+        },
+      });
+
+      res.status(200).json({ courses, count: courses.length });
+    } catch (error) {
+      console.error("❌ Error fetching courses:", error);
+      res.status(500).json({ message: "Unable to fetch courses", error });
+    }
+  },
+
+  getCoursesByCategoryDetailed: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { id } = req.params; // Extract category ID from URL params
+      console.log("Received request for getCoursesByCategory");
+      console.log("Path Params:", req.params);
+      console.log("Received category ID:", id);
+
+      if (!id || id.trim() === "") {
+        return res
+          .status(400)
+          .json({ message: "A valid category ID is required" });
+      }
+
+      const courses = await prisma.course.findMany({
+        where: {
+          courseCategories: {
             some: { id: id.trim() }, // ✅ Many-to-many relationship check
           },
           isDeleted: false,
