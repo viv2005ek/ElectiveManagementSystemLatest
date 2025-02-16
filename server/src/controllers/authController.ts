@@ -65,7 +65,7 @@ const authController = {
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // true on production
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 60 * 60 * 1000, // 1 hour
       });
 
@@ -137,7 +137,7 @@ const authController = {
       res.clearCookie("jwt", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // true on production
-        sameSite: "lax",
+        sameSite: "none",
       });
 
       return res.status(200).json({ message: "Logout successful" });
@@ -153,7 +153,7 @@ const authController = {
     try {
       const token = req.cookies.jwt;
       if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized. Token not found" });
       }
 
       const decoded = jwt.verify(
