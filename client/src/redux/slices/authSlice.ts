@@ -3,9 +3,9 @@ import axios from "axios";
 import axiosInstance from "../../axiosInstance.ts";
 
 interface User {
-  firstName: string
-  lastName: string
-  role: string
+  firstName: string;
+  lastName: string;
+  role: string;
 }
 
 interface UserState {

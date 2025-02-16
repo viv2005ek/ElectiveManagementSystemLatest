@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import InfoStudentPopUp from "./InfoStudentPopUp";
 import axiosInstance from "../axiosInstance.ts";
 
-
-
 interface Student {
   name: string;
   registrationNo: string;
@@ -76,7 +74,9 @@ export default function AllStudentList() {
         >
           <option value="">All Departments</option>
           {[...new Set(students.map((s) => s.departmentName))].map((dept) => (
-            <option key={dept} value={dept}>{dept}</option>
+            <option key={dept} value={dept}>
+              {dept}
+            </option>
           ))}
         </select>
 
@@ -105,8 +105,9 @@ export default function AllStudentList() {
               {student.name} - {student.registrationNo}
             </p>
             <p className="text-sm text-gray-600">
-              Department: <span className="font-medium">{student.departmentName}</span> | Semester: <span
-              className="font-medium">{student.semester}</span>
+              Department:{" "}
+              <span className="font-medium">{student.departmentName}</span> |
+              Semester: <span className="font-medium">{student.semester}</span>
             </p>
           </li>
         ))}

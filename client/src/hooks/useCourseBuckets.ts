@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from '../axiosInstance.ts';
+import axiosInstance from "../axiosInstance.ts";
 
 export interface Course {
   id: string;
@@ -21,7 +21,9 @@ interface UseCourseBucketsReturn {
 }
 
 export const useCourseBuckets = (): UseCourseBucketsReturn => {
-  const [courseBuckets, setCourseBuckets] = useState<CourseBucket[] | null>(null);
+  const [courseBuckets, setCourseBuckets] = useState<CourseBucket[] | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

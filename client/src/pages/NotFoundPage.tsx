@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 export default function NotFoundPage() {
   return (
@@ -14,7 +14,7 @@ export default function NotFoundPage() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link
-              to={'/home'}
+              to={"/home"}
               className="rounded-md bg-muj-orange px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Go back home
@@ -26,5 +26,5 @@ export default function NotFoundPage() {
         </div>
       </main>
     </>
-  )
+  );
 }

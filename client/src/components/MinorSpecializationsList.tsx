@@ -4,8 +4,7 @@ import {
   TrashIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useCourseBuckets } from '../hooks/useCourseBuckets.ts';
-
+import { useCourseBuckets } from "../hooks/useCourseBuckets.ts";
 
 interface Course {
   id: string;
@@ -21,16 +20,16 @@ interface CourseBucket {
 }
 
 function Notification({
-                        message,
-                        onClose,
-                      }: {
+  message,
+  onClose,
+}: {
   message: string;
   onClose: () => void;
 }) {
   useState(() => {
     const timer = setTimeout(onClose, 2000);
     return () => clearTimeout(timer);
-  }, [onClose]);
+  });
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex items-center gap-x-2 rounded-lg bg-[#df6039] px-4 py-2 text-white shadow-lg transition-all duration-300 ease-in-out">
@@ -106,7 +105,8 @@ export default function CourseBucketsList() {
                     key={course.id}
                     className="py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-md transition-all duration-200"
                   >
-                    - {course.name} ({course.courseCode}) - Semester {course.semester}
+                    - {course.name} ({course.courseCode}) - Semester{" "}
+                    {course.semester}
                   </li>
                 ))}
               </ul>
@@ -124,24 +124,24 @@ export default function CourseBucketsList() {
         <div className="px-4 py-3 sm:px-6">
           <table className="min-w-full divide-y divide-gray-200">
             <tbody className="divide-y divide-gray-200 bg-white">
-            {preferences.map((preference, index) => (
-              <tr key={index}>
-                <td className="px-2 py-4 text-sm text-gray-900">
-                  {index + 1}
-                </td>
-                <td className="px-2 py-4 text-sm text-gray-500">
-                  {preference.name}
-                </td>
-                <td className="px-2 py-4">
-                  <button
-                    onClick={() => handleRemovePreference(index)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+              {preferences.map((preference, index) => (
+                <tr key={index}>
+                  <td className="px-2 py-4 text-sm text-gray-900">
+                    {index + 1}
+                  </td>
+                  <td className="px-2 py-4 text-sm text-gray-500">
+                    {preference.name}
+                  </td>
+                  <td className="px-2 py-4">
+                    <button
+                      onClick={() => handleRemovePreference(index)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className="mt-4 flex justify-end">
@@ -150,7 +150,9 @@ export default function CourseBucketsList() {
               className="rounded-md bg-[#df6039] px-4 py-2 text-sm font-medium text-white shadow-lg hover:bg-[#c8502f] transition-all duration-200"
               onClick={() => {
                 if (preferences.length < 4) {
-                  setNotification("Please select 4 preferences before submitting.");
+                  setNotification(
+                    "Please select 4 preferences before submitting.",
+                  );
                   return;
                 }
                 setNotification("Preferences submitted successfully!");
