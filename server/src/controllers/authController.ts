@@ -167,35 +167,23 @@ const authController = {
       const user = await prisma.credential.findUnique({
         where: { id: decoded.id },
         select: {
-          id: true,
-          email: true,
           role: true,
           student: {
             select: {
-              id: true,
               firstName: true,
               lastName: true,
-              registrationNumber: true,
-              semester: true,
-              batch: true,
-              branch: { select: { id: true, name: true } },
             },
           },
           faculty: {
             select: {
-              id: true,
               firstName: true,
               lastName: true,
-              registrationNumber: true,
-              department: { select: { id: true, name: true } },
             },
           },
           admin: {
             select: {
-              id: true,
               firstName: true,
               lastName: true,
-              registrationNumber: true,
             },
           },
         },
@@ -205,7 +193,11 @@ const authController = {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.json(user);
+      const { role, student, faculty, admin } = user;
+      const firstName = student?.firstName || faculty?.firstName || admin?.firstName;
+      const lastName = student?.lastName || faculty?.lastName || admin?.lastName;
+
+      res.json({ role, firstName, lastName });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
