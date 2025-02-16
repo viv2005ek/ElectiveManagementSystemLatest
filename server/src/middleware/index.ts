@@ -4,15 +4,13 @@ import cookieParser from "cookie-parser";
 import express, { Express } from "express";
 
 export const setupMiddleware = (app: Express) => {
-  import cors from "cors";
-
   app.use(
     cors({
       origin: process.env.FRONTEND_URL || "http://localhost:3000",
       credentials: true, // Allow cookies
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "DELETE"],
-    })
+    }),
   );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
