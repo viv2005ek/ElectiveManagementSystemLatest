@@ -5,7 +5,6 @@ import { CourseCategory, useCourseCategories } from '../hooks/useCourseCategorie
 import SingleSelectMenu from '../components/FormComponents/SingleSelectMenu.tsx';
 import ToggleWithDescription from '../components/FormComponents/ToggleWithDescription.tsx';
 import { Department, useDepartments } from '../hooks/useDepartments.ts';
-import MultiSelectMenu from '../components/FormComponents/MultiSelectMenu.tsx';
 import { Branch, useBranches } from '../hooks/useBranches.ts';
 import MultiSelectMenuWithSearch from '../components/FormComponents/MultiSelectMenuWithSearch.tsx';
 import useFetchCourses, {Course} from '../hooks/useFetchCourses.ts';
@@ -17,7 +16,7 @@ export default function CreateSubjectPage () {
   const [courseCategory, setCourseCategory] = useState<CourseCategory | null>(null);
   const [isOptableAcrossDepartment, setIsOptableAcrossDepartment] = useState(false);
   const [selectedBranches, setSelectedBranches] = useState<Branch[]>([]);
-  const [selectedCourses, setSelectedCourses] = useState<Course[]>();
+  const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
 
   const {courseCategories} = useCourseCategories()
   const {departments} = useDepartments()
@@ -60,9 +59,9 @@ export default function CreateSubjectPage () {
             )}
           </div>
         </div>
-        <div>
+        <div className="grid grid-cols-2 gap-32">
           <MultiSelectMenuWithSearch label={"Branches"} items={branches} selected={selectedBranches} setSelected={setSelectedBranches} />
-          <MultiSelectMenuWithSearch label={"Courses"} items={courses} selected={selectedBranches} setSelected={setSelectedBranches} />
+          <MultiSelectMenuWithSearch label={"Courses"} items={courses} selected={selectedCourses} setSelected={setSelectedCourses} />
         </div>
       </div>
     </MainLayout>

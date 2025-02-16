@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import axiosInstance from '../axiosInstance.ts';
 
 interface Department {
   id: string;
@@ -52,7 +53,7 @@ const useFetchCourses = (categoryId?: string | null) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<ApiResponse>(`/courses/by-category/${categoryId}`);
+        const response = await axiosInstance.get(`/courses/by-category/${categoryId}`);
         setCourses(response.data.courses);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch courses');
