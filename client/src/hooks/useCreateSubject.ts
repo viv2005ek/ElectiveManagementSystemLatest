@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axiosInstance from '../axiosInstance.ts';
-import { CourseCategory } from '../hooks/useCourseCategories.ts';
+import { CourseCategory } from './useCourseCategories.ts';
 
 interface CreateSubjectPayload {
   name: string;
@@ -15,15 +15,10 @@ interface CreateSubjectPayload {
   canOptOutsideDepartment: boolean;
 }
 
-interface UseCreateSubjectReturn {
-  createSubject: (payload: CreateSubjectPayload, category: CourseCategory, isOptableAcrossDepartment: boolean) => Promise<void>;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export default function useCreateSubject(): UseCreateSubjectReturn {
+export default function useCreateSubject() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const createSubject = async (
     name: string,
@@ -39,8 +34,8 @@ export default function useCreateSubject(): UseCreateSubjectReturn {
   ) => {
     setIsLoading(true);
     setError(null);
+    setSuccess(false);
 
-    // Build the request body conditionally
     const requestBody: CreateSubjectPayload = {
       name,
       batch,
@@ -57,13 +52,17 @@ export default function useCreateSubject(): UseCreateSubjectReturn {
     try {
       const response = await axiosInstance.post('/subjects', requestBody);
       console.log('Subject created successfully:', response.data);
+      setSuccess(true);
     } catch (err: any) {
       console.error('Error creating subject:', err);
-      setError(err.response?.data?.message || 'Failed to create subject');
+      // Set error message or throw it to be handled by the caller
+      const errorMessage = err.response?.message || 'Failed to create subject';
+      setError(errorMessage);
+      throw new Error(errorMessage);  // Ensure the error is thrown
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { createSubject, isLoading, error };
+  return { createSubject, isLoading, error, success };
 }

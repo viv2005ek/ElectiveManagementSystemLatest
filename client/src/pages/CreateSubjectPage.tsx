@@ -14,11 +14,15 @@ import  dayjs from 'dayjs';
 import { Batch } from '../types/UserTypes.ts';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import useCreateSubject from '../hooks/useCreateSubject.ts';
+import { useNotification } from '../contexts/NotificationContext.tsx';
+import PageHeader from '../components/PageHeader.tsx';
 
 
 export default function CreateSubjectPage () {
 
-  const { createSubject, isLoading, error } = useCreateSubject()
+  const { createSubject, isLoading, error, success } = useCreateSubject()
+
+  const {notify} = useNotification()
 
   const semesters: Semester[] = Array.from({ length: 8 }, (_, i) => ({
     number: i + 1,
@@ -48,7 +52,7 @@ export default function CreateSubjectPage () {
   const {branches} = useBranches(isOptableAcrossDepartment, department)
   const {courses} = useFetchCourses(courseCategory, department)
   const {courseBuckets} = useCourseBuckets(department)
-  const [selectedSemesters, setSelectedSemesters] = useState<Semester[]>(semesters);
+  const [selectedSemesters, setSelectedSemesters] = useState<Semester[]>([]);
 
   useEffect(() => {
     if (isOptableAcrossDepartment) {
@@ -64,16 +68,35 @@ export default function CreateSubjectPage () {
   }, [department, isOptableAcrossDepartment]);
 
 
-  const handleSubmit = () => {
-    createSubject(
-      nam
-    )
-  }
+  const handleSubmit = async () => {
+    if (!subjectName || !courseCategory || !selectedBatch || selectedBranches.length === 0) {
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    // Define the promise for subject creation
+    const createSubjectPromise = createSubject(
+      subjectName,
+      selectedBatch.number,
+      courseCategory,
+      selectedBranches.map(branch => branch.id),
+      selectedCourses.map(course => course.id),
+      selectedCourseBuckets.map(bucket => bucket.id),
+      selectedSemesters.map(semester => semester.number),
+      selectedSemester ? selectedSemester.number : undefined,
+      department ? department.id : undefined,
+      isOptableAcrossDepartment
+    );
+
+    // Use the notify function to show toast.promise
+    notify('promise', 'Creating subject...', createSubjectPromise, "Failed to create subject");
+  };
 
 
   return (
     <MainLayout>
       <div className="p-8">
+        <PageHeader title={"Create Subject"}/>
         <div className="grid grid-cols-2 gap-32">
           <TextInputField
             value={subjectName}

@@ -110,6 +110,7 @@ const SubjectController = {
             name,
             semester,
             batch,
+            departmentId,
             categoryId,
             canOptOutsideDepartment,
             branches: { connect: branchIds.map((id) => ({ id })) },
