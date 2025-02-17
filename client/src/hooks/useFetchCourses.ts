@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../axiosInstance.ts';
+import { useState, useEffect } from "react";
+import axiosInstance from "../axiosInstance.ts";
 
 interface Department {
   id: string;
@@ -34,7 +34,10 @@ interface ApiResponse {
   count: number;
 }
 
-const useFetchCourses = (category: CourseCategory | null, department: Department | null ) => {
+const useFetchCourses = (
+  category: CourseCategory | null,
+  department: Department | null,
+) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,18 +52,20 @@ const useFetchCourses = (category: CourseCategory | null, department: Department
       setError(null);
       try {
         const queryParams = new URLSearchParams();
-        if (category) queryParams.append('categoryId', category.id);
-        if (department) queryParams.append('departmentId', department.id);
+        if (category) queryParams.append("categoryId", category.id);
+        if (department) queryParams.append("departmentId", department.id);
 
-        const response = await axiosInstance.get(`/courses?${queryParams.toString()}`);
+        const response = await axiosInstance.get(
+          `/courses?${queryParams.toString()}`,
+        );
         setCourses(response.data.courses);
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch courses');
+        setError(err.message || "Failed to fetch courses");
       } finally {
         setLoading(false);
       }
     };
-    setCourses([])
+    setCourses([]);
 
     fetchCourses();
   }, [category, department]);

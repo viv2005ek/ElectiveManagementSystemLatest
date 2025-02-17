@@ -8,7 +8,9 @@ const BranchController = {
     const { departmentId } = req.query;
     try {
       const branches = await prisma.branch.findMany({
-        where: departmentId ? { departmentId: String(departmentId) } : undefined,
+        where: departmentId
+          ? { departmentId: String(departmentId) }
+          : undefined,
         include: {
           department: true,
         },
@@ -40,7 +42,6 @@ const BranchController = {
       res.status(500).json({ message: "Unable to fetch branch" });
     }
   },
-
 
   bulkAddBranches: async (req: Request, res: Response): Promise<any> => {
     const { branches } = req.body;

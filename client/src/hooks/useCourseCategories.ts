@@ -14,7 +14,9 @@ interface UseCourseCategoriesReturn {
 }
 
 export const useCourseCategories = (): UseCourseCategoriesReturn => {
-  const [courseCategories, setCourseCategories] = useState<CourseCategory[] | null>(null);
+  const [courseCategories, setCourseCategories] = useState<
+    CourseCategory[] | null
+  >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

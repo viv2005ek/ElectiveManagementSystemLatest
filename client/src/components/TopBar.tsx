@@ -7,7 +7,7 @@ import { ImCross } from "react-icons/im";
 import Sidebar from "./Sidebar";
 import { RootState, store } from "../redux/store.ts";
 import { useSelector } from "react-redux";
-import { toast } from 'react-toastify'; // import Sidebar if it's a separate component
+import { toast } from "react-toastify"; // import Sidebar if it's a separate component
 
 export default function TopBar() {
   const { name, profilePic, mailId, mobileNo1, branchName, courseName } =

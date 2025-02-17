@@ -4,9 +4,8 @@ export enum UserRole {
   Admin = "Admin",
 }
 
-
 export interface Batch {
-  number: number
-  name: string
-  id: string
+  number: number;
+  name: string;
+  id: string;
 }

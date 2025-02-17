@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage.tsx";
 import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
 import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
@@ -12,7 +12,7 @@ import OpenElective from "./pages/OpenelectivePage.tsx";
 import ManageOEPage from "./pages/ManageOEPage.tsx";
 import EMSAdmin from "./pages/EMSAdminPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
-import CreateSubjectPage from './pages/CreateSubjectPage.tsx';
+import CreateSubjectPage from "./pages/CreateSubjectPage.tsx";
 
 export default function Router() {
   return (
@@ -38,7 +38,7 @@ export default function Router() {
         <Route path="/oemanage" element={<ManageOEPage />} />
         <Route path="/emsadmin" element={<EMSAdmin />} />
         <Route path={"/*"} element={<NotFoundPage />} />
-        <Route path={'/subjects/create'} element={<CreateSubjectPage/>}/>
+        <Route path={"/subjects/create"} element={<CreateSubjectPage />} />
       </Routes>
     </BrowserRouter>
   );

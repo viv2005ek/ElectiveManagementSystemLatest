@@ -42,7 +42,6 @@ router.get(
   BranchController.getAllBranches,
 );
 
-
 /**
  * @swagger
  * /branches/{id}:
@@ -72,7 +71,5 @@ router.get(
   authorizeRoles([UserRole.ADMIN]),
   BranchController.getBranchByID,
 );
-
-
 
 export default router;

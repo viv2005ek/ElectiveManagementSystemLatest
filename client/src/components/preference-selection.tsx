@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import type { Course, PreferenceSelection } from "../types/course";
 import { CourseCard } from "./course-card";
 import { SelectedPreferences } from "./selected-preferences";
-import axiosInstance from '../axiosInstance.ts';
+import axiosInstance from "../axiosInstance.ts";
 
 const API_URL = "https://apiems.shreshth.tech/courses";
 

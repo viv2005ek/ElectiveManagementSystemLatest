@@ -1,14 +1,22 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from "react";
 
-export default function TextInputField({label, placeholder, value, setValue}: {
-  label?: string,
-  placeholder?: string,
-  value: string
-  setValue: Dispatch<SetStateAction<string>>
+export default function TextInputField({
+  label,
+  placeholder,
+  value,
+  setValue,
+}: {
+  label?: string;
+  placeholder?: string;
+  value: string;
+  setValue: Dispatch<SetStateAction<string>>;
 }) {
   return (
     <div>
-      <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
+      <label
+        htmlFor="email"
+        className="block text-sm/6 font-medium text-gray-900"
+      >
         {label}
       </label>
       <div className="mt-2">
@@ -20,5 +28,5 @@ export default function TextInputField({label, placeholder, value, setValue}: {
         />
       </div>
     </div>
-  )
+  );
 }

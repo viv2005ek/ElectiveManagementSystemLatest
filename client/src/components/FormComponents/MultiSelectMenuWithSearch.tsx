@@ -1,7 +1,13 @@
-import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
-import { CheckIcon } from '@heroicons/react/20/solid';
-import { Dispatch, SetStateAction, useState } from 'react';
+import {
+  Label,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+import { CheckIcon } from "@heroicons/react/20/solid";
+import { Dispatch, SetStateAction, useState } from "react";
 
 type Identifiable = { id: string; [key: string]: any };
 
@@ -13,8 +19,14 @@ interface MultiSelectMenuProps<T extends Identifiable> {
   onChange?: (items: T[]) => void;
 }
 
-export default function MultiSelectMenuWithSearch<T extends Identifiable>({ label, items, selected, setSelected, onChange }: MultiSelectMenuProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function MultiSelectMenuWithSearch<T extends Identifiable>({
+  label,
+  items,
+  selected,
+  setSelected,
+  onChange,
+}: MultiSelectMenuProps<T>) {
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleChange = (newSelected: T[]) => {
     setSelected(newSelected);
@@ -24,17 +36,25 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({ labe
   };
 
   const filteredItems = Array.isArray(items)
-    ? items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    ? items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
     : [];
 
   return (
     <Listbox value={selected} onChange={handleChange} multiple>
-      <div className={'flex flex-col items-between w-full justify-start'}>
-        {label && <Label className="block text-sm/6 font-medium text-gray-900">{label}</Label>}
+      <div className={"flex flex-col items-between w-full justify-start"}>
+        {label && (
+          <Label className="block text-sm/6 font-medium text-gray-900">
+            {label}
+          </Label>
+        )}
         <div className="relative mt-1.5">
           <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
             <span className="col-start-1 row-start-1 truncate pr-6">
-              {selected.length > 0 ? selected.map((item) => item.name).join(', ') : "Select items"}
+              {selected.length > 0
+                ? selected.map((item) => item.name).join(", ")
+                : "Select items"}
             </span>
             <ChevronUpDownIcon
               aria-hidden="true"
@@ -56,23 +76,25 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({ labe
               />
             </div>
             {filteredItems.length > 0 ? (
-              filteredItems.sort((a, b) => a.name.localeCompare(b.name)).map((item) => (
-                <ListboxOption
-                  key={item.id}
-                  value={item}
-                  className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
-                >
-                  <span className="block truncate font-normal group-data-[selected]:font-semibold">
-                    {item.name}
-                  </span>
-
-                  {selected.some((i) => i.id === item.id) && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white">
-                      <CheckIcon aria-hidden="true" className="size-5" />
+              filteredItems
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((item) => (
+                  <ListboxOption
+                    key={item.id}
+                    value={item}
+                    className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
+                  >
+                    <span className="block truncate font-normal group-data-[selected]:font-semibold">
+                      {item.name}
                     </span>
-                  )}
-                </ListboxOption>
-              ))
+
+                    {selected.some((i) => i.id === item.id) && (
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white">
+                        <CheckIcon aria-hidden="true" className="size-5" />
+                      </span>
+                    )}
+                  </ListboxOption>
+                ))
             ) : (
               <div className="py-2 px-3 text-gray-500">No items available</div>
             )}

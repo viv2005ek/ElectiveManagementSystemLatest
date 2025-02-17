@@ -78,8 +78,6 @@ router.get(
   CourseController.getCoursesFiltered,
 );
 
-
-
 /**
  * @swagger
  * /courses:

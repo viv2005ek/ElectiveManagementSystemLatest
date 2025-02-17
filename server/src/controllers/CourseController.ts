@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 
 const CourseController = {
-
   // Get a course by ID
   getCourseById: async (req: Request, res: Response): Promise<any> => {
     try {
@@ -34,7 +33,7 @@ const CourseController = {
     try {
       const { departmentId, categoryId } = req.query;
       console.log("Received request for getCoursesByCategory");
-      console.log("Query Params:", req.query)
+      console.log("Query Params:", req.query);
 
       console.log("id", departmentId);
 
@@ -62,7 +61,6 @@ const CourseController = {
       res.status(500).json({ message: "Unable to fetch courses", error });
     }
   },
-
 
   getCoursesFiltered: async (req: Request, res: Response): Promise<any> => {
     try {
@@ -97,7 +95,6 @@ const CourseController = {
       res.status(500).json({ message: "Unable to fetch courses", error });
     }
   },
-
 
   // Add a new course
   addCourse: async (req: Request, res: Response): Promise<any> => {

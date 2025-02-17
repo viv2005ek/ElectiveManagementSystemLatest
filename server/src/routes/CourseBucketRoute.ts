@@ -43,7 +43,6 @@ router.get(
   CourseBucketController.getAllCourseBuckets,
 );
 
-
 /**
  * @swagger
  * /course-buckets/{id}:

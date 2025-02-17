@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axiosInstance from '../axiosInstance.ts';
+import { useState, useEffect } from "react";
+import axiosInstance from "../axiosInstance.ts";
 
 interface Department {
   id: string;
@@ -13,7 +13,10 @@ export interface Branch {
   department: Department;
 }
 
-const useBranches = (isOptableAcrossDepartment: boolean, department: Department | null) => {
+const useBranches = (
+  isOptableAcrossDepartment: boolean,
+  department: Department | null,
+) => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +27,14 @@ const useBranches = (isOptableAcrossDepartment: boolean, department: Department 
       setError(null);
       try {
         const queryParams = new URLSearchParams();
-        if (department) queryParams.append('departmentId', department.id);
+        if (department) queryParams.append("departmentId", department.id);
 
-        const response = await axiosInstance.get(`/branches?${queryParams.toString()}`);
+        const response = await axiosInstance.get(
+          `/branches?${queryParams.toString()}`,
+        );
         setBranches(response.data);
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch branches');
+        setError(err.message || "Failed to fetch branches");
       } finally {
         setLoading(false);
       }

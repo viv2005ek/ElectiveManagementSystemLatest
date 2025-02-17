@@ -106,8 +106,6 @@ router.post("/register", authController.registerController);
  */
 router.post("/logout", authController.logoutController);
 
-
-
 /**
  * @swagger
  * /auth/me:

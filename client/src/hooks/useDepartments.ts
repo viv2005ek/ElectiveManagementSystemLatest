@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react';
-import axiosInstance from '../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import axiosInstance from "../axiosInstance.ts";
 
 export interface Department {
   id: string;
@@ -16,7 +16,7 @@ export function useDepartments() {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await axiosInstance.get('/departments');
+        const response = await axiosInstance.get("/departments");
         const data: Department[] = await response.data;
         setDepartments(data);
       } catch (err) {

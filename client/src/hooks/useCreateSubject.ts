@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import axiosInstance from '../axiosInstance.ts';
-import { CourseCategory } from './useCourseCategories.ts';
+import { useState } from "react";
+import axiosInstance from "../axiosInstance.ts";
+import { CourseCategory } from "./useCourseCategories.ts";
 
 interface CreateSubjectPayload {
   name: string;
@@ -30,7 +30,7 @@ export default function useCreateSubject() {
     semesters: number[],
     semester: number | undefined,
     departmentId: string | undefined,
-    isOptableAcrossDepartment: boolean
+    isOptableAcrossDepartment: boolean,
   ) => {
     setIsLoading(true);
     setError(null);
@@ -42,23 +42,25 @@ export default function useCreateSubject() {
       categoryId: category.id,
       branchIds,
       canOptOutsideDepartment: isOptableAcrossDepartment,
-      courseIds: category.allotmentType === 'STANDALONE' ? courseIds : undefined,
-      courseBucketIds: category.allotmentType === 'BUCKET' ? courseBucketIds : undefined,
-      semesters: category.allotmentType === 'BUCKET' ? semesters : undefined,
-      semester: category.allotmentType === 'STANDALONE' ? semester : undefined,
+      courseIds:
+        category.allotmentType === "STANDALONE" ? courseIds : undefined,
+      courseBucketIds:
+        category.allotmentType === "BUCKET" ? courseBucketIds : undefined,
+      semesters: category.allotmentType === "BUCKET" ? semesters : undefined,
+      semester: category.allotmentType === "STANDALONE" ? semester : undefined,
       departmentId: isOptableAcrossDepartment ? undefined : departmentId,
     };
 
     try {
-      const response = await axiosInstance.post('/subjects', requestBody);
-      console.log('Subject created successfully:', response.data);
+      const response = await axiosInstance.post("/subjects", requestBody);
+      console.log("Subject created successfully:", response.data);
       setSuccess(true);
     } catch (err: any) {
-      console.error('Error creating subject:', err);
+      console.error("Error creating subject:", err);
       // Set error message or throw it to be handled by the caller
-      const errorMessage = err.response?.message || 'Failed to create subject';
+      const errorMessage = err.response?.message || "Failed to create subject";
       setError(errorMessage);
-      throw new Error(errorMessage);  // Ensure the error is thrown
+      throw new Error(errorMessage); // Ensure the error is thrown
     } finally {
       setIsLoading(false);
     }

@@ -153,7 +153,9 @@ const authController = {
     try {
       const token = req.cookies.jwt;
       if (!token) {
-        return res.status(401).json({ message: "Unauthorized. Token not found" });
+        return res
+          .status(401)
+          .json({ message: "Unauthorized. Token not found" });
       }
 
       const decoded = jwt.verify(
@@ -194,8 +196,10 @@ const authController = {
       }
 
       const { role, student, faculty, admin } = user;
-      const firstName = student?.firstName || faculty?.firstName || admin?.firstName;
-      const lastName = student?.lastName || faculty?.lastName || admin?.lastName;
+      const firstName =
+        student?.firstName || faculty?.firstName || admin?.firstName;
+      const lastName =
+        student?.lastName || faculty?.lastName || admin?.lastName;
 
       res.json({ role, firstName, lastName });
     } catch (error) {
