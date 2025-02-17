@@ -12,6 +12,7 @@ import OpenElective from "./pages/OpenelectivePage.tsx";
 import ManageOEPage from "./pages/ManageOEPage.tsx";
 import EMSAdmin from "./pages/EMSAdminPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import CreateSubjectPage from './pages/CreateSubjectPage.tsx';
 
 export default function Router() {
   return (
@@ -36,6 +37,7 @@ export default function Router() {
         <Route path="/oemanage" element={<ManageOEPage />} />
         <Route path="/emsadmin" element={<EMSAdmin />} />
         <Route path={"/*"} element={<NotFoundPage />} />
+        <Route path={'/subjects/create'} element={<CreateSubjectPage/>}/>
       </Routes>
     </BrowserRouter>
   );

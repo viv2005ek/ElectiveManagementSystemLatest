@@ -170,6 +170,7 @@ Table Subject {
   courseAllotments CourseAllotment [not null]
   courses Course [not null]
   buckets CourseBucket [not null]
+  isFinalised Boolean [not null, default: false]
   isDeleted Boolean [not null, default: false]
   categoryId String [not null]
   category CourseCategory [not null]

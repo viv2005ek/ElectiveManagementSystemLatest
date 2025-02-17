@@ -32,7 +32,7 @@ const router = express.Router();
  */
 router.get(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.ADMIN, UserRole.FACULTY]),
   departmentController.getAllDepartments,
 );
 

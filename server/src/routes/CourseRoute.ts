@@ -7,70 +7,25 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- *   name: Courses
- *   description: API for managing courses
- */
-
-/**
- * @swagger
  * /courses:
  *   get:
- *     summary: Get all courses
- *     tags: [Courses]
- *     responses:
- *       200:
- *         description: Successfully retrieved courses
- *       500:
- *         description: Internal server error
- */
-router.get(
-  "/",
-  authorizeRoles([UserRole.ADMIN]),
-  CourseController.getAllCourses,
-);
-
-/**
- * @swagger
- * /courses/{id}:
- *   get:
- *     summary: Get a course by ID
- *     tags: [Courses]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Course details
- *       404:
- *         description: Course not found
- *       500:
- *         description: Internal server error
- */
-router.get(
-  "/:id",
-  authorizeRoles([UserRole.ADMIN]),
-  CourseController.getCourseById,
-);
-
-/**
- * @swagger
- * /courses/by-category/{id}:
- *   get:
- *     summary: Get courses by category ID
- *     description: Retrieve a list of courses filtered by a single category ID.
+ *     summary: Get courses by optional department and category IDs
+ *     description: Retrieve a list of courses filtered by department and/or category IDs.
  *     tags:
  *       - Courses
  *     parameters:
- *       - in: path
- *         name: id
+ *       - in: query
+ *         name: departmentId
  *         schema:
  *           type: string
- *         required: true
- *         description: A single category ID (UUID format)
+ *         required: false
+ *         description: Optional department ID to filter courses
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Optional category ID to filter courses
  *     responses:
  *       200:
  *         description: Successfully retrieved courses
@@ -87,7 +42,7 @@ router.get(
  *                   type: integer
  *                   example: 5
  *       400:
- *         description: Bad request if category ID is missing
+ *         description: Bad request if query parameters are invalid
  *         content:
  *           application/json:
  *             schema:
@@ -95,9 +50,9 @@ router.get(
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "A valid category ID is required"
+ *                   example: "Invalid query parameters"
  *       404:
- *         description: No courses found for the given category
+ *         description: No courses found for the given filters
  *         content:
  *           application/json:
  *             schema:
@@ -105,7 +60,7 @@ router.get(
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "No courses found for the given category"
+ *                   example: "No courses found for the given filters"
  *       500:
  *         description: Internal server error
  *         content:
@@ -117,12 +72,13 @@ router.get(
  *                   type: string
  *                   example: "Unable to fetch courses"
  */
-
 router.get(
-  "/by-category/:id",
-  authorizeRoles([UserRole.ADMIN]),
-  CourseController.getCoursesByCategory,
+  "/",
+  // authorizeRoles([UserRole.ADMIN]),
+  CourseController.getCoursesFiltered,
 );
+
+
 
 /**
  * @swagger

@@ -2,25 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 
 const CourseController = {
-  // Get all courses (excluding deleted ones)
-  getAllCourses: async (req: Request, res: Response): Promise<any> => {
-    try {
-      const courses = await prisma.course.findMany({
-        where: { isDeleted: false },
-        include: {
-          department: true,
-          courseCategories: true,
-          courseBuckets: true,
-          subjectPreferences: true,
-          courseAllotment: true,
-        },
-      });
-      res.status(200).json(courses);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      res.status(500).json({ message: "Unable to fetch courses" });
-    }
-  },
 
   // Get a course by ID
   getCourseById: async (req: Request, res: Response): Promise<any> => {
@@ -36,6 +17,7 @@ const CourseController = {
           courseAllotment: true,
         },
       });
+      console.log("hello");
 
       if (!course || course.isDeleted) {
         return res.status(404).json({ message: "Course not found" });
@@ -50,30 +32,62 @@ const CourseController = {
 
   getCoursesByCategory: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { id } = req.params; // Extract category ID from URL params
+      const { departmentId, categoryId } = req.query;
       console.log("Received request for getCoursesByCategory");
-      console.log("Path Params:", req.params);
-      console.log("Received category ID:", id);
+      console.log("Query Params:", req.query)
 
-      if (!id || id.trim() === "") {
-        return res
-          .status(400)
-          .json({ message: "A valid category ID is required" });
+      console.log("id", departmentId);
+
+      const filters: any = {
+        isDeleted: false,
+      };
+
+      if (departmentId) {
+        filters.departmentId = departmentId;
+      }
+
+      if (categoryId) {
+        filters.courseCategories = {
+          some: { id: categoryId },
+        };
       }
 
       const courses = await prisma.course.findMany({
-        where: {
-          courseCategories: {
-            some: { id: id.trim() }, // ✅ Many-to-many relationship check
-          },
-          isDeleted: false,
-        },
+        where: filters,
+      });
+
+      res.status(200).json({ courses, count: courses.length });
+    } catch (error) {
+      console.error(" Error fetching courses:", error);
+      res.status(500).json({ message: "Unable to fetch courses", error });
+    }
+  },
+
+
+  getCoursesFiltered: async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { departmentId, categoryId } = req.query; // Extract query parameters
+      console.log("Received request for getCoursesFiltered");
+      console.log("Query Params:", req.query);
+
+      const filters: any = {
+        isDeleted: false,
+      };
+
+      if (departmentId) {
+        filters.departmentId = departmentId;
+      }
+
+      if (categoryId) {
+        filters.courseCategories = {
+          some: { id: categoryId },
+        };
+      }
+
+      const courses = await prisma.course.findMany({
+        where: filters,
         include: {
           department: true,
-          courseCategories: true,
-          courseBuckets: true,
-          subjectPreferences: true,
-          courseAllotment: true,
         },
       });
 
@@ -83,6 +97,7 @@ const CourseController = {
       res.status(500).json({ message: "Unable to fetch courses", error });
     }
   },
+
 
   // Add a new course
   addCourse: async (req: Request, res: Response): Promise<any> => {

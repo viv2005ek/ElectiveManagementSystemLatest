@@ -4,10 +4,14 @@ import { prisma } from "../prismaClient";
 const CourseBucketsController = {
   getAllCourseBuckets: async (req: Request, res: Response): Promise<any> => {
     try {
+      const { departmentId } = req.query;
+
       const courseBuckets = await prisma.courseBucket.findMany({
-        where: { isDeleted: false },
+        where: {
+          isDeleted: false,
+          ...(departmentId ? { departmentId: String(departmentId) } : {}),
+        },
         include: {
-          courses: true,
           department: true,
         },
       });

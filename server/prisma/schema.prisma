@@ -175,6 +175,7 @@ model Subject {
   courseAllotments             CourseAllotment[]
   courses                      Course[]                       @relation("SubjectToCourse")
   buckets                      CourseBucket[]                 @relation("SubjectToCourseBucket")
+  isFinalised                  Boolean                        @default(false)
   isDeleted                    Boolean                        @default(false)
   categoryId                   String
   category                     CourseCategory                 @relation(fields: [categoryId], references: [id])
