@@ -18,6 +18,12 @@ const router = express.Router();
  *   get:
  *     summary: Get all branches
  *     tags: [Branches]
+ *     parameters:
+ *       - in: query
+ *         name: departmentId
+ *         schema:
+ *           type: string
+ *         description: Optional department ID to filter branches
  *     responses:
  *       200:
  *         description: Successfully retrieved all branches
@@ -25,7 +31,8 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               type: array
- *
+ *               items:
+ *                 type: object
  *       500:
  *         description: Unable to fetch branches
  */
@@ -34,6 +41,7 @@ router.get(
   authorizeRoles([UserRole.ADMIN]),
   BranchController.getAllBranches,
 );
+
 
 /**
  * @swagger
@@ -65,36 +73,6 @@ router.get(
   BranchController.getBranchByID,
 );
 
-/**
- * @swagger
- * /branches/department/{departmentId}:
- *   get:
- *     summary: Get all branches under a specific department
- *     tags: [Branches]
- *     parameters:
- *       - in: path
- *         name: departmentId
- *         required: true
- *         schema:
- *           type: string
- *         description: The department ID
- *     responses:
- *       200:
- *         description: Successfully retrieved branches for the department
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *
- *       404:
- *         description: No branches found for this department
- *       500:
- *         description: Unable to fetch branches
- */
-router.get(
-  "/department/:departmentId",
-  authorizeRoles([UserRole.ADMIN]),
-  BranchController.getBranchesByDepartmentId,
-);
+
 
 export default router;

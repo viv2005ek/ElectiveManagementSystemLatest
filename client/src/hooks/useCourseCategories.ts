@@ -4,7 +4,6 @@ import axiosInstance from "../axiosInstance.ts";
 export interface CourseCategory {
   id: string;
   name: string;
-  isDeleted: boolean;
   allotmentType: "BUCKET" | "STANDALONE";
 }
 

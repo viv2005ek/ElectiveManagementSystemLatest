@@ -3,8 +3,9 @@ import { Search } from "lucide-react";
 import type { Course, PreferenceSelection } from "../types/course";
 import { CourseCard } from "./course-card";
 import { SelectedPreferences } from "./selected-preferences";
+import axiosInstance from '../axiosInstance.ts';
 
-const API_URL = "https://apiems.shreshth.tech/programme-electives/standalone";
+const API_URL = "https://apiems.shreshth.tech/courses";
 
 export function PreferenceSelection() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,9 +19,9 @@ export function PreferenceSelection() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch(API_URL);
+        const response = await axiosInstance(API_URL);
         if (!response.ok) throw new Error("Failed to fetch courses");
-        const data: Course[] = await response.json();
+        const data: Course[] = await response.data;
         setCourses(data);
       } catch (err) {
         setError("Error fetching courses. Please try again later.");

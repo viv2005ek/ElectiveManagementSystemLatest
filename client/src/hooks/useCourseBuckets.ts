@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance.ts";
+import { Department } from './useDepartments.ts';
 
 export interface Course {
   id: string;
@@ -20,7 +21,7 @@ interface UseCourseBucketsReturn {
   error: string | null;
 }
 
-export const useCourseBuckets = (): UseCourseBucketsReturn => {
+export const useCourseBuckets = (department: Department | null): UseCourseBucketsReturn => {
   const [courseBuckets, setCourseBuckets] = useState<CourseBucket[] | null>(
     null,
   );
@@ -30,7 +31,10 @@ export const useCourseBuckets = (): UseCourseBucketsReturn => {
   useEffect(() => {
     const fetchCourseBuckets = async () => {
       try {
-        const response = await axiosInstance.get("/course-buckets");
+        const queryParams = new URLSearchParams();
+        if (department) queryParams.append('departmentId', department.id);
+
+        const response = await axiosInstance.get(`/course-buckets?${queryParams.toString()}`);
         setCourseBuckets(response.data);
       } catch (err) {
         setError("Error fetching Course Buckets");
@@ -40,7 +44,7 @@ export const useCourseBuckets = (): UseCourseBucketsReturn => {
     };
 
     fetchCourseBuckets();
-  }, []);
+  }, [department]);
 
   return { courseBuckets, isLoading, error };
 };

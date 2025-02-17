@@ -1,17 +1,14 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import axiosInstance from '../axiosInstance.ts';
 
 interface Department {
   id: string;
   name: string;
-  isDeleted: boolean;
 }
 
 interface CourseCategory {
   id: string;
   name: string;
-  isDeleted: boolean;
   allotmentType: string;
 }
 
@@ -19,7 +16,6 @@ interface CourseBucket {
   id: string;
   name: string;
   departmentId: string;
-  isDeleted: boolean;
 }
 
 export interface Course {
@@ -27,7 +23,6 @@ export interface Course {
   name: string;
   code: string;
   credits: number;
-  isDeleted: boolean;
   departmentId: string;
   createdAt: string;
   updatedAt: string;
@@ -39,21 +34,25 @@ interface ApiResponse {
   count: number;
 }
 
-const useFetchCourses = (categoryId?: string | null) => {
+const useFetchCourses = (category: CourseCategory | null, department: Department | null ) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
-      if (!categoryId) {
+      if (!category) {
         setCourses([]);
         return;
       }
       setLoading(true);
       setError(null);
       try {
-        const response = await axiosInstance.get(`/courses/by-category/${categoryId}`);
+        const queryParams = new URLSearchParams();
+        if (category) queryParams.append('categoryId', category.id);
+        if (department) queryParams.append('departmentId', department.id);
+
+        const response = await axiosInstance.get(`/courses?${queryParams.toString()}`);
         setCourses(response.data.courses);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch courses');
@@ -61,9 +60,10 @@ const useFetchCourses = (categoryId?: string | null) => {
         setLoading(false);
       }
     };
+    setCourses([])
 
     fetchCourses();
-  }, [categoryId]);
+  }, [category, department]);
 
   return { courses, loading, error };
 };

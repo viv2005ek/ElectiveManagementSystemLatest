@@ -1,27 +1,74 @@
 import MainLayout from '../layouts/MainLayout.tsx';
 import TextInputField from '../components/FormComponents/TextInputField.tsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CourseCategory, useCourseCategories } from '../hooks/useCourseCategories.ts';
 import SingleSelectMenu from '../components/FormComponents/SingleSelectMenu.tsx';
 import ToggleWithDescription from '../components/FormComponents/ToggleWithDescription.tsx';
 import { Department, useDepartments } from '../hooks/useDepartments.ts';
-import { Branch, useBranches } from '../hooks/useBranches.ts';
 import MultiSelectMenuWithSearch from '../components/FormComponents/MultiSelectMenuWithSearch.tsx';
 import useFetchCourses, {Course} from '../hooks/useFetchCourses.ts';
+import useBranches, { Branch } from '../hooks/useBranches.ts';
+import { CourseBucket, useCourseBuckets } from '../hooks/useCourseBuckets.ts';
+import { AllotmentType, Semester } from '../types/course.ts';
+import  dayjs from 'dayjs';
+import { Batch } from '../types/UserTypes.ts';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import useCreateSubject from '../hooks/useCreateSubject.ts';
+
 
 export default function CreateSubjectPage () {
+
+  const { createSubject, isLoading, error } = useCreateSubject()
+
+  const semesters: Semester[] = Array.from({ length: 8 }, (_, i) => ({
+    number: i + 1,
+    name: `Semester ${i + 1}`,
+    id: (i+1).toString()
+  }));
+  const year = dayjs().year();
+
+  const batches: Batch[] = Array.from({ length: 11 }, (_, i) => ({
+    number: year - 5 + i,
+    name: `Batch of ${year - 5 + i}`,
+    id: (year - 5 + i).toString()
+  }));
 
   const [subjectName, setSubjectName] = useState("");
   const [department, setDepartment] = useState<Department | null>(null);
   const [courseCategory, setCourseCategory] = useState<CourseCategory | null>(null);
-  const [isOptableAcrossDepartment, setIsOptableAcrossDepartment] = useState(false);
+  const [isOptableAcrossDepartment, setIsOptableAcrossDepartment] = useState<boolean>(false);
   const [selectedBranches, setSelectedBranches] = useState<Branch[]>([]);
+  const [selectedSemester, setSelectedSemester] = useState<Semester | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+  const [selectedCourseBuckets, setSelectedCourseBuckets] = useState<CourseBucket[]>([]);
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
 
   const {courseCategories} = useCourseCategories()
   const {departments} = useDepartments()
-  const {branches} = useBranches()
-  const {courses} = useFetchCourses(courseCategory?.id)
+  const {branches} = useBranches(isOptableAcrossDepartment, department)
+  const {courses} = useFetchCourses(courseCategory, department)
+  const {courseBuckets} = useCourseBuckets(department)
+  const [selectedSemesters, setSelectedSemesters] = useState<Semester[]>(semesters);
+
+  useEffect(() => {
+    if (isOptableAcrossDepartment) {
+      setDepartment(null)
+    }
+  }, [isOptableAcrossDepartment]);
+
+  useEffect(() => {
+    setSelectedBranches([])
+    setSelectedCourses([])
+    setSelectedCourseBuckets([])
+    setSelectedCourseBuckets([])
+  }, [department, isOptableAcrossDepartment]);
+
+
+  const handleSubmit = () => {
+    createSubject(
+      nam
+    )
+  }
 
 
   return (
@@ -61,7 +108,29 @@ export default function CreateSubjectPage () {
         </div>
         <div className="grid grid-cols-2 gap-32">
           <MultiSelectMenuWithSearch label={"Branches"} items={branches} selected={selectedBranches} setSelected={setSelectedBranches} />
-          <MultiSelectMenuWithSearch label={"Courses"} items={courses} selected={selectedCourses} setSelected={setSelectedCourses} />
+          {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
+            <MultiSelectMenuWithSearch label={"Courses"} items={courses} selected={selectedCourses} setSelected={setSelectedCourses} />
+          ) }
+          {courseCategory?.allotmentType === AllotmentType.BUCKET && (
+            <MultiSelectMenuWithSearch label={"Course Buckets"} items={courseBuckets} selected={selectedCourseBuckets} setSelected={setSelectedCourseBuckets} />
+          )}
+        </div>
+        <div className={'flex w-full flex-row gap-32 mt-12'}>
+          <div className={'w-full'}>
+            {courseCategory?.allotmentType === AllotmentType.BUCKET && (
+              <MultiSelectMenuWithSearch label={'Semesters'} items={semesters} selected={selectedSemesters} setSelected={setSelectedSemesters}/>
+            )}
+            {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
+              <SingleSelectMenu label={'Semester'} items={semesters} selected={selectedSemester} setSelected={setSelectedSemester}/>
+            )}
+          </div>
+          <SingleSelectMenu label={'Batch'} items={batches} selected={selectedBatch} setSelected={setSelectedBatch}/>
+        </div>
+        <div className={'flex w-full justify-end'}>
+          <button onClick={handleSubmit} className={'bg-blue-500 mt-12 p-1.5 hover:bg-blue-400 text-white rounded-full flex items-center flex-row justify-between gap-4 pl-1 pr-6  w-min'}>
+            <PlusCircleIcon className={'stroke-white w-8 h-8'}/>
+            <div className={'text-lg'}>Create</div>
+          </button>
         </div>
       </div>
     </MainLayout>

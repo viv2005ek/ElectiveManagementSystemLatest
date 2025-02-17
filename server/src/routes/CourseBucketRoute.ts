@@ -18,6 +18,13 @@ const router = express.Router();
  *   get:
  *     summary: Get all course buckets
  *     tags: [CourseBuckets]
+ *     parameters:
+ *       - in: query
+ *         name: departmentId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter course buckets by department ID
  *     responses:
  *       200:
  *         description: Successfully retrieved course buckets
@@ -35,6 +42,7 @@ router.get(
   authorizeRoles([UserRole.ADMIN]),
   CourseBucketController.getAllCourseBuckets,
 );
+
 
 /**
  * @swagger

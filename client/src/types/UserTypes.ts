@@ -3,3 +3,10 @@ export enum UserRole {
   Faculty = "Faculty",
   Admin = "Admin",
 }
+
+
+export interface Batch {
+  number: number
+  name: string
+  id: string
+}
