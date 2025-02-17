@@ -9,7 +9,7 @@ const useDeleteCourse = () => {
   const deleteCourse = async (id: string) => {
     setIsDeleting(true);
     setError(null);
-    setSuccess(false);
+    setSuccess(false) ;
 
     try {
       const response = await axiosInstance.delete(`/courses/${id}`);

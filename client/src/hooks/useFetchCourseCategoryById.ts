@@ -15,7 +15,7 @@ const useFetchCourseCategoryById = (id: string | null) => {
         return;
       }
 
-      setLoading(true);
+      setLoading(true) ;
       setError(null);
       try {
         const response = await axiosInstance.get(`/course-categories/${id}`);
