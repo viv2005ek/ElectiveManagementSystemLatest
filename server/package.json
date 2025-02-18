@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon --files src/index.ts",
     "debug": "set DEBUG=express:* && nodemon src/index.ts",
     "test": "tsc --noEmit && npx prettier --write ."
   },
@@ -38,7 +38,7 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.13.4",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.7",
     "@types/uuid": "^10.0.0",
@@ -47,6 +47,7 @@
     "prisma": "^6.3.1",
     "prisma-dbml-generator": "^0.12.0",
     "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
     "typescript": "^5.6.3"
   }
 }

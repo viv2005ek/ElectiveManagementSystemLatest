@@ -11,7 +11,10 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "express"]
   },
+  "include": ["src", "src/types/*.d.ts"],
   "exclude": ["src/scripts"]
 }

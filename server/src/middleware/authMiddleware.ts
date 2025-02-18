@@ -1,20 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { prisma } from "../prismaClient";
-import { UserRole } from "@prisma/client";
-
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    role: UserRole;
-    student?: any;
-    faculty?: any;
-    admin?: any;
-  };
-}
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../prismaClient';
 
 const authMiddleware = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<any> => {
@@ -45,9 +34,9 @@ const authMiddleware = async (
     req.user = {
       id: credential.id,
       role: credential.role,
-      student: credential.student || null,
-      faculty: credential.faculty || null,
-      admin: credential.admin || null,
+      student: credential.student,
+      faculty: credential.faculty,
+      admin: credential.admin,
     };
 
     next();
