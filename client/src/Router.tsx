@@ -22,10 +22,10 @@ export default function Router() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<StudentsLandingPage />} />
         <Route path="/choose/:id" element={<ElectiveChoicePage />} />
-        <Route
+        {/* <Route
           path="/programme-electives"
           element={<ProgrammeElectivesPage />}
-        />
+        /> */}
         <Route
           path="/minor-specializations"
           element={<MinorSpecializationsPage />}

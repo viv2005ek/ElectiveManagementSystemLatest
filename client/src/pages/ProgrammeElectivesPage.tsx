@@ -1,5 +1,5 @@
 import MainLayout from "../layouts/MainLayout.tsx";
-import { PreferenceSelection } from "../components/preference-selection.tsx";
+//import { PreferenceSelection } from "../components/preference-selection.tsx";
 import img from "../assets/back.png";
 
 export default function ProgrammeElectivesPage() {
@@ -15,7 +15,7 @@ export default function ProgrammeElectivesPage() {
         }}
       >
         <div className="max-w-5xl mx-auto py-10 px-4">
-          <PreferenceSelection />
+          {/*<PreferenceSelection />*/}
         </div>
       </div>
     </MainLayout>

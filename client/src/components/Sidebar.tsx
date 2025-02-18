@@ -8,13 +8,13 @@ import { Link } from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/home", icon: HomeIcon, count: "5", current: true },
-  {
+  /* {
     name: "Programme electives",
     href: "/programme-electives",
     icon: FaWpforms,
     count: "5",
     current: false,
-  },
+  }, */
   {
     name: "Student List",
     href: "/student-list",
