@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import axiosInstance from '../axiosInstance.ts';
+import { useState } from "react";
+import axiosInstance from "../axiosInstance.ts";
 
 const useDeleteCourse = () => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -9,29 +9,31 @@ const useDeleteCourse = () => {
   const deleteCourse = async (id: string) => {
     setIsDeleting(true);
     setError(null);
-    setSuccess(false) ;
+    setSuccess(false);
 
     try {
       const response = await axiosInstance.delete(`/courses/${id}`);
       if (response.status === 200) {
         setSuccess(true);
       } else {
-        setError('Unexpected response from the server');
+        setError("Unexpected response from the server");
       }
     } catch (err: any) {
       if (err.response) {
         switch (err.response.status) {
           case 404:
-            setError('Course not found');
+            setError("Course not found");
             break;
           case 500:
-            setError('Internal server error');
+            setError("Internal server error");
             break;
           default:
-            setError(err.response.data.message || 'Failed to delete the course');
+            setError(
+              err.response.data.message || "Failed to delete the course",
+            );
         }
       } else {
-        setError(err.message || 'Failed to delete the course');
+        setError(err.message || "Failed to delete the course");
       }
     } finally {
       setIsDeleting(false);

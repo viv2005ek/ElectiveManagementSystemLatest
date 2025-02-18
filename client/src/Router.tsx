@@ -13,6 +13,9 @@ import ManageOEPage from "./pages/ManageOEPage.tsx";
 import EMSAdmin from "./pages/EMSAdminPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 import CreateSubjectPage from "./pages/CreateSubjectPage.tsx";
+import DepartmentsPage from "./pages/DepartmentsPage.tsx";
+import BranchesPage from "./pages/BranchesPage.tsx";
+import StudentsPage from "./pages/StudentsPage.tsx";
 
 export default function Router() {
   return (
@@ -39,6 +42,9 @@ export default function Router() {
         <Route path="/emsadmin" element={<EMSAdmin />} />
         <Route path={"/*"} element={<NotFoundPage />} />
         <Route path={"/subjects/create"} element={<CreateSubjectPage />} />
+        <Route path={"/departments"} element={<DepartmentsPage />} />
+        <Route path={"/branches"} element={<BranchesPage />} />
+        <Route path={"/students"} element={<StudentsPage />} />
       </Routes>
     </BrowserRouter>
   );

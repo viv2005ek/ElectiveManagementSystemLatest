@@ -30,6 +30,11 @@ const router = express.Router();
  *           type: string
  *         description: Filter students by branch ID
  *       - in: query
+ *         name: semester
+ *         schema:
+ *           type: number
+ *         description: Filter students by semester
+ *       - in: query
  *         name: batch
  *         schema:
  *           type: integer

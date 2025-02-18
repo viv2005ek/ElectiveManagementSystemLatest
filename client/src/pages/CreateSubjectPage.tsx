@@ -19,24 +19,17 @@ import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import useCreateSubject from "../hooks/useCreateSubject.ts";
 import { useNotification } from "../contexts/NotificationContext.tsx";
 import PageHeader from "../components/PageHeader.tsx";
+import { getBatches, getSemesters } from '../utils/generateObjectArrays.ts';
 
 export default function CreateSubjectPage() {
   const { createSubject, isLoading, error, success } = useCreateSubject();
 
   const { notify } = useNotification();
 
-  const semesters: Semester[] = Array.from({ length: 8 }, (_, i) => ({
-    number: i + 1,
-    name: `Semester ${i + 1}`,
-    id: (i + 1).toString(),
-  }));
+  const semesters: Semester[] = getSemesters(8)
   const year = dayjs().year();
 
-  const batches: Batch[] = Array.from({ length: 11 }, (_, i) => ({
-    number: year - 5 + i,
-    name: `Batch of ${year - 5 + i}`,
-    id: (year - 5 + i).toString(),
-  }));
+  const batches: Batch[] = getBatches(5,5)
 
   const [subjectName, setSubjectName] = useState("");
   const [department, setDepartment] = useState<Department | null>(null);
@@ -113,98 +106,100 @@ export default function CreateSubjectPage() {
     <MainLayout>
       <div className="p-8">
         <PageHeader title={"Create Subject"} />
-        <div className="grid grid-cols-2 gap-32">
-          <TextInputField
-            value={subjectName}
-            setValue={setSubjectName}
-            label="Subject name"
-            placeholder="Programme Elective - 3"
-          />
-          <SingleSelectMenu
-            label="Category"
-            items={courseCategories}
-            selected={courseCategory}
-            setSelected={setCourseCategory}
-          />
-        </div>
-        <div className={"flex flex-row gap-32 my-12"}>
-          <ToggleWithDescription
-            enabled={isOptableAcrossDepartment}
-            setEnabled={setIsOptableAcrossDepartment}
-            title="Is Optable Across Department"
-            description="Can students choose courses other than the ones offered by their Department?"
-          />
-          <div className={"w-full"}>
-            {!isOptableAcrossDepartment && (
-              <SingleSelectMenu
-                label="Department"
-                items={departments}
-                selected={department}
-                setSelected={setDepartment}
+        <div className={'mt-8 px-4'}>
+          <div className="grid grid-cols-2 gap-32">
+            <TextInputField
+              value={subjectName}
+              setValue={setSubjectName}
+              label="Subject name"
+              placeholder="Programme Elective - 3"
+            />
+            <SingleSelectMenu
+              label="Category"
+              items={courseCategories}
+              selected={courseCategory}
+              setSelected={setCourseCategory}
+            />
+          </div>
+          <div className={"flex flex-row gap-32 my-12"}>
+            <ToggleWithDescription
+              enabled={isOptableAcrossDepartment}
+              setEnabled={setIsOptableAcrossDepartment}
+              title="Is Optable Across Department"
+              description="Can students choose courses other than the ones offered by their Department?"
+            />
+            <div className={"w-full"}>
+              {!isOptableAcrossDepartment && (
+                <SingleSelectMenu
+                  label="Department"
+                  items={departments}
+                  selected={department}
+                  setSelected={setDepartment}
+                />
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-32">
+            <MultiSelectMenuWithSearch
+              label={"Branches"}
+              items={branches}
+              selected={selectedBranches}
+              setSelected={setSelectedBranches}
+            />
+            {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
+              <MultiSelectMenuWithSearch
+                label={"Courses"}
+                items={courses}
+                selected={selectedCourses}
+                setSelected={setSelectedCourses}
               />
             )}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-32">
-          <MultiSelectMenuWithSearch
-            label={"Branches"}
-            items={branches}
-            selected={selectedBranches}
-            setSelected={setSelectedBranches}
-          />
-          {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
-            <MultiSelectMenuWithSearch
-              label={"Courses"}
-              items={courses}
-              selected={selectedCourses}
-              setSelected={setSelectedCourses}
-            />
-          )}
-          {courseCategory?.allotmentType === AllotmentType.BUCKET && (
-            <MultiSelectMenuWithSearch
-              label={"Course Buckets"}
-              items={courseBuckets}
-              selected={selectedCourseBuckets}
-              setSelected={setSelectedCourseBuckets}
-            />
-          )}
-        </div>
-        <div className={"flex w-full flex-row gap-32 mt-12"}>
-          <div className={"w-full"}>
             {courseCategory?.allotmentType === AllotmentType.BUCKET && (
               <MultiSelectMenuWithSearch
-                label={"Semesters"}
-                items={semesters}
-                selected={selectedSemesters}
-                setSelected={setSelectedSemesters}
-              />
-            )}
-            {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
-              <SingleSelectMenu
-                label={"Semester"}
-                items={semesters}
-                selected={selectedSemester}
-                setSelected={setSelectedSemester}
+                label={"Course Buckets"}
+                items={courseBuckets}
+                selected={selectedCourseBuckets}
+                setSelected={setSelectedCourseBuckets}
               />
             )}
           </div>
-          <SingleSelectMenu
-            label={"Batch"}
-            items={batches}
-            selected={selectedBatch}
-            setSelected={setSelectedBatch}
-          />
-        </div>
-        <div className={"flex w-full justify-end"}>
-          <button
-            onClick={handleSubmit}
-            className={
-              "bg-blue-500 mt-12 p-1.5 hover:bg-blue-400 text-white rounded-full flex items-center flex-row justify-between gap-4 pl-1 pr-6  w-min"
-            }
-          >
-            <PlusCircleIcon className={"stroke-white w-8 h-8"} />
-            <div className={"text-lg"}>Create</div>
-          </button>
+          <div className={"flex w-full flex-row gap-32 mt-12"}>
+            <div className={"w-full"}>
+              {courseCategory?.allotmentType === AllotmentType.BUCKET && (
+                <MultiSelectMenuWithSearch
+                  label={"Semesters"}
+                  items={semesters}
+                  selected={selectedSemesters}
+                  setSelected={setSelectedSemesters}
+                />
+              )}
+              {courseCategory?.allotmentType === AllotmentType.STANDALONE && (
+                <SingleSelectMenu
+                  label={"Semester"}
+                  items={semesters}
+                  selected={selectedSemester}
+                  setSelected={setSelectedSemester}
+                />
+              )}
+            </div>
+            <SingleSelectMenu
+              label={"Batch"}
+              items={batches}
+              selected={selectedBatch}
+              setSelected={setSelectedBatch}
+            />
+          </div>
+          <div className={"flex w-full justify-end"}>
+            <button
+              onClick={handleSubmit}
+              className={
+                "bg-blue-500 mt-12 p-1.5 hover:bg-blue-400 text-white rounded-full flex items-center flex-row justify-between gap-4 pl-1 pr-6  w-min"
+              }
+            >
+              <PlusCircleIcon className={"stroke-white w-8 h-8"} />
+              <div className={"text-lg"}>Create</div>
+            </button>
+          </div>
         </div>
       </div>
     </MainLayout>

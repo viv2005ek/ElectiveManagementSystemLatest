@@ -7,7 +7,7 @@ const studentController = {
   // Get all students (excluding deleted ones)
   getAllStudents: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { departmentId, branchId, batch, search } = req.query;
+      const { departmentId, branchId, batch, semester, search } = req.query;
 
       // Build the where condition dynamically
       const where: any = { isDeleted: false };
@@ -18,6 +18,9 @@ const studentController = {
 
       if (batch) {
         where.batch = Number(batch);
+      }
+      if (semester) {
+        where.semester = Number(semester);
       }
 
       if (search) {

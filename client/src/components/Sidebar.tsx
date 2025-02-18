@@ -16,8 +16,8 @@ const navigation = [
     current: false,
   },
   {
-    name: "Student List",
-    href: "/student-list",
+    name: "Students",
+    href: "/students",
     icon: PiStudentBold,
     count: "5",
     current: false,
