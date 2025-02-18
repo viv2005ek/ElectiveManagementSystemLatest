@@ -1,14 +1,41 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
-import { hash } from 'bcrypt';
-import { UserRole } from '@prisma/client';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
+import { hash } from "bcrypt";
+import { UserRole } from "@prisma/client";
 
 const studentController = {
   // Get all students (excluding deleted ones)
   getAllStudents: async (req: Request, res: Response): Promise<any> => {
     try {
+      const { departmentId, branchId, batch, search } = req.query;
+
+      // Build the where condition dynamically
+      const where: any = { isDeleted: false };
+
+      if (branchId) {
+        where.branchId = branchId;
+      }
+
+      if (batch) {
+        where.batch = Number(batch);
+      }
+
+      if (search) {
+        where.OR = [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { registrationNumber: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      if (departmentId) {
+        where.branch = {
+          departmentId: departmentId,
+        };
+      }
+
       const students = await prisma.student.findMany({
-        where: { isDeleted: false },
+        where,
         include: {
           branch: {
             select: {
@@ -27,8 +54,8 @@ const studentController = {
 
       res.status(200).json(students);
     } catch (error) {
-      console.error("Error fetching students:", error);
-      res.status(500).json({ message: "Unable to fetch students" });
+      console.error('Error fetching students:', error);
+      res.status(500).json({ message: 'Unable to fetch students' });
     }
   },
 
@@ -102,7 +129,6 @@ const studentController = {
           contactNumber: student.contactNumber,
           email: student.email,
           semester: student.semester,
-          section: student.section,
           batch: student.batch,
           gender: student.gender,
           branchId: student.branchId,
@@ -121,7 +147,6 @@ const studentController = {
               contactNumber: student.contactNumber,
               email: student.email,
               semester: student.semester,
-              section: student.section,
               batch: student.batch,
               gender: student.gender,
               branch: { connect: { id: student.branchId } },

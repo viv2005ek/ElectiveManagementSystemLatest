@@ -34,12 +34,10 @@ model Student {
   gender                Gender
   minorSpecializationId String?
   semester              Int
-  section               String
   batch                 Int
   branchId              String
   branch                Branch               @relation(fields: [branchId], references: [id])
   contactNumber         String               @db.VarChar(15)
-  profilePictureId      String?
   credentialId          String               @unique
   credential            Credential           @relation(fields: [credentialId], references: [id])
   isDeleted             Boolean              @default(false)

@@ -1,7 +1,7 @@
-import express from 'express';
-import StudentController from '../controllers/StudentController';
-import { authorizeRoles } from '../middleware/roleMiddleware';
-import { UserRole } from '@prisma/client';
+import express from "express";
+import StudentController from "../controllers/StudentController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -18,6 +18,27 @@ const router = express.Router();
  *   get:
  *     summary: Get all students
  *     tags: [Students]
+ *     parameters:
+ *       - in: query
+ *         name: departmentId
+ *         schema:
+ *           type: string
+ *         description: Filter students by department ID
+ *       - in: query
+ *         name: branchId
+ *         schema:
+ *           type: string
+ *         description: Filter students by branch ID
+ *       - in: query
+ *         name: batch
+ *         schema:
+ *           type: integer
+ *         description: Filter students by batch
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search students by first name, last name, or registration number
  *     responses:
  *       200:
  *         description: List of all students
@@ -35,6 +56,7 @@ router.get(
   authorizeRoles([UserRole.ADMIN]),
   StudentController.getAllStudents,
 );
+
 
 /**
  * @swagger

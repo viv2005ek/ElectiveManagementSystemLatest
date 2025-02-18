@@ -25,12 +25,10 @@ Table Student {
   gender Gender [not null]
   minorSpecializationId String
   semester Int [not null]
-  section String [not null]
   batch Int [not null]
   branchId String [not null]
   branch Branch [not null]
   contactNumber String [not null]
-  profilePictureId String
   credentialId String [unique, not null]
   credential Credential [not null]
   isDeleted Boolean [not null, default: false]

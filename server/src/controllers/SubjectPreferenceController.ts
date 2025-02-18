@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 const SubjectPreferenceController = {
   createSubjectPreference: async (req: Request, res: Response) => {
