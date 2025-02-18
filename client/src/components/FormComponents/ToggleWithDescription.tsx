@@ -1,7 +1,7 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
-import { Description, Field, Label, Switch } from "@headlessui/react";
+import { Dispatch, SetStateAction } from 'react';
+import { Description, Field, Label, Switch } from '@headlessui/react';
 
 interface ToggleWithDescriptionProps {
   enabled: boolean;

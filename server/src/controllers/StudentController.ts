@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { hash } from "bcrypt";
-import { UserRole } from "@prisma/client";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
+import { hash } from 'bcrypt';
+import { UserRole } from '@prisma/client';
 
 const studentController = {
   // Get all students (excluding deleted ones)
@@ -25,9 +25,9 @@ const studentController = {
 
       if (search) {
         where.OR = [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { registrationNumber: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { registrationNumber: { contains: search, mode: "insensitive" } },
         ];
       }
 
@@ -57,8 +57,8 @@ const studentController = {
 
       res.status(200).json(students);
     } catch (error) {
-      console.error('Error fetching students:', error);
-      res.status(500).json({ message: 'Unable to fetch students' });
+      console.error("Error fetching students:", error);
+      res.status(500).json({ message: "Unable to fetch students" });
     }
   },
 

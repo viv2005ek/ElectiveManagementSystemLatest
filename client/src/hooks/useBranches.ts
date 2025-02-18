@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import axiosInstance from "../axiosInstance.ts";
+import { useEffect, useState } from 'react';
+import axiosInstance from '../axiosInstance.ts';
 
 interface Department {
   id: string;

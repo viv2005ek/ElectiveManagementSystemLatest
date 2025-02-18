@@ -1,6 +1,6 @@
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
-import { ChevronUpDownIcon } from '@heroicons/react/16/solid'
-import { CheckIcon } from '@heroicons/react/20/solid'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
+import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
+import { CheckIcon } from '@heroicons/react/20/solid';
 import { useEffect, useRef, useState } from 'react';
 
 interface GenericItem {
@@ -16,18 +16,23 @@ interface SingleSelectFilterProps<T extends GenericItem> {
   setSelected: (number: number) => void;
 }
 
-export default function SingleSelectFilter<T extends GenericItem>({ name, items, selected, setSelected }: SingleSelectFilterProps<T>) {
-  const [maxWidth, setMaxWidth] = useState('auto');
+export default function SingleSelectFilter<T extends GenericItem>({
+  name,
+  items,
+  selected,
+  setSelected,
+}: SingleSelectFilterProps<T>) {
+  const [maxWidth, setMaxWidth] = useState("auto");
   const listboxRef = useRef<HTMLDivElement>(null);
 
   const selectedItem = items?.find((item) => item.number === selected) || null;
 
   useEffect(() => {
     if (items && items.length > 0) {
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.visibility = 'hidden';
-      tempContainer.style.whiteSpace = 'nowrap';
+      const tempContainer = document.createElement("div");
+      tempContainer.style.position = "absolute";
+      tempContainer.style.visibility = "hidden";
+      tempContainer.style.whiteSpace = "nowrap";
       document.body.appendChild(tempContainer);
 
       let maxItemWidth = 0;
@@ -45,12 +50,19 @@ export default function SingleSelectFilter<T extends GenericItem>({ name, items,
   }, [items, name]);
 
   return (
-    <Listbox value={selectedItem} onChange={(item) => item && setSelected(item.number)}>
-      <div className="relative mt-2" ref={listboxRef} style={{ width: maxWidth }}>
-        <ListboxButton className={`${selectedItem ? 'bg-orange-300' : ''} w-full cursor-default grid-cols-1 rounded-md flex p-2 gap-2 bg-white items-center justify-center pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}>
-          <span>
-            {selectedItem ? selectedItem.name : `Select ${name}`}
-          </span>
+    <Listbox
+      value={selectedItem}
+      onChange={(item) => item && setSelected(item.number)}
+    >
+      <div
+        className="relative mt-2"
+        ref={listboxRef}
+        style={{ width: maxWidth }}
+      >
+        <ListboxButton
+          className={`${selectedItem ? "bg-orange-300" : ""} w-full cursor-default grid-cols-1 rounded-md flex p-2 gap-2 bg-white items-center justify-center pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+        >
+          <span>{selectedItem ? selectedItem.name : `Select ${name}`}</span>
           <ChevronUpDownIcon
             aria-hidden="true"
             className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"

@@ -8,8 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon --files src/index.ts",
+    "typecheck": "tsc --noEmit",
     "debug": "set DEBUG=express:* && nodemon src/index.ts",
-    "test": "tsc --noEmit && npx prettier --write ."
+    "test": "npm run typecheck && npx prettier --write ."
   },
   "author": "",
   "license": "ISC",

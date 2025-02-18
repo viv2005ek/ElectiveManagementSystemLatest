@@ -1,11 +1,11 @@
 // OpenElectivePage.tsx
-import React, { useState } from "react";
-import MainLayout from "../layouts/MainLayout.tsx";
-import OpenElective from "../components/OpeElective.tsx";
-import electives from "../store/OEList.ts";
-import userDetails from "../store/currentUserData";
-import img from "../assets/back.png";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import MainLayout from '../layouts/MainLayout.tsx';
+import OpenElective from '../components/OpeElective.tsx';
+import electives from '../store/OEList.ts';
+import userDetails from '../store/currentUserData';
+import img from '../assets/back.png';
+import { useNavigate } from 'react-router-dom';
 
 const OpenElectivePage: React.FC = () => {
   const [userElective, setUserElective] = useState(userDetails.OE);

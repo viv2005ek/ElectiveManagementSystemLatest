@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../../axiosInstance.ts";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axiosInstance from '../../axiosInstance.ts';
 
 interface User {
   firstName: string;

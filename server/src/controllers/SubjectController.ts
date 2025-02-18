@@ -1,7 +1,6 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { AllotmentType } from "@prisma/client";
-import { Department } from "@prisma/client";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
+import { AllotmentType } from '@prisma/client';
 
 const SubjectController = {
   createSubject: async (req: Request, res: Response): Promise<any> => {

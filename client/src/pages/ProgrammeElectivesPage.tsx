@@ -1,6 +1,6 @@
-import MainLayout from "../layouts/MainLayout.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
 //import { PreferenceSelection } from "../components/preference-selection.tsx";
-import img from "../assets/back.png";
+import img from '../assets/back.png';
 
 export default function ProgrammeElectivesPage() {
   return (

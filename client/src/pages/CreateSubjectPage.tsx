@@ -1,24 +1,21 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useEffect, useState } from "react";
-import {
-  CourseCategory,
-  useCourseCategories,
-} from "../hooks/useCourseCategories.ts";
-import SingleSelectMenu from "../components/FormComponents/SingleSelectMenu.tsx";
-import ToggleWithDescription from "../components/FormComponents/ToggleWithDescription.tsx";
-import { Department, useDepartments } from "../hooks/useDepartments.ts";
-import MultiSelectMenuWithSearch from "../components/FormComponents/MultiSelectMenuWithSearch.tsx";
-import useFetchCourses, { Course } from "../hooks/useFetchCourses.ts";
-import useBranches, { Branch } from "../hooks/useBranches.ts";
-import { CourseBucket, useCourseBuckets } from "../hooks/useCourseBuckets.ts";
-import { AllotmentType, Semester } from "../types/course.ts";
-import dayjs from "dayjs";
-import { Batch } from "../types/UserTypes.ts";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import useCreateSubject from "../hooks/useCreateSubject.ts";
-import { useNotification } from "../contexts/NotificationContext.tsx";
-import PageHeader from "../components/PageHeader.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
+import TextInputField from '../components/FormComponents/TextInputField.tsx';
+import { useEffect, useState } from 'react';
+import { CourseCategory, useCourseCategories } from '../hooks/useCourseCategories.ts';
+import SingleSelectMenu from '../components/FormComponents/SingleSelectMenu.tsx';
+import ToggleWithDescription from '../components/FormComponents/ToggleWithDescription.tsx';
+import { Department, useDepartments } from '../hooks/useDepartments.ts';
+import MultiSelectMenuWithSearch from '../components/FormComponents/MultiSelectMenuWithSearch.tsx';
+import useFetchCourses, { Course } from '../hooks/useFetchCourses.ts';
+import useBranches, { Branch } from '../hooks/useBranches.ts';
+import { CourseBucket, useCourseBuckets } from '../hooks/useCourseBuckets.ts';
+import { AllotmentType, Semester } from '../types/course.ts';
+import dayjs from 'dayjs';
+import { Batch } from '../types/UserTypes.ts';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import useCreateSubject from '../hooks/useCreateSubject.ts';
+import { useNotification } from '../contexts/NotificationContext.tsx';
+import PageHeader from '../components/PageHeader.tsx';
 import { getBatches, getSemesters } from '../utils/generateObjectArrays.ts';
 
 export default function CreateSubjectPage() {
@@ -26,10 +23,10 @@ export default function CreateSubjectPage() {
 
   const { notify } = useNotification();
 
-  const semesters: Semester[] = getSemesters(8)
+  const semesters: Semester[] = getSemesters(8);
   const year = dayjs().year();
 
-  const batches: Batch[] = getBatches(5,5)
+  const batches: Batch[] = getBatches(5, 5);
 
   const [subjectName, setSubjectName] = useState("");
   const [department, setDepartment] = useState<Department | null>(null);
@@ -106,7 +103,7 @@ export default function CreateSubjectPage() {
     <MainLayout>
       <div className="p-8">
         <PageHeader title={"Create Subject"} />
-        <div className={'mt-8 px-4'}>
+        <div className={"mt-8 px-4"}>
           <div className="grid grid-cols-2 gap-32">
             <TextInputField
               value={subjectName}

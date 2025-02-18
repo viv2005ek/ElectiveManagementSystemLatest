@@ -1,12 +1,5 @@
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useState,
-} from "react";
-import { UserRole } from "../types/UserTypes"; // Make sure this type is defined correctly
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
+import { UserRole } from '../types/UserTypes'; // Make sure this type is defined correctly
 
 interface UserContextType {
   role: UserRole | null;

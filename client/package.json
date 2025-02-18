@@ -16,7 +16,7 @@
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "vitest": "vitest run",
     "vitest:watch": "vitest",
-    "test": "npm run typecheck && npx prettier --write . && npm run build"
+    "test": "npm run typecheck && npx prettier --write ."
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",

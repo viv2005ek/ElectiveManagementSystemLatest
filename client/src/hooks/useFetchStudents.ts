@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Branch } from "./useBranches.ts";
-import axiosInstance from "../axiosInstance.ts";
+import { useEffect, useState } from 'react';
+import { Branch } from './useBranches.ts';
+import axiosInstance from '../axiosInstance.ts';
 
 export interface Student {
   id: string;
@@ -57,7 +57,7 @@ export const useFetchStudents = (
     };
 
     fetchStudents();
-  }, [ batch, branch, semester, searchQuery]);
+  }, [batch, branch, semester, searchQuery]);
 
   return { students, loading, error };
 };

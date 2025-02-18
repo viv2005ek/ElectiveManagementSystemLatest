@@ -1,5 +1,5 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import OpenElectivesList from "../components/OpenElectivesList.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
+import OpenElectivesList from '../components/OpenElectivesList.tsx';
 
 export default function ElectiveChoicePage() {
   return (
