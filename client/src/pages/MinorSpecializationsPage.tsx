@@ -1,5 +1,5 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import MinorSpecializationsList from '../components/MinorSpecializationsList.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import MinorSpecializationsList from "../components/MinorSpecializationsList.tsx";
 
 export default function MinorSpecializationsPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

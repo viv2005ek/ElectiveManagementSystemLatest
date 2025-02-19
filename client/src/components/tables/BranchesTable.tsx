@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Branch } from '../../hooks/useBranches.ts';
+import { Link, useNavigate } from "react-router-dom";
+import { Branch } from "../../hooks/useBranches.ts";
 
 export default function BranchesTable({
   branches,

@@ -1,13 +1,21 @@
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
-import { hash } from 'bcrypt';
-import { UserRole } from '@prisma/client';
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
+import { hash } from "bcrypt";
+import { UserRole } from "@prisma/client";
 
 const studentController = {
   // Get all students (excluding deleted ones)
-  getAllStudents: async (req: Request, res: Response): Promise<any> => {
+  getAllStudents: async (req: Request, res: Response) => {
     try {
-      const { departmentId, branchId, batch, semester, search } = req.query;
+      const {
+        departmentId,
+        branchId,
+        batch,
+        semester,
+        search,
+        page = 1,
+        pageSize = 10,
+      } = req.query;
 
       // Build the where condition dynamically
       const where: any = { isDeleted: false };
@@ -23,22 +31,32 @@ const studentController = {
         where.semester = Number(semester);
       }
 
-      if (search) {
-        where.OR = [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-          { registrationNumber: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
       if (departmentId) {
         where.branch = {
           departmentId: departmentId,
         };
       }
 
+      // First, get all students matching the search criteria (without pagination)
+      let filteredWhere = { ...where };
+
+      if (search) {
+        filteredWhere.OR = [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { registrationNumber: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      // Get total count of filtered students
+      const totalStudents = await prisma.student.count({
+        where: filteredWhere,
+      });
+      const totalPages = Math.ceil(totalStudents / Number(pageSize));
+
+      // Apply pagination AFTER filtering
       const students = await prisma.student.findMany({
-        where,
+        where: filteredWhere,
         include: {
           branch: {
             select: {
@@ -53,9 +71,16 @@ const studentController = {
             },
           },
         },
+        skip: (Number(page) - 1) * Number(pageSize),
+        take: Number(pageSize),
       });
 
-      res.status(200).json(students);
+      res.status(200).json({
+        students,
+        totalPages,
+        currentPage: Number(page),
+        pageSize: Number(pageSize),
+      });
     } catch (error) {
       console.error("Error fetching students:", error);
       res.status(500).json({ message: "Unable to fetch students" });

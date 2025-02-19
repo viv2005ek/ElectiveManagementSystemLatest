@@ -1,6 +1,6 @@
 // OpenElective.tsx
-import React, { useState } from 'react';
-import ElectiveItem from './ElectiveItem.tsx';
+import React, { useState } from "react";
+import ElectiveItem from "./ElectiveItem.tsx";
 
 type Elective = {
   name: string;

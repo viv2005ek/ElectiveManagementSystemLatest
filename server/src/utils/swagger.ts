@@ -1,10 +1,10 @@
-import { Express, Request, Response } from 'express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import { version } from '../../package.json';
-import log from './logger';
-import { schemas } from './swaggerSchema';
-import path from 'node:path';
+import { Express, Request, Response } from "express";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { version } from "../../package.json";
+import log from "./logger";
+import { schemas } from "./swaggerSchema";
+import path from "node:path";
 
 const options: swaggerJsdoc.Options = {
   definition: {

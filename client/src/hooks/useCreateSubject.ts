@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import axiosInstance from '../axiosInstance.ts';
-import { CourseCategory } from './useCourseCategories.ts';
+import { useState } from "react";
+import axiosInstance from "../axiosInstance.ts";
+import { CourseCategory } from "./useCourseCategories.ts";
 
 interface CreateSubjectPayload {
   name: string;

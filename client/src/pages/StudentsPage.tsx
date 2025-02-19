@@ -1,15 +1,15 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import StudentsTable from '../components/tables/StudentsTable.tsx';
-import { useFetchStudents } from '../hooks/useFetchStudents.ts';
-import { useState } from 'react';
-import { useDepartments } from '../hooks/useDepartments.ts';
-import useBranches, { Branch } from '../hooks/useBranches.ts';
-import { Link } from 'react-router-dom';
-import SingleSelectFilterForIds from '../components/filters/SingleSelectFilterForIds.tsx';
-import SearchBar from '../components/SearchBar.tsx';
-import { getBatches, getSemesters } from '../utils/generateObjectArrays.ts';
-import SingleSelectFilterForNumbers from '../components/filters/SingleSelectFilterForNumbers.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import StudentsTable from "../components/tables/StudentsTable.tsx";
+import { useFetchStudents } from "../hooks/useFetchStudents.ts";
+import { useEffect, useState } from "react";
+import { useDepartments } from "../hooks/useDepartments.ts";
+import useBranches, { Branch } from "../hooks/useBranches.ts";
+import { Link } from "react-router-dom";
+import SingleSelectFilterForIds from "../components/filters/SingleSelectFilterForIds.tsx";
+import SearchBar from "../components/SearchBar.tsx";
+import { getBatches, getSemesters } from "../utils/generateObjectArrays.ts";
+import SingleSelectFilterForNumbers from "../components/filters/SingleSelectFilterForNumbers.tsx";
 
 export default function StudentsPage() {
   // const [department, setDepartment] = useState<Department | null>(null);
@@ -17,19 +17,26 @@ export default function StudentsPage() {
   const [batch, setBatch] = useState<number | null>(null);
   const [semester, setSemester] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { departments } = useDepartments();
   const { branches } = useBranches(true, null);
   const semesters = getSemesters(8);
   const batches = getBatches(5, 5);
 
-  const { students } = useFetchStudents(
+  const { students, totalPages, loading } = useFetchStudents(
     // department,
     branch,
     batch,
     semester,
     searchQuery,
+    currentPage,
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   return (
     <MainLayout>
       <div className={"p-8"}>
@@ -67,7 +74,13 @@ export default function StudentsPage() {
             </Link>
           </div>
         </div>
-        <StudentsTable students={students} />
+        <StudentsTable
+          students={students}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+          isLoading={loading}
+        />
       </div>
     </MainLayout>
   );

@@ -1,5 +1,5 @@
-import { Department } from '../../hooks/useDepartments.ts';
-import { Link, useNavigate } from 'react-router-dom';
+import { Department } from "../../hooks/useDepartments.ts";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function DepartmentsTable({
   departments,

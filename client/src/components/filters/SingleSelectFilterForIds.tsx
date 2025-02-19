@@ -1,9 +1,14 @@
 "use client";
 
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
-import { CheckIcon } from '@heroicons/react/20/solid';
-import { useEffect, useRef, useState } from 'react';
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+import { CheckIcon } from "@heroicons/react/20/solid";
+import { useEffect, useRef, useState } from "react";
 
 interface Item {
   id: string;
@@ -67,7 +72,7 @@ export default function SingleSelectFilter<T extends Item>({
 
         <ListboxOptions
           transition
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
+          className="absolute  mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
         >
           {items?.map((item) => (
             <ListboxOption

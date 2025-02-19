@@ -1,5 +1,5 @@
-import { useAuth } from '../hooks/useAuth.ts';
-import { Link } from 'react-router-dom';
+import { useAuth } from "../hooks/useAuth.ts";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
   const { email, password, setPassword, setEmail, login, isLoading } =

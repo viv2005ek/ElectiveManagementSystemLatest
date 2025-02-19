@@ -1,9 +1,13 @@
-import express from 'express';
-import StudentController from '../controllers/StudentController';
-import { authorizeRoles } from '../middleware/roleMiddleware';
-import { UserRole } from '@prisma/client';
+import express from "express";
+import StudentController from "../controllers/StudentController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
+
+const { PrismaClient } = require("@prisma/client");
+
+const prisma = new PrismaClient();
 
 /**
  * @swagger
@@ -44,15 +48,36 @@ const router = express.Router();
  *         schema:
  *           type: string
  *         description: Search students by first name, last name, or registration number
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of students per page
  *     responses:
  *       200:
- *         description: List of all students
+ *         description: List of all students with pagination info
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Student'
+ *               type: object
+ *               properties:
+ *                 students:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Student'
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *                 pageSize:
+ *                   type: integer
  *       500:
  *         description: Internal server error
  */

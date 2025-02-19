@@ -1,5 +1,5 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import UpcomingDeadlinesList from '../components/UpcomingDeadlinesList.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import UpcomingDeadlinesList from "../components/UpcomingDeadlinesList.tsx";
 
 export default function StudentsLandingPage() {
   return (

@@ -1,7 +1,7 @@
-import cors from 'cors';
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import express, { Express } from 'express';
+import cors from "cors";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import express, { Express } from "express";
 
 export const setupMiddleware = (app: Express) => {
   app.use(
@@ -11,9 +11,14 @@ export const setupMiddleware = (app: Express) => {
         "http://localhost:3000", // For local development
       ],
       credentials: true, // Allow cookies
-      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+      ],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    })
+    }),
   );
 
   // Handle preflight requests
