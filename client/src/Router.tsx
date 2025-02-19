@@ -15,6 +15,7 @@ import CreateSubjectPage from "./pages/CreateSubjectPage.tsx";
 import DepartmentsPage from "./pages/DepartmentsPage.tsx";
 import BranchesPage from "./pages/BranchesPage.tsx";
 import StudentsPage from "./pages/StudentsPage.tsx";
+import CoursesPage from "./pages/CoursesPage.tsx";
 
 export default function Router() {
   return (
@@ -24,10 +25,6 @@ export default function Router() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<StudentsLandingPage />} />
         <Route path="/choose/:id" element={<ElectiveChoicePage />} />
-        {/* <Route
-          path="/programme-electives"
-          element={<ProgrammeElectivesPage />}
-        /> */}
         <Route
           path="/minor-specializations"
           element={<MinorSpecializationsPage />}
@@ -44,6 +41,7 @@ export default function Router() {
         <Route path={"/departments"} element={<DepartmentsPage />} />
         <Route path={"/branches"} element={<BranchesPage />} />
         <Route path={"/students"} element={<StudentsPage />} />
+        <Route path={"/courses"} element={<CoursesPage />} />
       </Routes>
     </BrowserRouter>
   );

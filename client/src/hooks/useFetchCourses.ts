@@ -12,12 +12,6 @@ interface CourseCategory {
   allotmentType: string;
 }
 
-interface CourseBucket {
-  id: string;
-  name: string;
-  departmentId: string;
-}
-
 export interface Course {
   id: string;
   name: string;
@@ -27,6 +21,7 @@ export interface Course {
   createdAt: string;
   updatedAt: string;
   department: Department;
+  courseCategories: CourseCategory[];
 }
 
 interface ApiResponse {
@@ -34,43 +29,53 @@ interface ApiResponse {
   count: number;
 }
 
-const useFetchCourses = (
-  category: CourseCategory | null,
-  department: Department | null,
-) => {
+const useFetchCourses = (options?: {
+  category?: CourseCategory | null;
+  department?: Department | null;
+  credits?: number;
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
-      if (!category) {
-        setCourses([]);
-        return;
-      }
       setLoading(true);
       setError(null);
       try {
         const queryParams = new URLSearchParams();
-        if (category) queryParams.append("categoryId", category.id);
-        if (department) queryParams.append("departmentId", department.id);
+
+        if (options?.category)
+          queryParams.append("categoryId", options.category.id);
+        if (options?.department)
+          queryParams.append("departmentId", options.department.id);
+        if (options?.credits)
+          queryParams.append("credits", options.credits.toString());
+        if (options?.search) queryParams.append("search", options.search);
+        if (options?.page) queryParams.append("page", options.page.toString());
+        if (options?.limit)
+          queryParams.append("limit", options.limit.toString());
 
         const response = await axiosInstance.get(
           `/courses?${queryParams.toString()}`,
         );
         setCourses(response.data.courses);
+        setTotalPages(response.data.totalPages);
       } catch (err: any) {
         setError(err.message || "Failed to fetch courses");
       } finally {
         setLoading(false);
       }
     };
-    setCourses([]);
 
     fetchCourses();
-  }, [category, department]);
+  }, [JSON.stringify(options)]);
 
-  return { courses, loading, error };
+  return { courses, loading, error, totalPages };
 };
 
 export default useFetchCourses;

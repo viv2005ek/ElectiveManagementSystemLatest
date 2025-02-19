@@ -9,8 +9,8 @@ const router = express.Router();
  * @swagger
  * /courses:
  *   get:
- *     summary: Get courses by optional department and category IDs
- *     description: Retrieve a list of courses filtered by department and/or category IDs.
+ *     summary: Get courses with optional filters and pagination
+ *     description: Retrieve a list of courses filtered by department, category, credits, and a search query, with pagination support.
  *     tags:
  *       - Courses
  *     parameters:
@@ -19,16 +19,42 @@ const router = express.Router();
  *         schema:
  *           type: string
  *         required: false
- *         description: Optional department ID to filter courses
+ *         description: Optional department ID to filter courses.
  *       - in: query
  *         name: categoryId
  *         schema:
  *           type: string
  *         required: false
- *         description: Optional category ID to filter courses
+ *         description: Optional category ID to filter courses.
+ *       - in: query
+ *         name: credits
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Optional number of credits to filter courses.
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Optional search query to filter by course name or code.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         required: false
+ *         description: Number of courses per page.
  *     responses:
  *       200:
- *         description: Successfully retrieved courses
+ *         description: Successfully retrieved courses with pagination.
  *         content:
  *           application/json:
  *             schema:
@@ -40,9 +66,26 @@ const router = express.Router();
  *                     $ref: '#/components/schemas/Course'
  *                 count:
  *                   type: integer
+ *                   example: 10
+ *                 totalCourses:
+ *                   type: integer
+ *                   example: 50
+ *                 totalPages:
+ *                   type: integer
  *                   example: 5
+ *                 currentPage:
+ *                   type: integer
+ *                   example: 1
+ *                 courseCategories:
+ *                   type: object
+ *                   properties:
+ *                     id: string
+ *                     name: string
+ *                     allotmentType: string
+ *
+ *
  *       400:
- *         description: Bad request if query parameters are invalid
+ *         description: Bad request if query parameters are invalid.
  *         content:
  *           application/json:
  *             schema:
@@ -52,7 +95,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Invalid query parameters"
  *       404:
- *         description: No courses found for the given filters
+ *         description: No courses found for the given filters.
  *         content:
  *           application/json:
  *             schema:
@@ -62,7 +105,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "No courses found for the given filters"
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -72,11 +115,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Unable to fetch courses"
  */
-router.get(
-  "/",
-  // authorizeRoles([UserRole.ADMIN]),
-  CourseController.getCoursesFiltered,
-);
+router.get("/", authorizeRoles([UserRole.ADMIN]), CourseController.getCourses);
 
 /**
  * @swagger

@@ -62,9 +62,16 @@ const CourseController = {
     }
   },
 
-  getCoursesFiltered: async (req: Request, res: Response): Promise<any> => {
+  getCourses: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { departmentId, categoryId } = req.query; // Extract query parameters
+      const {
+        departmentId,
+        categoryId,
+        credits,
+        search,
+        page = 1,
+        limit = 10,
+      } = req.query; // Extract query parameters
       console.log("Received request for getCoursesFiltered");
       console.log("Query Params:", req.query);
 
@@ -82,14 +89,38 @@ const CourseController = {
         };
       }
 
+      if (credits) {
+        filters.credits = Number(credits);
+      }
+
+      if (search) {
+        filters.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+          { code: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      const offset = (Number(page) - 1) * Number(limit);
+
       const courses = await prisma.course.findMany({
         where: filters,
         include: {
           department: true,
+          courseCategories: true,
         },
+        skip: offset,
+        take: Number(limit),
       });
 
-      res.status(200).json({ courses, count: courses.length });
+      const totalCourses = await prisma.course.count({ where: filters });
+
+      res.status(200).json({
+        courses,
+        count: courses.length,
+        totalCourses,
+        totalPages: Math.ceil(totalCourses / Number(limit)),
+        currentPage: Number(page),
+      });
     } catch (error) {
       console.error("❌ Error fetching courses:", error);
       res.status(500).json({ message: "Unable to fetch courses", error });

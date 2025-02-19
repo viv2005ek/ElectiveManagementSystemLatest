@@ -51,7 +51,7 @@ export default function CreateSubjectPage() {
   const { courseCategories } = useCourseCategories();
   const { departments } = useDepartments();
   const { branches } = useBranches(isOptableAcrossDepartment, department);
-  const { courses } = useFetchCourses(courseCategory, department);
+  const { courses } = useFetchCourses({ category: courseCategory, department });
   const { courseBuckets } = useCourseBuckets(department);
   const [selectedSemesters, setSelectedSemesters] = useState<Semester[]>([]);
 
