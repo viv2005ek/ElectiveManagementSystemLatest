@@ -1,10 +1,14 @@
 import { Department } from "../../hooks/useDepartments.ts";
 import { Link, useNavigate } from "react-router-dom";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export default function DepartmentsTable({
   departments,
+  loading,
 }: {
   departments: Department[] | null;
+  loading: boolean;
 }) {
   const navigate = useNavigate();
   return (
@@ -48,28 +52,45 @@ export default function DepartmentsTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {departments?.map((department, index) => (
-                  <tr
-                    onClick={() => navigate(`/departments/${department.id}`)}
-                    key={department.id}
-                    className={"hover:bg-gray-100 hover:cursor-pointer"}
-                  >
-                    <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
-                      {department.name}
-                    </td>
-                    <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
-                      <a
-                        href="#"
-                        className="text-indigo-600 hover:text-indigo-900"
+                {loading
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      <tr key={index}>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm">
+                          <Skeleton />
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm">
+                          <Skeleton />
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
+                          <Skeleton />
+                        </td>
+                      </tr>
+                    ))
+                  : departments?.map((department, index) => (
+                      <tr
+                        onClick={() =>
+                          navigate(`/departments/${department.id}`)
+                        }
+                        key={department.id}
+                        className={"hover:bg-gray-100 hover:cursor-pointer"}
                       >
-                        Edit<span className="sr-only">, {department.name}</span>
-                      </a>
-                    </td>
-                  </tr>
-                ))}
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
+                          {department.name}
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
+                          <a
+                            href="#"
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Edit
+                            <span className="sr-only">, {department.name}</span>
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
           </div>

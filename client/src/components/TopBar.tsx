@@ -22,38 +22,9 @@ export default function TopBar() {
     navigate("/user-profile");
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
-
-  useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isSidebarOpen]);
-
   return (
     <div className="sticky top-0 bg-white">
       <div className="shadow-md h-auto flex items-center justify-between px-6 py-2">
-        <div className="flex md:hidden">
-          <button onClick={toggleSidebar} className="p-2 focus:outline-none">
-            {isSidebarOpen ? (
-              <span className="material-icons">
-                <ImCross />
-              </span>
-            ) : (
-              <span className="material-icons ">
-                <FaList />
-              </span>
-            )}
-          </button>
-        </div>
-
         <div className="flex flex-grow flex-col sm:flex-row sm:items-center">
           <div className="ml-4">
             <div className="text-xl">
@@ -88,9 +59,7 @@ export default function TopBar() {
         className={`transition-transform duration-300 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
-      >
-        {isSidebarOpen && <Sidebar />}
-      </div>
+      ></div>
     </div>
   );
 }

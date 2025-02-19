@@ -8,13 +8,13 @@ import BranchesTable from "../components/tables/BranchesTable.tsx";
 export default function BranchesPage() {
   const [department, setDepartment] = useState<Department | null>(null);
 
-  const { branches } = useBranches(true, department);
+  const { branches, loading } = useBranches(true, department);
 
   return (
     <MainLayout>
       <div className={"p-8"}>
         <PageHeader title={"Branches"} />
-        <BranchesTable branches={branches} />
+        <BranchesTable branches={branches} loading={loading} />
       </div>
     </MainLayout>
   );

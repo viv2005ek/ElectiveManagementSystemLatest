@@ -1,13 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Branch } from "../../hooks/useBranches.ts";
+import Skeleton from "react-loading-skeleton";
 
 export default function BranchesTable({
   branches,
+  loading,
 }: {
   branches: Branch[] | null;
+  loading: boolean;
 }) {
-  const navigate = useNavigate();
-
   return (
     <div className="px-4 sm:px-6 lg:px-8 mt-6">
       <div className="sm:flex sm:items-center">
@@ -28,58 +29,62 @@ export default function BranchesTable({
             <table className="min-w-full divide-y divide-gray-300">
               <thead className="bg-gray-50">
                 <tr>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
                     S.no
                   </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
                     Name
                   </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
                     Department
                   </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-right text-sm font-semibold text-gray-900"
-                  >
+                  <th className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {branches?.map((branch, index) => (
-                  <tr
-                    onClick={() => navigate(`/branches/${branch.id}`)}
-                    key={branch.id}
-                    className={"hover:bg-gray-100 hover:cursor-pointer"}
-                  >
-                    <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
-                      {branch.name}
-                    </td>
-                    <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
-                      {branch.department.name}
-                    </td>
-                    <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
-                      <a
-                        href="#"
-                        className="text-indigo-600 hover:text-indigo-900"
+                {loading
+                  ? [...Array(8)].map((_, index) => (
+                      <tr key={index}>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          <Skeleton />
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          <Skeleton />
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          <Skeleton />
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
+                          <Skeleton />
+                        </td>
+                      </tr>
+                    ))
+                  : branches?.map((branch, index) => (
+                      <tr
+                        key={branch.id}
+                        className="hover:bg-gray-100 hover:cursor-pointer"
                       >
-                        Edit<span className="sr-only">, {branch.name}</span>
-                      </a>
-                    </td>
-                  </tr>
-                ))}
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          {branch.name}
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                          {branch.department.name}
+                        </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
+                          <a
+                            href="#"
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Edit
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
           </div>
