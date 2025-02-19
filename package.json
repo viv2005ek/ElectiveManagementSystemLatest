@@ -3,7 +3,6 @@
     "prisma": "^6.2.1"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1",
-    "react-loading-skeleton": "^3.5.0"
+    "@prisma/client": "^6.2.1"
   }
 }
