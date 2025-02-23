@@ -1,5 +1,4 @@
 import MainLayout from '../layouts/MainLayout.tsx';
-import MinorSpecializationsList from '../components/MinorSpecializationsList.tsx';
 
 export default function MinorSpecializationsPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -7,7 +6,7 @@ export default function MinorSpecializationsPage() {
   return (
     <MainLayout>
       <div className={"p-8"}>
-        <MinorSpecializationsList />
+        {/*<MinorSpecializationsList />*/}
       </div>
     </MainLayout>
   );
