@@ -1,9 +1,9 @@
-import { useState } from "react";
-import axiosInstance from "../axiosInstance.ts";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../redux/store.ts";
-import { fetchUser } from "../redux/slices/authSlice.ts";
+import { useState } from 'react';
+import axiosInstance from '../axiosInstance.ts';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../redux/store.ts';
+import { fetchUser } from '../redux/slices/authSlice.ts';
 
 interface UseAuthReturn {
   email: string;

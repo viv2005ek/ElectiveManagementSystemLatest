@@ -1,5 +1,5 @@
-import { NextFunction, Response } from "express";
-import { UserRole } from "@prisma/client";
+import { NextFunction, Response } from 'express';
+import { UserRole } from '@prisma/client';
 
 // Since you have extended the Request type globally, you shouldn't need to import AuthenticatedRequest
 // Your custom `user` property will be available on req automatically.

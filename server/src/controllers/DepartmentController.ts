@@ -1,36 +1,45 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
 
-const departmentController = {
-  getAllDepartments: async (req: Request, res: Response): Promise<any> => {
+const DepartmentController = {
+  /**
+   * Get all departments, optionally filter by schoolId
+   */
+  async getAllDepartments(req: Request, res: Response): Promise<any> {
     try {
+      const { schoolId } = req.query; // Extract schoolId from query params
+
       const departments = await prisma.department.findMany({
-        select: {
-          id: true,
-          name: true,
-        },
-        where: {
-          isDeleted: false,
+        where: schoolId ? { schoolId: String(schoolId) } : {}, // Apply filter if schoolId exists
+        include: {
+          school: true,
+          professors: true,
+          courses: true,
+          courseBuckets: true,
         },
       });
+
       return res.status(200).json(departments);
     } catch (error) {
       console.error("Error fetching departments:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 
-  getDepartmentById: async (req: Request, res: Response): Promise<any> => {
+  /**
+   * Get department by ID
+   */
+  async getDepartmentById(req: Request, res: Response): Promise<any> {
     try {
       const { id } = req.params;
 
       const department = await prisma.department.findUnique({
-        where: { id, isDeleted: false },
+        where: { id },
         include: {
-          branches: true,
-          faculty: true,
-          course: true,
-          courseBucket: true,
+          school: true,
+          professors: true,
+          courses: true,
+          courseBuckets: true,
         },
       });
 
@@ -41,36 +50,71 @@ const departmentController = {
       return res.status(200).json(department);
     } catch (error) {
       console.error("Error fetching department:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 
-  addDepartments: async (req: Request, res: Response): Promise<any> => {
+  /**
+   * Create a new department
+   */
+  async createDepartment(req: Request, res: Response): Promise<any> {
     try {
-      const { departments } = req.body;
+      const { name, schoolId } = req.body;
 
-      if (!Array.isArray(departments) || departments.length === 0) {
+      if (!name || !schoolId) {
         return res
           .status(400)
-          .json({ message: "Invalid input: Expected an array of departments" });
+          .json({ message: "Name and schoolId are required" });
       }
 
-      const createdDepartments = await prisma.department.createMany({
-        data: departments.map((dept) => ({
-          name: dept.name,
-        })),
-        skipDuplicates: true,
+      const department = await prisma.department.create({
+        data: { name, schoolId },
       });
 
-      return res.status(201).json({
-        message: "Departments added successfully",
-        count: createdDepartments.count,
-      });
+      return res.status(201).json(department);
     } catch (error) {
-      console.error("Error adding departments:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error creating department:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  /**
+   * Update department by ID
+   */
+  async updateDepartment(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      const { name, schoolId } = req.body;
+
+      const updatedDepartment = await prisma.department.update({
+        where: { id },
+        data: { name, schoolId },
+      });
+
+      return res.status(200).json(updatedDepartment);
+    } catch (error) {
+      console.error("Error updating department:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  /**
+   * Delete department by ID
+   */
+  async deleteDepartment(req: Request, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+
+      await prisma.department.delete({ where: { id } });
+
+      return res
+        .status(200)
+        .json({ message: "Department deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting department:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 };
 
-export default departmentController;
+export default DepartmentController;

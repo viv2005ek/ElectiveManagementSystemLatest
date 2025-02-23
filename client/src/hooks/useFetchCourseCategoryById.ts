@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import axiosInstance from "../axiosInstance.ts";
+import { useEffect, useState } from 'react';
+import axiosInstance from '../axiosInstance.ts';
 
-import { CourseCategory } from "./useCourseCategories.ts";
+import { CourseCategory } from './useCourseCategories.ts';
 
 const useFetchCourseCategoryById = (id: string | null) => {
   const [category, setCategory] = useState<CourseCategory | null>(null);

@@ -1,9 +1,9 @@
-import { BookOpenIcon, HomeIcon } from "@heroicons/react/24/outline";
-import { PiStudentBold } from "react-icons/pi";
-import { RiAdminLine } from "react-icons/ri";
-import { GrSystem } from "react-icons/gr";
+import { BookOpenIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { PiStudentBold } from 'react-icons/pi';
+import { RiAdminLine } from 'react-icons/ri';
+import { GrSystem } from 'react-icons/gr';
 
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const navigation = [
   { name: "Home", href: "/home", icon: HomeIcon, count: "5", current: true },

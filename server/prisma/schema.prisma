@@ -12,52 +12,15 @@ generator dbml {
 }
 
 model Credential {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String     @id @default(uuid())
+  email        String     @unique
   passwordHash String
   role         UserRole
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   student      Student?
-  faculty      Faculty?
+  professor    Professor?
   admin        Admin?
-}
-
-model Student {
-  id                    String               @id @default(uuid())
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
-  registrationNumber    String               @unique
-  email                 String               @unique
-  firstName             String
-  lastName              String?
-  gender                Gender
-  minorSpecializationId String?
-  semester              Int
-  batch                 Int
-  branchId              String
-  branch                Branch               @relation(fields: [branchId], references: [id])
-  contactNumber         String               @db.VarChar(15)
-  credentialId          String               @unique
-  credential            Credential           @relation(fields: [credentialId], references: [id])
-  isDeleted             Boolean              @default(false)
-  subjectPreferences    SubjectPreferences[]
-  courseAllotment       CourseAllotment[]
-}
-
-model Faculty {
-  id                 String     @id @default(uuid())
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  registrationNumber String     @unique
-  email              String     @unique
-  firstName          String
-  lastName           String?
-  departmentId       String
-  department         Department @relation(fields: [departmentId], references: [id])
-  credentialId       String     @unique
-  credential         Credential @relation(fields: [credentialId], references: [id])
-  isDeleted          Boolean    @default(false)
 }
 
 model Admin {
@@ -67,180 +30,208 @@ model Admin {
   registrationNumber String     @unique
   email              String     @unique
   firstName          String
+  middleName         String?
   lastName           String?
   credentialId       String     @unique
   credential         Credential @relation(fields: [credentialId], references: [id])
   isDeleted          Boolean    @default(false)
 }
 
+model Faculty {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  schools School[]
+}
+
+model School {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  facultyId   String
+  faculty     Faculty      @relation(fields: [facultyId], references: [id])
+  departments Department[]
+}
+
 model Department {
-  id           String         @id @default(uuid())
-  name         String         @unique
-  branches     Branch[]
-  faculty      Faculty[]
-  isDeleted    Boolean        @default(false)
-  course       Course[]
-  courseBucket CourseBucket[]
-  Subject      Subject[]
+  id            String         @id @default(uuid())
+  name          String         @unique
+  schoolId      String
+  school        School         @relation(fields: [schoolId], references: [id])
+  professors    Professor[]
+  courses       Course[]
+  courseBuckets CourseBucket[]
+  Program       Program[]
 }
 
-model Branch {
-  id           String     @id @default(uuid())
-  name         String     @unique
+model Program {
+  id           String      @id @default(uuid())
+  name         String      @unique
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
+  department   Department  @relation(fields: [departmentId], references: [id])
+  programType  ProgramType
   students     Student[]
-  subjects     Subject[]  @relation("SubjectToBranch")
-  isDeleted    Boolean    @default(false)
+  subjects     Subject[]   @relation("ProgramToSubject")
 }
 
-model Course {
-  id                 String               @id @default(uuid())
-  name               String
-  code               String               @unique
-  credits            Int
-  isDeleted          Boolean              @default(false)
+model Student {
+  id                 String      @id @default(uuid())
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  registrationNumber String      @unique
+  programId          String
+  program            Program     @relation(fields: [programId], references: [id])
+  email              String      @unique
+  firstName          String
+  middleName         String?
+  lastName           String?
+  gender             Gender
+  semester           Int
+  batchId            String
+  batch              Batch       @relation(fields: [batchId], references: [id])
+  contactNumber      String      @unique @db.VarChar(15)
+  credentialId       String      @unique
+  credential         Credential  @relation(fields: [credentialId], references: [id])
+  isDeleted          Boolean     @default(false)
+  allotments         Allotment[]
+
+  @@index([registrationNumber])
+}
+
+model Professor {
+  id                 String        @id @default(uuid())
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  professorRankId    String
+  professorRank      ProfessorRank @relation(fields: [professorRankId], references: [id])
+  registrationNumber String        @unique
   departmentId       String
-  department         Department           @relation(fields: [departmentId], references: [id])
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  courseCategories   CourseCategory[]
-  courseBuckets      CourseBucket[]
-  subjectPreferences SubjectPreferences[]
-  courseAllotment    CourseAllotment[]
-  subject            Subject[]            @relation("SubjectToCourse")
-  bucketCourseOrder  BucketCourseOrder[]
+  department         Department    @relation(fields: [departmentId], references: [id])
+  email              String        @unique
+  firstName          String
+  middleName         String?
+  lastName           String?
+  credentialId       String        @unique
+  credential         Credential    @relation(fields: [credentialId], references: [id])
+  isDeleted          Boolean       @default(false)
 }
 
 model CourseCategory {
   id            String        @id @default(uuid())
   name          String        @unique
-  courses       Course[]
-  isDeleted     Boolean       @default(false)
   allotmentType AllotmentType
-  subjects      Subject[]
+}
+
+model Course {
+  id                  String               @id @default(uuid())
+  code                String
+  name                String
+  credits             Int
+  departmentId        String
+  department          Department           @relation(fields: [departmentId], references: [id])
+  courseBuckets       CourseBucket[]       @relation("CourseBucketToCourse")
+  allotments          Allotment[]
+  courseBucketCourses CourseBucketCourse[]
+  subjects            Subject[]            @relation("SubjectCourses")
+
+  @@unique([code, departmentId])
 }
 
 model CourseBucket {
-  id                 String               @id @default(uuid())
-  name               String
-  departmentId       String
-  department         Department           @relation(fields: [departmentId], references: [id])
-  courses            Course[]
-  subjectPreferences SubjectPreferences[]
-  subjects           Subject[]            @relation("SubjectToCourseBucket")
-  courseAllotment    CourseAllotment[]
-  isDeleted          Boolean              @default(false)
-  bucketCourseOrder  BucketCourseOrder[]
+  id                  String               @id @default(uuid())
+  name                String
+  departmentId        String
+  department          Department           @relation(fields: [departmentId], references: [id])
+  courses             Course[]             @relation("CourseBucketToCourse")
+  allotments          Allotment[]
+  courseBucketCourses CourseBucketCourse[]
+  subjects            Subject[]            @relation("SubjectCourseBuckets")
 }
 
-model BucketCourseOrder {
+model CourseBucketCourse {
   id             String       @id @default(uuid())
   courseBucketId String
   courseBucket   CourseBucket @relation(fields: [courseBucketId], references: [id])
   courseId       String
   course         Course       @relation(fields: [courseId], references: [id])
-  allotmentOrder Int
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  orderIndex     Int
 
-  @@unique([courseBucketId, courseId, allotmentOrder])
-}
-
-model BucketSubjectSemesterMapping {
-  id        String   @id @default(uuid())
-  subjectId String
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  semester  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([subjectId, semester])
+  @@unique([courseBucketId, courseId])
+  @@unique([courseBucketId, orderIndex])
 }
 
 model Subject {
-  id                           String                         @id @default(uuid())
-  name                         String
-  semester                     Int?
-  departmentId                 String?
-  Department                   Department?                    @relation(fields: [departmentId], references: [id])
-  batch                        Int
-  isEnrollOpen                 Boolean                        @default(false)
-  canOptOutsideDepartment      Boolean                        @default(false)
-  enrollmentDeadline           DateTime?
-  branches                     Branch[]                       @relation("SubjectToBranch")
-  subjectPreferences           SubjectPreferences[]
-  courseAllotments             CourseAllotment[]
-  courses                      Course[]                       @relation("SubjectToCourse")
-  buckets                      CourseBucket[]                 @relation("SubjectToCourseBucket")
-  isFinalised                  Boolean                        @default(false)
-  isDeleted                    Boolean                        @default(false)
-  categoryId                   String
-  category                     CourseCategory                 @relation(fields: [categoryId], references: [id])
-  bucketSubjectSemesterMapping BucketSubjectSemesterMapping[]
-
-  @@unique([batch, name])
+  id            String         @id @default(uuid())
+  name          String
+  allotmentType AllotmentType
+  semester      Int?
+  semesters     Semester[]     @relation("SubjectSemesters")
+  programs      Program[]      @relation("ProgramToSubject")
+  allotments    Allotment[]
+  courses       Course[]       @relation("SubjectCourses")
+  batchId       String
+  batch         Batch          @relation(fields: [batchId], references: [id])
+  courseBuckets CourseBucket[] @relation("SubjectCourseBuckets")
 }
 
-model SubjectPreferences {
-  id              String        @id @default(uuid())
+model Batch {
+  id       String    @id @default(uuid())
+  year     Int       @unique
+  students Student[]
+  subjects Subject[]
+}
+
+model Semester {
+  id         String      @id @default(uuid())
+  number     Int         @unique
+  subjects   Subject[]   @relation("SubjectSemesters")
+  allotments Allotment[]
+}
+
+model Allotment {
+  id              String          @id @default(uuid())
   studentId       String
-  student         Student       @relation(fields: [studentId], references: [id])
-  courseId        String?
-  course          Course?       @relation(fields: [courseId], references: [id])
-  courseBucketId  String?
-  courseBucket    CourseBucket? @relation(fields: [courseBucketId], references: [id])
+  student         Student         @relation(fields: [studentId], references: [id])
   subjectId       String
-  subject         Subject       @relation(fields: [subjectId], references: [id])
-  preferenceOrder Int
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  isDeleted       Boolean       @default(false)
-
-  @@unique([subjectId, studentId, courseId, courseBucketId, preferenceOrder])
-  @@index([studentId])
+  subject         Subject         @relation(fields: [subjectId], references: [id])
+  courseBucketId  String?
+  courseBucket    CourseBucket?   @relation(fields: [courseBucketId], references: [id])
+  courseId        String
+  course          Course          @relation(fields: [courseId], references: [id])
+  semesterId      String
+  semester        Semester        @relation(fields: [semesterId], references: [id])
+  allotmentStatus AllotmentStatus
 }
 
-model CourseAllotment {
-  id             String          @id @default(uuid())
-  studentId      String
-  student        Student         @relation(fields: [studentId], references: [id])
-  courseId       String?
-  course         Course?         @relation(fields: [courseId], references: [id])
-  semester       Int
-  courseBucketId String?
-  courseBucket   CourseBucket?   @relation(fields: [courseBucketId], references: [id])
-  subjectId      String
-  subject        Subject         @relation(fields: [subjectId], references: [id])
-  type           AllotmentType
-  status         AllotmentStatus @default(PENDING)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  isDeleted      Boolean         @default(false)
-
-  @@unique([studentId, courseId, courseBucketId, semester])
-  @@index([studentId])
+model ProfessorRank {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  priority  Int         @unique
+  Professor Professor[]
 }
 
 enum Gender {
-  MALE
-  FEMALE
-  OTHER
+  Male
+  Female
+  Other
+}
+
+enum ProgramType {
+  Undergraduate
+  Postgraduate
+  PhD
 }
 
 enum UserRole {
-  STUDENT
-  FACULTY
-  ADMIN
+  Student
+  Professor
+  Admin
 }
 
 enum AllotmentType {
-  STANDALONE
-  BUCKET
+  Standalone
+  Bucket
 }
 
 enum AllotmentStatus {
-  PENDING
-  CONFIRMED
-  REJECTED
+  Pending
+  Confirmed
 }

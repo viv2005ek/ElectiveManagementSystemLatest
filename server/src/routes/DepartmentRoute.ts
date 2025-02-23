@@ -1,7 +1,5 @@
-import express from "express";
-import departmentController from "../controllers/DepartmentController";
-import { authorizeRoles } from "../middleware/roleMiddleware";
-import { UserRole } from "@prisma/client";
+import express from 'express';
+import DepartmentController from '../controllers/DepartmentController';
 
 const router = express.Router();
 
@@ -9,7 +7,7 @@ const router = express.Router();
  * @swagger
  * tags:
  *   name: Departments
- *   description: API for managing departments
+ *   description: Department management
  */
 
 /**
@@ -18,23 +16,19 @@ const router = express.Router();
  *   get:
  *     summary: Get all departments
  *     tags: [Departments]
+ *     parameters:
+ *       - in: query
+ *         name: schoolId
+ *         schema:
+ *           type: string
+ *         description: Optional school ID to filter departments
  *     responses:
  *       200:
- *         description: List of all departments
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Department'
+ *         description: List of departments
  *       500:
  *         description: Internal server error
  */
-router.get(
-  "/",
-  authorizeRoles([UserRole.ADMIN, UserRole.FACULTY]),
-  departmentController.getAllDepartments,
-);
+router.get("/", DepartmentController.getAllDepartments);
 
 /**
  * @swagger
@@ -52,22 +46,18 @@ router.get(
  *     responses:
  *       200:
  *         description: Department details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Department'
  *       404:
  *         description: Department not found
  *       500:
  *         description: Internal server error
  */
-router.get("/:id", departmentController.getDepartmentById);
+router.get("/:id", DepartmentController.getDepartmentById);
 
 /**
  * @swagger
- * /departments/bulk-add:
+ * /departments:
  *   post:
- *     summary: Add multiple departments
+ *     summary: Create a new department
  *     tags: [Departments]
  *     requestBody:
  *       required: true
@@ -76,35 +66,78 @@ router.get("/:id", departmentController.getDepartmentById);
  *           schema:
  *             type: object
  *             required:
- *               - departments
+ *               - name
+ *               - schoolId
  *             properties:
- *               departments:
- *                 type: array
- *                 items:
- *                   type: object
- *                   required:
- *                     - name
- *                   properties:
- *                     name:
- *                       type: string
- *                       description: The name of the department
+ *               name:
+ *                 type: string
+ *               schoolId:
+ *                 type: string
  *     responses:
  *       201:
- *         description: Departments added successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 count:
- *                   type: integer
+ *         description: Department created successfully
  *       400:
- *         description: Invalid input (missing or incorrect fields)
+ *         description: Missing required fields
  *       500:
  *         description: Internal server error
  */
-router.post("/bulk-add", departmentController.addDepartments);
+router.post("/", DepartmentController.createDepartment);
+
+/**
+ * @swagger
+ * /departments/{id}:
+ *   put:
+ *     summary: Update a department by ID
+ *     tags: [Departments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The department ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               schoolId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Department updated successfully
+ *       404:
+ *         description: Department not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put("/:id", DepartmentController.updateDepartment);
+
+/**
+ * @swagger
+ * /departments/{id}:
+ *   delete:
+ *     summary: Delete a department by ID
+ *     tags: [Departments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The department ID
+ *     responses:
+ *       200:
+ *         description: Department deleted successfully
+ *       404:
+ *         description: Department not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/:id", DepartmentController.deleteDepartment);
 
 export default router;

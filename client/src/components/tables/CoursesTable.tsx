@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { Student } from "../../hooks/useFetchStudents.ts";
-import { capitalize } from "../../utils/StringUtils.ts";
-import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
-import PaginationFooter from "../PaginationFooter.tsx";
-import { Dispatch, SetStateAction } from "react";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-import { Course } from "../../hooks/useFetchCourses.ts";
+import { useNavigate } from 'react-router-dom';
+import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
+import PaginationFooter from '../PaginationFooter.tsx';
+import { Dispatch, SetStateAction } from 'react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+import { Course } from '../../hooks/useFetchCourses.ts';
 
 export default function CoursesTable({
   courses,

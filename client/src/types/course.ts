@@ -16,9 +16,3 @@ export enum AllotmentType {
   STANDALONE = "STANDALONE",
   BUCKET = "BUCKET",
 }
-
-export interface Semester {
-  number: number;
-  name: string;
-  id: string;
-}

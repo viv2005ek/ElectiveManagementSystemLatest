@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogBackdrop,
@@ -10,40 +10,34 @@ import {
   MenuItem,
   MenuItems,
   TransitionChild,
-} from "@headlessui/react";
-import {
-  Bars3Icon,
-  BellIcon,
-  CalendarIcon,
-  ChartPieIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
-  HomeIcon,
-  UserGroupIcon,
-  UsersIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store.ts";
-import { BookIcon, Building2Icon, BuildingIcon } from "lucide-react";
-import { BsBucket } from "react-icons/bs";
-import { GiTeacher } from "react-icons/gi";
-import { PiBooks, PiStudentBold } from "react-icons/pi";
-import { Link, useLocation } from "react-router-dom";
+} from '@headlessui/react';
+import { Bars3Icon, BellIcon, Cog6ToothIcon, HomeIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store.ts';
+import { BookIcon, BuildingIcon, GraduationCap, SchoolIcon, UniversityIcon } from 'lucide-react';
+import { BsBucket } from 'react-icons/bs';
+import { PiBooks, PiStudentBold } from 'react-icons/pi';
+import { Link, useLocation } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
 
 const navigation = [
   { name: "Home", href: "/home", icon: HomeIcon, current: true },
   { name: "Students", href: "/students", icon: PiStudentBold, current: false },
-  { name: "Faculties", href: "/faculties", icon: GiTeacher, current: false },
+  {
+    name: "Faculties",
+    href: "/faculties",
+    icon: UniversityIcon,
+    current: false,
+  },
+  { name: "Schools", href: "/schools", icon: SchoolIcon, current: false },
   {
     name: "Departments",
     href: "/departments",
     icon: BuildingIcon,
     current: false,
   },
-  { name: "Branches", href: "/branches", icon: Building2Icon, current: false },
+  { name: "Programs", href: "/programs", icon: GraduationCap, current: false },
   { name: "Courses", href: "/courses", icon: BookIcon, current: false },
   {
     name: "Course Buckets",
@@ -268,7 +262,13 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                           aria-hidden="true"
                           className="ml-4 text-sm/6 font-semibold text-gray-900"
                         >
-                          Tom Cook
+                          {user ? (
+                            <div>
+                              {user.firstName} {user.lastName}
+                            </div>
+                          ) : (
+                            <Skeleton />
+                          )}
                         </span>
                         <ChevronDownIcon
                           aria-hidden="true"

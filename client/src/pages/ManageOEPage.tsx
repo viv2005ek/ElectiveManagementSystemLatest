@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import OpenElective from "../components/OpeElective.tsx";
-import MainLayout from "../layouts/MainLayout.tsx";
-import userDetails from "../store/currentUserData";
-import electives from "../store/OEList.ts";
-import img from "../assets/back.png";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import OpenElective from '../components/OpeElective.tsx';
+import MainLayout from '../layouts/MainLayout.tsx';
+import userDetails from '../store/currentUserData';
+import electives from '../store/OEList.ts';
+import img from '../assets/back.png';
+import { useNavigate } from 'react-router-dom';
 
 const ManageOEPage: React.FC = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import type { PreferenceSelection } from "../types/course";
+import type { PreferenceSelection } from '../types/course';
 
 interface SelectedPreferencesProps {
   preferences: PreferenceSelection[];

@@ -1,17 +1,18 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import { hash } from "bcrypt";
-import { UserRole } from "@prisma/client";
+import { Request, Response } from 'express';
+import { prisma } from '../prismaClient';
+import { hash } from 'bcrypt';
+import { UserRole } from '@prisma/client';
 
 const studentController = {
   // Get all students (excluding deleted ones)
-  getAllStudents: async (req: Request, res: Response) => {
+  getAllStudents: async (req: Request, res: Response): Promise<any> => {
     try {
       const {
-        departmentId,
-        branchId,
-        batch,
+        programId,
+        batchId,
         semester,
+        departmentId,
+        schoolId,
         search,
         page = 1,
         pageSize = 10,
@@ -20,45 +21,59 @@ const studentController = {
       // Build the where condition dynamically
       const where: any = { isDeleted: false };
 
-      if (branchId) {
-        where.branchId = branchId;
+      if (programId) {
+        where.programId = String(programId);
       }
-
-      if (batch) {
-        where.batch = Number(batch);
+      if (batchId) {
+        where.batchId = String(batchId);
       }
       if (semester) {
         where.semester = Number(semester);
       }
-
       if (departmentId) {
-        where.branch = {
-          departmentId: departmentId,
-        };
+        where.program = { departmentId: String(departmentId) };
+      }
+      if (schoolId) {
+        where.program = { department: { schoolId: String(schoolId) } };
       }
 
-      // First, get all students matching the search criteria (without pagination)
-      let filteredWhere = { ...where };
+      // Ensure search is a string before using split()
+      if (typeof search === "string" && search.trim() !== "") {
+        const searchTerms = search
+          .trim()
+          .split(" ")
+          .map((term) => ({
+            contains: term,
+            mode: "insensitive",
+          }));
 
-      if (search) {
-        filteredWhere.OR = [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
+        where.OR = [
+          {
+            AND: [
+              { firstName: searchTerms[0] },
+              searchTerms[1] ? { middleName: searchTerms[1] } : {},
+              searchTerms[2] ? { lastName: searchTerms[2] } : {},
+            ],
+          },
+          {
+            AND: [
+              { firstName: searchTerms[0] },
+              searchTerms[1] ? { lastName: searchTerms[1] } : {},
+            ],
+          },
           { registrationNumber: { contains: search, mode: "insensitive" } },
         ];
       }
 
       // Get total count of filtered students
-      const totalStudents = await prisma.student.count({
-        where: filteredWhere,
-      });
+      const totalStudents = await prisma.student.count({ where });
       const totalPages = Math.ceil(totalStudents / Number(pageSize));
 
       // Apply pagination AFTER filtering
       const students = await prisma.student.findMany({
-        where: filteredWhere,
+        where,
         include: {
-          branch: {
+          program: {
             select: {
               id: true,
               name: true,
@@ -66,13 +81,21 @@ const studentController = {
                 select: {
                   id: true,
                   name: true,
+                  school: { select: { id: true, name: true } },
                 },
               },
+            },
+          },
+          batch: {
+            select: {
+              id: true,
+              year: true,
             },
           },
         },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
+        orderBy: { registrationNumber: "asc" }, // Sorting by registration number
       });
 
       res.status(200).json({
@@ -94,13 +117,23 @@ const studentController = {
       const student = await prisma.student.findUnique({
         where: { id },
         include: {
-          branch: {
+          program: {
             select: {
               id: true,
               name: true,
               department: {
-                select: { id: true, name: true },
+                select: {
+                  id: true,
+                  name: true,
+                  school: { select: { id: true, name: true } },
+                },
               },
+            },
+          },
+          batch: {
+            select: {
+              id: true,
+              year: true,
             },
           },
         },
@@ -157,9 +190,9 @@ const studentController = {
           contactNumber: student.contactNumber,
           email: student.email,
           semester: student.semester,
-          batch: student.batch,
+          programId: student.programId,
+          batchId: student.batchId,
           gender: student.gender,
-          branchId: student.branchId,
           password: await hash(student.password, 10),
         })),
       );
@@ -175,14 +208,14 @@ const studentController = {
               contactNumber: student.contactNumber,
               email: student.email,
               semester: student.semester,
-              batch: student.batch,
+              program: { connect: { id: student.programId } },
+              batch: { connect: { id: student.batchId } },
               gender: student.gender,
-              branch: { connect: { id: student.branchId } },
               credential: {
                 create: {
                   email: student.email,
                   passwordHash: student.password,
-                  role: UserRole.STUDENT,
+                  role: UserRole.Student,
                 },
               },
             },

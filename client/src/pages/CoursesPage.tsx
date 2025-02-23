@@ -1,12 +1,10 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import PageHeader from "../components/PageHeader.tsx";
-import CoursesTable from "../components/tables/CoursesTable.tsx";
-import useFetchCourses from "../hooks/useFetchCourses.ts";
-import { useState } from "react";
-import SearchBar from "../components/SearchBar.tsx";
-import SingleSelectFilterForIds from "../components/filters/SingleSelectFilterForIds.tsx";
-import SingleSelectFilterForNumbers from "../components/filters/SingleSelectFilterForNumbers.tsx";
-import { Link } from "react-router-dom";
+import MainLayout from '../layouts/MainLayout.tsx';
+import PageHeader from '../components/PageHeader.tsx';
+import CoursesTable from '../components/tables/CoursesTable.tsx';
+import useFetchCourses from '../hooks/useFetchCourses.ts';
+import { useState } from 'react';
+import SearchBarWithDebounce from '../components/SearchBarWithDebounce.tsx';
+import { Link } from 'react-router-dom';
 
 export default function CoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +20,10 @@ export default function CoursesPage() {
         <PageHeader title={"Courses"} />
         <div className={"flex flex-row my-8 items-center justify-center"}>
           <div className={"flex flex-row gap-4 items-end"}>
-            <SearchBar value={searchQuery} setValue={setSearchQuery} />
+            <SearchBarWithDebounce
+              value={searchQuery}
+              setValue={setSearchQuery}
+            />
             {/*<SingleSelectFilterForIds*/}
             {/*  name={"Branch"}*/}
             {/*  items={branches}*/}

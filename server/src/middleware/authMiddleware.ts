@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import { prisma } from "../prismaClient";
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../prismaClient';
 
 const authMiddleware = async (
   req: Request,
@@ -22,7 +22,7 @@ const authMiddleware = async (
       where: { id: decoded.id },
       include: {
         student: true,
-        faculty: true,
+        professor: true,
         admin: true,
       },
     });
@@ -35,7 +35,7 @@ const authMiddleware = async (
       id: credential.id,
       role: credential.role,
       student: credential.student,
-      faculty: credential.faculty,
+      faculty: credential.professor,
       admin: credential.admin,
     };
 

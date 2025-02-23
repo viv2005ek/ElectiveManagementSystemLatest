@@ -1,7 +1,4 @@
-import {
-  ArrowLongLeftIcon,
-  ArrowLongRightIcon,
-} from "@heroicons/react/20/solid";
+import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/20/solid';
 
 interface footerProps {
   totalPages: number;

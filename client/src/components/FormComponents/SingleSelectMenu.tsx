@@ -1,19 +1,14 @@
-import {
-  Label,
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
-} from "@headlessui/react";
-import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
-import { CheckIcon } from "@heroicons/react/20/solid";
-import { Dispatch, SetStateAction } from "react";
+import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
+import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
+import { CheckIcon } from '@heroicons/react/20/solid';
+import { Dispatch, SetStateAction } from 'react';
 
 type Identifiable = { id: string; [key: string]: any };
 
 interface SingleSelectMenuProps<T extends Identifiable> {
   label?: string;
   items: T[] | null;
+  name?: string;
   selected: T | null;
   setSelected: Dispatch<SetStateAction<T | null>>;
   onChange?: (item: T) => void;
@@ -25,6 +20,7 @@ export default function SingleSelectMenu<T extends Identifiable>({
   selected,
   setSelected,
   onChange,
+  name,
 }: SingleSelectMenuProps<T>) {
   const handleChange = (item: T) => {
     setSelected(item);
@@ -44,7 +40,7 @@ export default function SingleSelectMenu<T extends Identifiable>({
         <div className="relative mt-1.5">
           <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
             <span className="col-start-1 row-start-1 truncate pr-6">
-              {selected ? selected.name : "Select an item"}
+              {selected ? selected.name : `Select a ${label}`}
             </span>
             <ChevronUpDownIcon
               aria-hidden="true"

@@ -10,45 +10,8 @@ Table Credential {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   student Student
-  faculty Faculty
+  professor Professor
   admin Admin
-}
-
-Table Student {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  registrationNumber String [unique, not null]
-  email String [unique, not null]
-  firstName String [not null]
-  lastName String
-  gender Gender [not null]
-  minorSpecializationId String
-  semester Int [not null]
-  batch Int [not null]
-  branchId String [not null]
-  branch Branch [not null]
-  contactNumber String [not null]
-  credentialId String [unique, not null]
-  credential Credential [not null]
-  isDeleted Boolean [not null, default: false]
-  subjectPreferences SubjectPreferences [not null]
-  courseAllotment CourseAllotment [not null]
-}
-
-Table Faculty {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  registrationNumber String [unique, not null]
-  email String [unique, not null]
-  firstName String [not null]
-  lastName String
-  departmentId String [not null]
-  department Department [not null]
-  credentialId String [unique, not null]
-  credential Credential [not null]
-  isDeleted Boolean [not null, default: false]
 }
 
 Table Admin {
@@ -58,58 +21,109 @@ Table Admin {
   registrationNumber String [unique, not null]
   email String [unique, not null]
   firstName String [not null]
+  middleName String
   lastName String
   credentialId String [unique, not null]
   credential Credential [not null]
   isDeleted Boolean [not null, default: false]
 }
 
+Table Faculty {
+  id String [pk]
+  name String [unique, not null]
+  schools School [not null]
+}
+
+Table School {
+  id String [pk]
+  name String [unique, not null]
+  facultyId String [not null]
+  faculty Faculty [not null]
+  departments Department [not null]
+}
+
 Table Department {
   id String [pk]
   name String [unique, not null]
-  branches Branch [not null]
-  faculty Faculty [not null]
-  isDeleted Boolean [not null, default: false]
-  course Course [not null]
-  courseBucket CourseBucket [not null]
-  Subject Subject [not null]
+  schoolId String [not null]
+  school School [not null]
+  professors Professor [not null]
+  courses Course [not null]
+  courseBuckets CourseBucket [not null]
+  Program Program [not null]
 }
 
-Table Branch {
+Table Program {
   id String [pk]
   name String [unique, not null]
   departmentId String [not null]
   department Department [not null]
+  programType ProgramType [not null]
   students Student [not null]
   subjects Subject [not null]
-  isDeleted Boolean [not null, default: false]
 }
 
-Table Course {
+Table Student {
   id String [pk]
-  name String [not null]
-  code String [unique, not null]
-  credits Int [not null]
-  isDeleted Boolean [not null, default: false]
-  departmentId String [not null]
-  department Department [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  courseCategories CourseCategory [not null]
-  courseBuckets CourseBucket [not null]
-  subjectPreferences SubjectPreferences [not null]
-  courseAllotment CourseAllotment [not null]
-  subject Subject [not null]
-  bucketCourseOrder BucketCourseOrder [not null]
+  registrationNumber String [unique, not null]
+  programId String [not null]
+  program Program [not null]
+  email String [unique, not null]
+  firstName String [not null]
+  middleName String
+  lastName String
+  gender Gender [not null]
+  semester Int [not null]
+  batchId String [not null]
+  batch Batch [not null]
+  contactNumber String [unique, not null]
+  credentialId String [unique, not null]
+  credential Credential [not null]
+  isDeleted Boolean [not null, default: false]
+  allotments Allotment [not null]
+}
+
+Table Professor {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  professorRankId String [not null]
+  professorRank ProfessorRank [not null]
+  registrationNumber String [unique, not null]
+  departmentId String [not null]
+  department Department [not null]
+  email String [unique, not null]
+  firstName String [not null]
+  middleName String
+  lastName String
+  credentialId String [unique, not null]
+  credential Credential [not null]
+  isDeleted Boolean [not null, default: false]
 }
 
 Table CourseCategory {
   id String [pk]
   name String [unique, not null]
-  courses Course [not null]
-  isDeleted Boolean [not null, default: false]
   allotmentType AllotmentType [not null]
+}
+
+Table Course {
+  id String [pk]
+  code String [not null]
+  name String [not null]
+  credits Int [not null]
+  departmentId String [not null]
+  department Department [not null]
+  courseBuckets CourseBucket [not null]
+  allotments Allotment [not null]
+  courseBucketCourses CourseBucketCourse [not null]
   subjects Subject [not null]
+
+  indexes {
+    (code, departmentId) [unique]
+  }
 }
 
 Table CourseBucket {
@@ -118,195 +132,164 @@ Table CourseBucket {
   departmentId String [not null]
   department Department [not null]
   courses Course [not null]
-  subjectPreferences SubjectPreferences [not null]
+  allotments Allotment [not null]
+  courseBucketCourses CourseBucketCourse [not null]
   subjects Subject [not null]
-  courseAllotment CourseAllotment [not null]
-  isDeleted Boolean [not null, default: false]
-  bucketCourseOrder BucketCourseOrder [not null]
 }
 
-Table BucketCourseOrder {
+Table CourseBucketCourse {
   id String [pk]
   courseBucketId String [not null]
   courseBucket CourseBucket [not null]
   courseId String [not null]
   course Course [not null]
-  allotmentOrder Int [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
+  orderIndex Int [not null]
 
   indexes {
-    (courseBucketId, courseId, allotmentOrder) [unique]
-  }
-}
-
-Table BucketSubjectSemesterMapping {
-  id String [pk]
-  subjectId String [not null]
-  subject Subject [not null]
-  semester Int [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-
-  indexes {
-    (subjectId, semester) [unique]
+    (courseBucketId, courseId) [unique]
+    (courseBucketId, orderIndex) [unique]
   }
 }
 
 Table Subject {
   id String [pk]
   name String [not null]
+  allotmentType AllotmentType [not null]
   semester Int
-  departmentId String
-  Department Department
-  batch Int [not null]
-  isEnrollOpen Boolean [not null, default: false]
-  canOptOutsideDepartment Boolean [not null, default: false]
-  enrollmentDeadline DateTime
-  branches Branch [not null]
-  subjectPreferences SubjectPreferences [not null]
-  courseAllotments CourseAllotment [not null]
+  semesters Semester [not null]
+  programs Program [not null]
+  allotments Allotment [not null]
   courses Course [not null]
-  buckets CourseBucket [not null]
-  isFinalised Boolean [not null, default: false]
-  isDeleted Boolean [not null, default: false]
-  categoryId String [not null]
-  category CourseCategory [not null]
-  bucketSubjectSemesterMapping BucketSubjectSemesterMapping [not null]
-
-  indexes {
-    (batch, name) [unique]
-  }
+  batchId String [not null]
+  batch Batch [not null]
+  courseBuckets CourseBucket [not null]
 }
 
-Table SubjectPreferences {
+Table Batch {
+  id String [pk]
+  year Int [unique, not null]
+  students Student [not null]
+  subjects Subject [not null]
+}
+
+Table Semester {
+  id String [pk]
+  number Int [unique, not null]
+  subjects Subject [not null]
+  allotments Allotment [not null]
+}
+
+Table Allotment {
   id String [pk]
   studentId String [not null]
   student Student [not null]
-  courseId String
-  course Course
-  courseBucketId String
-  courseBucket CourseBucket
   subjectId String [not null]
   subject Subject [not null]
-  preferenceOrder Int [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  isDeleted Boolean [not null, default: false]
-
-  indexes {
-    (subjectId, studentId, courseId, courseBucketId, preferenceOrder) [unique]
-  }
+  courseBucketId String
+  courseBucket CourseBucket
+  courseId String [not null]
+  course Course [not null]
+  semesterId String [not null]
+  semester Semester [not null]
+  allotmentStatus AllotmentStatus [not null]
 }
 
-Table CourseAllotment {
+Table ProfessorRank {
   id String [pk]
-  studentId String [not null]
-  student Student [not null]
-  courseId String
-  course Course
-  semester Int [not null]
-  courseBucketId String
-  courseBucket CourseBucket
-  subjectId String [not null]
-  subject Subject [not null]
-  type AllotmentType [not null]
-  status AllotmentStatus [not null, default: 'PENDING']
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  isDeleted Boolean [not null, default: false]
-
-  indexes {
-    (studentId, courseId, courseBucketId, semester) [unique]
-  }
+  name String [unique, not null]
+  priority Int [unique, not null]
+  Professor Professor [not null]
 }
 
-Table SubjectToBranch {
+Table ProgramToSubject {
   subjectsId String [ref: > Subject.id]
-  branchesId String [ref: > Branch.id]
+  programsId String [ref: > Program.id]
 }
 
-Table CourseToCourseCategory {
-  coursecategoriesId String [ref: > CourseCategory.id]
-  coursesId String [ref: > Course.id]
-}
-
-Table CourseToCourseBucket {
+Table CourseBucketToCourse {
   coursebucketsId String [ref: > CourseBucket.id]
   coursesId String [ref: > Course.id]
 }
 
-Table SubjectToCourse {
-  subjectId String [ref: > Subject.id]
+Table SubjectCourses {
+  subjectsId String [ref: > Subject.id]
   coursesId String [ref: > Course.id]
 }
 
-Table SubjectToCourseBucket {
+Table SubjectCourseBuckets {
   subjectsId String [ref: > Subject.id]
-  bucketsId String [ref: > CourseBucket.id]
+  coursebucketsId String [ref: > CourseBucket.id]
+}
+
+Table SubjectSemesters {
+  semestersId String [ref: > Semester.id]
+  subjectsId String [ref: > Subject.id]
 }
 
 Enum Gender {
-  MALE
-  FEMALE
-  OTHER
+  Male
+  Female
+  Other
+}
+
+Enum ProgramType {
+  Undergraduate
+  Postgraduate
+  PhD
 }
 
 Enum UserRole {
-  STUDENT
-  FACULTY
-  ADMIN
+  Student
+  Professor
+  Admin
 }
 
 Enum AllotmentType {
-  STANDALONE
-  BUCKET
+  Standalone
+  Bucket
 }
 
 Enum AllotmentStatus {
-  PENDING
-  CONFIRMED
-  REJECTED
+  Pending
+  Confirmed
 }
-
-Ref: Student.branchId > Branch.id
-
-Ref: Student.credentialId - Credential.id
-
-Ref: Faculty.departmentId > Department.id
-
-Ref: Faculty.credentialId - Credential.id
 
 Ref: Admin.credentialId - Credential.id
 
-Ref: Branch.departmentId > Department.id
+Ref: School.facultyId > Faculty.id
+
+Ref: Department.schoolId > School.id
+
+Ref: Program.departmentId > Department.id
+
+Ref: Student.programId > Program.id
+
+Ref: Student.batchId > Batch.id
+
+Ref: Student.credentialId - Credential.id
+
+Ref: Professor.professorRankId > ProfessorRank.id
+
+Ref: Professor.departmentId > Department.id
+
+Ref: Professor.credentialId - Credential.id
 
 Ref: Course.departmentId > Department.id
 
 Ref: CourseBucket.departmentId > Department.id
 
-Ref: BucketCourseOrder.courseBucketId > CourseBucket.id
+Ref: CourseBucketCourse.courseBucketId > CourseBucket.id
 
-Ref: BucketCourseOrder.courseId > Course.id
+Ref: CourseBucketCourse.courseId > Course.id
 
-Ref: BucketSubjectSemesterMapping.subjectId > Subject.id
+Ref: Subject.batchId > Batch.id
 
-Ref: Subject.departmentId > Department.id
+Ref: Allotment.studentId > Student.id
 
-Ref: Subject.categoryId > CourseCategory.id
+Ref: Allotment.subjectId > Subject.id
 
-Ref: SubjectPreferences.studentId > Student.id
+Ref: Allotment.courseBucketId > CourseBucket.id
 
-Ref: SubjectPreferences.courseId > Course.id
+Ref: Allotment.courseId > Course.id
 
-Ref: SubjectPreferences.courseBucketId > CourseBucket.id
-
-Ref: SubjectPreferences.subjectId > Subject.id
-
-Ref: CourseAllotment.studentId > Student.id
-
-Ref: CourseAllotment.courseId > Course.id
-
-Ref: CourseAllotment.courseBucketId > CourseBucket.id
-
-Ref: CourseAllotment.subjectId > Subject.id
+Ref: Allotment.semesterId > Semester.id

@@ -1,5 +1,5 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import Admin from "../components/Admin.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
+import Admin from '../components/Admin.tsx';
 
 export default function ElectiveChoicePage() {
   return (

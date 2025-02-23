@@ -10,6 +10,3 @@ export const formatName = (
     .join(" ");
   return { firstName, lastName };
 };
-
-console.log(formatName("SHRESHTH MIDDLENAME PUROHIT"));
-// Output: { firstName: 'Shreshth', lastName: 'Middlename P

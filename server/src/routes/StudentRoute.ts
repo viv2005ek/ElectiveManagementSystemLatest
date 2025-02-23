@@ -1,13 +1,9 @@
-import express from "express";
-import StudentController from "../controllers/StudentController";
-import { authorizeRoles } from "../middleware/roleMiddleware";
-import { UserRole } from "@prisma/client";
+import express from 'express';
+import studentController from '../controllers/StudentController';
+import { authorizeRoles } from '../middleware/roleMiddleware';
+import { UserRole } from '@prisma/client';
 
 const router = express.Router();
-
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
 
 /**
  * @swagger
@@ -24,30 +20,35 @@ const prisma = new PrismaClient();
  *     tags: [Students]
  *     parameters:
  *       - in: query
+ *         name: programId
+ *         schema:
+ *           type: string
+ *         description: Filter students by program ID
+ *       - in: query
+ *         name: batchId
+ *         schema:
+ *           type: string
+ *         description: Filter students by batch ID
+ *       - in: query
+ *         name: semester
+ *         schema:
+ *           type: integer
+ *         description: Filter students by semester
+ *       - in: query
  *         name: departmentId
  *         schema:
  *           type: string
  *         description: Filter students by department ID
  *       - in: query
- *         name: branchId
+ *         name: schoolId
  *         schema:
  *           type: string
- *         description: Filter students by branch ID
- *       - in: query
- *         name: semester
- *         schema:
- *           type: number
- *         description: Filter students by semester
- *       - in: query
- *         name: batch
- *         schema:
- *           type: integer
- *         description: Filter students by batch
+ *         description: Filter students by school ID
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search students by first name, last name, or registration number
+ *         description: Search students by first, middle, and last name combined or registration number
  *       - in: query
  *         name: page
  *         schema:
@@ -63,28 +64,11 @@ const prisma = new PrismaClient();
  *     responses:
  *       200:
  *         description: List of all students with pagination info
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 students:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Student'
- *                 totalPages:
- *                   type: integer
- *                 currentPage:
- *                   type: integer
- *                 pageSize:
- *                   type: integer
- *       500:
- *         description: Internal server error
  */
 router.get(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
-  StudentController.getAllStudents,
+  authorizeRoles([UserRole.Admin]),
+  studentController.getAllStudents,
 );
 
 /**
@@ -99,23 +83,38 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *         description: The student ID (a unique identifier for the student)
+ *         description: The student ID
  *     responses:
  *       200:
  *         description: Student details successfully retrieved
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Student'
- *       404:
- *         description: Student not found with the given ID
- *       500:
- *         description: Internal server error
  */
 router.get(
   "/:id",
-  authorizeRoles([UserRole.ADMIN]),
-  StudentController.getStudentById,
+  authorizeRoles([UserRole.Admin]),
+  studentController.getStudentById,
+);
+
+/**
+ * @swagger
+ * /students/{id}:
+ *   delete:
+ *     summary: Soft delete a student
+ *     tags: [Students]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student ID
+ *     responses:
+ *       200:
+ *         description: Student deleted successfully
+ */
+router.delete(
+  "/:id",
+  authorizeRoles([UserRole.Admin]),
+  studentController.deleteStudent,
 );
 
 /**
@@ -130,7 +129,6 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [students]
  *             properties:
  *               students:
  *                 type: array
@@ -143,92 +141,40 @@ router.get(
  *                     - contactNumber
  *                     - registrationNumber
  *                     - semester
- *                     - batch
+ *                     - batchId
  *                     - email
- *                     - section
- *                     - departmentId
- *                     - branchId
+ *                     - programId
  *                     - password
  *                   properties:
  *                     firstName:
  *                       type: string
- *                       example: "John"
  *                     lastName:
  *                       type: string
- *                       example: "Doe"
  *                     gender:
  *                       type: string
  *                       enum: [MALE, FEMALE, OTHER]
- *                       example: "MALE"
  *                     contactNumber:
  *                       type: string
- *                       example: "+1234567890"
  *                     registrationNumber:
  *                       type: string
- *                       example: "2023001"
  *                     semester:
  *                       type: integer
- *                       example: 3
- *                     batch:
- *                       type: integer
- *                       example: 2023
+ *                     batchId:
+ *                       type: string
  *                     email:
  *                       type: string
- *                       format: email
- *                       example: "john.doe@example.com"
- *                     section:
+ *                     programId:
  *                       type: string
- *                       example: "A"
- *                     departmentId:
- *                       type: string
- *                       example: "dep123"
- *                     branchId:
- *                       type: string
- *                       example: "brn456"
  *                     password:
  *                       type: string
- *                       format: password
- *                       example: "SecurePass123!"
  *     responses:
  *       201:
  *         description: Students and credentials added successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Students and credentials added successfully (duplicates skipped)"
- *                 students:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "stu001"
- *                       firstName:
- *                         type: string
- *                         example: "John"
- *                       lastName:
- *                         type: string
- *                         example: "Doe"
- *                       gender:
- *                         type: string
- *                         example: "MALE"
- *                       email:
- *                         type: string
- *                         example: "john.doe@example.com"
- *       400:
- *         description: Invalid input, expected an array of students
- *       500:
- *         description: Internal server error
  */
 router.post(
   "/bulk-add",
-  authorizeRoles([UserRole.ADMIN]),
-  StudentController.bulkAddStudents,
+  authorizeRoles([UserRole.Admin]),
+  studentController.bulkAddStudents,
 );
 
 export default router;

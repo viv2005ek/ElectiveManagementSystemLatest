@@ -1,10 +1,6 @@
-import { useState } from "react";
-import {
-  ChevronDownIcon,
-  TrashIcon,
-  XCircleIcon,
-} from "@heroicons/react/24/outline";
-import { useCourseBuckets } from "../hooks/useCourseBuckets.ts";
+import { useState } from 'react';
+import { ChevronDownIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useCourseBuckets } from '../hooks/useCourseBuckets.ts';
 
 interface Course {
   id: string;

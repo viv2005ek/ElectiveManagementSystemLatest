@@ -1,5 +1,5 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import AllStudentList from "../components/AllStudentList.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
+import AllStudentList from '../components/AllStudentList.tsx';
 
 export default function AllStudentListPage() {
   return (

@@ -1,37 +1,40 @@
-import MainLayout from "../layouts/MainLayout.tsx";
-import PageHeader from "../components/PageHeader.tsx";
-import StudentsTable from "../components/tables/StudentsTable.tsx";
-import { useFetchStudents } from "../hooks/useFetchStudents.ts";
-import { useEffect, useState } from "react";
-import { useDepartments } from "../hooks/useDepartments.ts";
-import useBranches, { Branch } from "../hooks/useBranches.ts";
-import { Link } from "react-router-dom";
-import SingleSelectFilterForIds from "../components/filters/SingleSelectFilterForIds.tsx";
-import SearchBar from "../components/SearchBar.tsx";
-import { getBatches, getSemesters } from "../utils/generateObjectArrays.ts";
-import SingleSelectFilterForNumbers from "../components/filters/SingleSelectFilterForNumbers.tsx";
+import MainLayout from '../layouts/MainLayout.tsx';
+import PageHeader from '../components/PageHeader.tsx';
+import StudentsTable from '../components/tables/StudentsTable.tsx';
+import { useFetchStudents } from '../hooks/studentHooks/useFetchStudents.ts';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import SearchBarWithDebounce from '../components/SearchBarWithDebounce.tsx';
+import useFetchDepartments, { Department } from '../hooks/departmentHooks/useFetchDepartments.ts';
+import useFetchSemesters, { Semester } from '../hooks/semesterHooks/useFetchSemesters.ts';
+import useFetchBatches, { Batch } from '../hooks/batchHooks/useFetchBatches.ts';
+import { Program } from '../hooks/programHooks/useFetchPrograms.ts';
+import useFetchSchools, { School } from '../hooks/schoolHooks/useFetchSchools.ts';
 
 export default function StudentsPage() {
   // const [department, setDepartment] = useState<Department | null>(null);
-  const [branch, setBranch] = useState<Branch | null>(null);
-  const [batch, setBatch] = useState<number | null>(null);
-  const [semester, setSemester] = useState<number | null>(null);
+  const [batch, setBatch] = useState<Batch | null>(null);
+  const [program, setProgram] = useState<Program | null>(null);
+  const [semester, setSemester] = useState<Semester | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [school, setSchool] = useState<School | null>(null);
+  const [department, setDepartment] = useState<Department | null>(null);
 
-  const { departments } = useDepartments();
-  const { branches } = useBranches(true, null);
-  const semesters = getSemesters(8);
-  const batches = getBatches(5, 5);
+  const { departments } = useFetchDepartments();
+  const { semesters } = useFetchSemesters();
+  const { batches } = useFetchBatches();
+  const { schools } = useFetchSchools();
 
-  const { students, totalPages, loading } = useFetchStudents(
-    // department,
-    branch,
-    batch,
-    semester,
-    searchQuery,
-    currentPage,
-  );
+  const { students, totalPages, loading } = useFetchStudents({
+    search: searchQuery,
+    batchId: batch?.id,
+    programId: program?.id,
+    semesterId: semester?.id,
+    departmentId: department?.id,
+    schoolId: school?.id,
+    page: currentPage,
+  });
 
   useEffect(() => {
     setCurrentPage(1);
@@ -43,25 +46,13 @@ export default function StudentsPage() {
         <PageHeader title={"Students"} />
         <div className={"flex flex-row my-8 items-center justify-center"}>
           <div className={"flex flex-row gap-4 items-end"}>
-            <SearchBar value={searchQuery} setValue={setSearchQuery} />
-            <SingleSelectFilterForIds
-              name={"Branch"}
-              items={branches}
-              selected={branch}
-              setSelected={setBranch}
+            <SearchBarWithDebounce
+              value={searchQuery}
+              setValue={setSearchQuery}
             />
-            <SingleSelectFilterForNumbers
-              name={"Semesters"}
-              items={semesters}
-              selected={semester}
-              setSelected={setSemester}
-            />
-            <SingleSelectFilterForNumbers
-              name={"Batches"}
-              items={batches}
-              selected={batch}
-              setSelected={setBatch}
-            />
+            {/*<SingleSelectMenu items={batches} selected={batch} setSelected={setBatch}/>*/}
+            {/*<SingleSelectMenu items={semesters} selected={semester} setSelected={setSemester}/>*/}
+            {/*<SingleSelectMenu items={departments} selected={department} setSelected={setDepartment}/>*/}
           </div>
           <div className={"flex flex-row flex-grow justify-end"}>
             <Link to={"/branches/create"}>

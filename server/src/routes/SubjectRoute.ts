@@ -1,3 +1,4 @@
+/*
 import express from "express";
 import SubjectController from "../controllers/SubjectController";
 import { authorizeRoles } from "../middleware/roleMiddleware";
@@ -5,14 +6,14 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
-/**
+/!**
  * @swagger
  * tags:
  *   name: Subjects
  *   description: Subject management API
- */
+ *!/
 
-/**
+/!**
  * @swagger
  * /subjects:
  *   get:
@@ -27,14 +28,14 @@ const router = express.Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Subject'
- */
+ *!/
 router.get(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.Admin]),
   SubjectController.getSubjects,
 );
 
-/**
+/!**
  * @swagger
  * /subjects:
  *   post:
@@ -102,14 +103,14 @@ router.get(
  *         description: Bad request (e.g., missing required fields, invalid data)
  *       500:
  *         description: Internal server error
- */
+ *!/
 router.post(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.Admin]),
   SubjectController.createSubject,
 );
 
-/**
+/!**
  * @swagger
  * /subjects:
  *   put:
@@ -147,14 +148,14 @@ router.post(
  *         description: Bad request
  *       500:
  *         description: Internal server error
- */
+ *!/
 router.put(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.Admin]),
   SubjectController.updateSubject,
 );
 
-/**
+/!**
  * @swagger
  * /subjects/enrollment:
  *   patch:
@@ -184,14 +185,14 @@ router.put(
  *         description: Bad request
  *       404:
  *         description: Subject not found
- */
+ *!/
 router.patch(
   "/enrollment",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.Admin]),
   SubjectController.updateEnrollmentStatus,
 );
 
-/**
+/!**
  * @swagger
  * /subjects:
  *   delete:
@@ -211,11 +212,12 @@ router.patch(
  *         description: Bad request
  *       500:
  *         description: Internal server error
- */
+ *!/
 router.delete(
   "/",
-  authorizeRoles([UserRole.ADMIN]),
+  authorizeRoles([UserRole.Admin]),
   SubjectController.deleteSubject,
 );
 
 export default router;
+*/

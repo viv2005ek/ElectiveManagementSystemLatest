@@ -1,7 +1,7 @@
-import { Department } from "../../hooks/useDepartments.ts";
-import { Link, useNavigate } from "react-router-dom";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
+import { useNavigate } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
+import { Department } from '../../hooks/departmentHooks/useFetchDepartments.ts';
 
 export default function DepartmentsTable({
   departments,
@@ -12,19 +12,7 @@ export default function DepartmentsTable({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="px-4 sm:px-6 lg:px-8 mt-6">
-      <div className="sm:flex sm:items-center">
-        <div className="flex justify-end w-full">
-          <Link to={"/departments/create"}>
-            <button
-              type="button"
-              className="block rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
-            >
-              Add department
-            </button>
-          </Link>
-        </div>
-      </div>
+    <div className="">
       <div className="mt-6 flow-root">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
@@ -42,6 +30,12 @@ export default function DepartmentsTable({
                     className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
                   >
                     Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
+                  >
+                    School
                   </th>
                   <th
                     scope="col"
@@ -64,21 +58,24 @@ export default function DepartmentsTable({
                         <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
                           <Skeleton />
                         </td>
+                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
+                          <Skeleton />
+                        </td>
                       </tr>
                     ))
                   : departments?.map((department, index) => (
                       <tr
-                        onClick={() =>
-                          navigate(`/departments/${department.id}`)
-                        }
                         key={department.id}
-                        className={"hover:bg-gray-100 hover:cursor-pointer"}
+                        className={"hover:bg-gray-100 cursor-auto"}
                       >
                         <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
                           {index + 1}
                         </td>
-                        <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
+                        <td className="whitespace-nowrap font-semibold py-4 font px-4 text-sm text-gray-900">
                           {department.name}
+                        </td>
+                        <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
+                          {department.school.name}
                         </td>
                         <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
                           <a
