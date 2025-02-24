@@ -114,12 +114,6 @@ model Professor {
   isDeleted          Boolean       @default(false)
 }
 
-model CourseCategory {
-  id            String        @id @default(uuid())
-  name          String        @unique
-  allotmentType AllotmentType
-}
-
 model Course {
   id                  String               @id @default(uuid())
   code                String
@@ -158,18 +152,31 @@ model CourseBucketCourse {
   @@unique([courseBucketId, orderIndex])
 }
 
+model SubjectType {
+  id                  String        @id @default(uuid())
+  name                String        @unique
+  description         String?
+  allotmentType       AllotmentType
+  allowAnyDepartment  Boolean
+  allowSameFaculty    Boolean
+  allowSameSchool     Boolean
+  allowSameDepartment Boolean
+  subjects            Subject[]
+}
+
 model Subject {
   id            String         @id @default(uuid())
   name          String
-  allotmentType AllotmentType
   semester      Int?
-  semesters     Semester[]     @relation("SubjectSemesters")
-  programs      Program[]      @relation("ProgramToSubject")
-  allotments    Allotment[]
-  courses       Course[]       @relation("SubjectCourses")
   batchId       String
   batch         Batch          @relation(fields: [batchId], references: [id])
+  subjectTypeId String
+  subjectType   SubjectType    @relation(fields: [subjectTypeId], references: [id])
+  semesters     Semester[]     @relation("SubjectSemesters")
+  programs      Program[]      @relation("ProgramToSubject")
+  courses       Course[]       @relation("SubjectCourses")
   courseBuckets CourseBucket[] @relation("SubjectCourseBuckets")
+  allotments    Allotment[]
 }
 
 model Batch {
