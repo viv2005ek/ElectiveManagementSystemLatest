@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axiosInstance from '../../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../axiosInstance.ts";
 
 export interface Program {
   id: string;
@@ -8,7 +8,11 @@ export interface Program {
   department: {
     id: string;
     name: string;
-    school: { id: string; name: string };
+    school: {
+      id: string;
+      name: string;
+      faculty?: { id: string; name: string };
+    };
   };
 }
 
@@ -21,6 +25,7 @@ export enum ProgramType {
 interface FetchProgramsOptions {
   departmentId?: string;
   schoolId?: string;
+  facultyId?: string;
   programType?: string;
   search?: string;
 }
@@ -36,7 +41,16 @@ export function useFetchPrograms(options?: FetchProgramsOptions) {
       setError(null);
 
       try {
-        const params = new URLSearchParams(options as Record<string, string>);
+        const params = new URLSearchParams(
+          Object.entries(options || {}).reduce(
+            (acc, [key, value]) => {
+              if (value) acc[key] = value;
+              return acc;
+            },
+            {} as Record<string, string>,
+          ),
+        );
+
         const response = await axiosInstance.get(
           `/programs?${params.toString()}`,
         );
@@ -49,7 +63,7 @@ export function useFetchPrograms(options?: FetchProgramsOptions) {
     };
 
     fetchPrograms();
-  }, [options]);
+  }, [JSON.stringify(options)]);
 
   return { programs, loading, error };
 }

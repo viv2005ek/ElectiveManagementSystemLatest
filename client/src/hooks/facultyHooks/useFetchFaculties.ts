@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import axiosInstance from '../../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import axiosInstance from "../../axiosInstance.ts";
 
 export interface Faculty {
   id: string;

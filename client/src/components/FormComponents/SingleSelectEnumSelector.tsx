@@ -1,7 +1,14 @@
-import { Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { ChevronUpDownIcon } from '@heroicons/react/16/solid';
-import { CheckIcon } from '@heroicons/react/20/solid';
-import { Dispatch, SetStateAction } from 'react';
+import {
+  Label,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/react";
+import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+import { CheckIcon, InformationCircleIcon } from "@heroicons/react/20/solid";
+import { Dispatch, SetStateAction, useState } from "react";
+import { pascalToNormal } from "../../utils/StringUtils.ts";
 
 interface SingleSelectMenuProps {
   label?: string;
@@ -9,6 +16,7 @@ interface SingleSelectMenuProps {
   selected: string | null;
   setSelected: Dispatch<SetStateAction<string | null>>;
   onChange?: (item: string) => void;
+  info?: string;
 }
 
 export default function SingleSelectEnumSelector({
@@ -16,8 +24,11 @@ export default function SingleSelectEnumSelector({
   items,
   selected,
   setSelected,
+  info,
   onChange,
 }: SingleSelectMenuProps) {
+  const [hover, setHover] = useState(false);
+
   const handleChange = (item: string) => {
     setSelected(item);
     if (onChange) {
@@ -28,15 +39,32 @@ export default function SingleSelectEnumSelector({
   return (
     <Listbox value={selected} onChange={handleChange}>
       <div className="flex flex-col items-between w-full justify-start">
-        {label && (
-          <Label className="block text-sm font-medium text-gray-900">
-            {label}
-          </Label>
-        )}
+        <div className={"flex flex-row items-end gap-2"}>
+          {label && (
+            <Label className="block text-sm font-medium text-gray-900">
+              {label}
+            </Label>
+          )}
+          {info && (
+            <div
+              className="relative flex items-center"
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
+            >
+              <InformationCircleIcon className="h-5 w-5 text-gray-700 cursor-pointer" />
+
+              {hover && info && (
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-600 bg-opacity-80 px-2 py-1 text-xs text-white shadow-md">
+                  {info}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <div className="relative mt-1.5">
           <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm">
             <span className="col-start-1 row-start-1 truncate pr-6">
-              {selected ?? "Select an item"}
+              {selected ? pascalToNormal(selected) : "Select an item"}
             </span>
             <ChevronUpDownIcon
               aria-hidden="true"
@@ -58,7 +86,7 @@ export default function SingleSelectEnumSelector({
                     className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
                   >
                     <span className="block truncate font-normal group-data-[selected]:font-semibold">
-                      {item}
+                      {pascalToNormal(item)}
                     </span>
 
                     <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-[&:not([data-selected])]:hidden group-data-[focus]:text-white">

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axiosInstance from '../../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../axiosInstance.ts";
 
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/students`;
 

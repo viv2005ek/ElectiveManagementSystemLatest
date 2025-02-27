@@ -1,15 +1,19 @@
-import { Prisma, ProgramType } from '@prisma/client';
-import { Request, Response } from 'express';
-import { prisma } from '../prismaClient';
+import { Prisma, ProgramType } from "@prisma/client";
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 const ProgramController = {
   getPrograms: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { departmentId, schoolId, programType, search } = req.query;
+      const { departmentId, schoolId, facultyId, programType, search } =
+        req.query;
 
       const where: Prisma.ProgramWhereInput = {
         departmentId: departmentId ? String(departmentId) : undefined,
-        department: schoolId ? { schoolId: String(schoolId) } : undefined,
+        department: {
+          schoolId: schoolId ? String(schoolId) : undefined,
+          school: facultyId ? { facultyId: String(facultyId) } : undefined,
+        },
         programType: programType ? (programType as ProgramType) : undefined,
         name: search
           ? { contains: String(search), mode: "insensitive" }
@@ -19,7 +23,15 @@ const ProgramController = {
       const programs = await prisma.program.findMany({
         where,
         include: {
-          department: { include: { school: true } },
+          department: {
+            include: {
+              school: {
+                include: {
+                  faculty: true,
+                },
+              },
+            },
+          },
         },
       });
 

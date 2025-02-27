@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import axiosInstance from "../../axiosInstance.ts";
 
 export interface Semester {
   id: string;
@@ -16,14 +17,9 @@ const useFetchSemesters = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/semesters`,
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await axiosInstance.get("/semesters");
 
-        setSemesters(response.data.semesters);
+        setSemesters(response.data);
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to fetch semesters");
       } finally {

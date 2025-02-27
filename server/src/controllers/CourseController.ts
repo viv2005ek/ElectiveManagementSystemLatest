@@ -10,10 +10,7 @@
 //         where: { id },
 //         include: {
 //           department: true,
-//           courseCategories: true,
 //           courseBuckets: true,
-//           subjectPreferences: true,
-//           courseAllotment: true,
 //         },
 //       });
 //       console.log("hello");
@@ -26,39 +23,6 @@
 //     } catch (error) {
 //       console.error("Error fetching course:", error);
 //       res.status(500).json({ message: "Unable to fetch course" });
-//     }
-//   },
-//
-//   getCoursesByCategory: async (req: Request, res: Response): Promise<any> => {
-//     try {
-//       const { departmentId, categoryId } = req.query;
-//       console.log("Received request for getCoursesByCategory");
-//       console.log("Query Params:", req.query);
-//
-//       console.log("id", departmentId);
-//
-//       const filters: any = {
-//         isDeleted: false,
-//       };
-//
-//       if (departmentId) {
-//         filters.departmentId = departmentId;
-//       }
-//
-//       if (categoryId) {
-//         filters.courseCategories = {
-//           some: { id: categoryId },
-//         };
-//       }
-//
-//       const courses = await prisma.course.findMany({
-//         where: filters,
-//       });
-//
-//       res.status(200).json({ courses, count: courses.length });
-//     } catch (error) {
-//       console.error(" Error fetching courses:", error);
-//       res.status(500).json({ message: "Unable to fetch courses", error });
 //     }
 //   },
 //
@@ -255,47 +219,6 @@
 //   },
 //
 //   // Update a course
-//   updateCourse: async (req: Request, res: Response): Promise<any> => {
-//     try {
-//       const { id } = req.params;
-//       const {
-//         name,
-//         code,
-//         credits,
-//         departmentId,
-//         courseCategories,
-//         courseBuckets,
-//       } = req.body;
-//
-//       const existingCourse = await prisma.course.findUnique({ where: { id } });
-//       if (!existingCourse || existingCourse.isDeleted) {
-//         return res.status(404).json({ message: "Course not found" });
-//       }
-//
-//       const updatedCourse = await prisma.course.update({
-//         where: { id },
-//         data: {
-//           name,
-//           code,
-//           credits,
-//           departmentId,
-//           courseCategories: courseCategories
-//             ? { set: courseCategories.map((id: string) => ({ id })) }
-//             : undefined,
-//           courseBuckets: courseBuckets
-//             ? { set: courseBuckets.map((id: string) => ({ id })) }
-//             : undefined,
-//         },
-//       });
-//
-//       res
-//         .status(200)
-//         .json({ message: "Course updated successfully", data: updatedCourse });
-//     } catch (error) {
-//       console.error("Error updating course:", error);
-//       res.status(500).json({ message: "Unable to update course" });
-//     }
-//   },
 //
 //   // Soft delete a course
 //   deleteCourse: async (req: Request, res: Response): Promise<any> => {

@@ -1,5 +1,5 @@
-import express from 'express';
-import EnumsController from '../controllers/EnumsController';
+import express from "express";
+import EnumsController from "../controllers/EnumsController";
 
 const router = express.Router();
 
@@ -69,5 +69,17 @@ router.get("/allotment-types", EnumsController.getAllotmentTypes);
  *         description: List of allotment statuses
  */
 router.get("/allotment-statuses", EnumsController.getAllotmentStatuses);
+
+/**
+ * @swagger
+ * /enums/subject-scopes:
+ *   get:
+ *     summary: Get all subject scopes
+ *     tags: [Enums]
+ *     responses:
+ *       200:
+ *         description: List of subject scopes
+ */
+router.get("/subject-scopes", EnumsController.getSubjectScopes);
 
 export default router;

@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import axiosInstance from '../../axiosInstance';
-import { useNotification } from '../../contexts/NotificationContext.tsx';
-import axios from 'axios';
+import { useState } from "react";
+import axiosInstance from "../../axiosInstance";
+import { useNotification } from "../../contexts/NotificationContext.tsx";
+import axios from "axios";
 
 interface SchoolResponse {
   id: string;

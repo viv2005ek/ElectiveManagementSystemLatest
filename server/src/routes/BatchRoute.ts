@@ -1,5 +1,5 @@
-import express from 'express';
-import BatchController from '../controllers/BatchController';
+import express from "express";
+import BatchController from "../controllers/BatchController";
 
 const router = express.Router();
 

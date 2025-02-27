@@ -1,5 +1,12 @@
-import { Request, Response } from 'express';
-import { AllotmentStatus, AllotmentType, Gender, ProgramType, UserRole } from '@prisma/client';
+import { Request, Response } from "express";
+import {
+  AllotmentStatus,
+  AllotmentType,
+  Gender,
+  ProgramType,
+  SubjectScope,
+  UserRole,
+} from "@prisma/client";
 
 const EnumsController = {
   getGenders: (req: Request, res: Response): void => {
@@ -20,6 +27,9 @@ const EnumsController = {
 
   getAllotmentStatuses: (req: Request, res: Response): void => {
     res.status(200).json(Object.values(AllotmentStatus));
+  },
+  getSubjectScopes: (req: Request, res: Response): void => {
+    res.status(200).json(Object.values(SubjectScope));
   },
 };
 

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import InfoStudentPopUp from './InfoStudentPopUp';
-import axiosInstance from '../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import InfoStudentPopUp from "./InfoStudentPopUp";
+import axiosInstance from "../axiosInstance.ts";
 
 interface Student {
   name: string;

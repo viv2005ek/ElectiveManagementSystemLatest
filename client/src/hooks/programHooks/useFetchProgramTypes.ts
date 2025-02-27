@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axiosInstance from '../../axiosInstance.ts';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../axiosInstance.ts";
 
 const useFetchProgramTypes = () => {
   const [programTypes, setProgramTypes] = useState<string[]>([]);

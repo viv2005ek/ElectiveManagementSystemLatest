@@ -1,12 +1,14 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import TextInputField from '../components/FormComponents/TextInputField.tsx';
-import { useState } from 'react';
-import SingleSelectMenu from '../components/FormComponents/SingleSelectMenu.tsx';
-import useFetchDepartments, { Department } from '../hooks/departmentHooks/useFetchDepartments.ts';
-import useCreateProgram from '../hooks/programHooks/useCreateProgram.ts';
-import useFetchProgramTypes from '../hooks/programHooks/useFetchProgramTypes.ts';
-import SingleSelectEnumSelector from '../components/FormComponents/SingleSelectEnumSelector.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import TextInputField from "../components/FormComponents/TextInputField.tsx";
+import { useState } from "react";
+import SingleSelectMenu from "../components/FormComponents/SingleSelectMenu.tsx";
+import useFetchDepartments, {
+  Department,
+} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import useCreateProgram from "../hooks/programHooks/useCreateProgram.ts";
+import useFetchProgramTypes from "../hooks/programHooks/useFetchProgramTypes.ts";
+import SingleSelectEnumSelector from "../components/FormComponents/SingleSelectEnumSelector.tsx";
 
 export default function CreateProgramPage() {
   const [name, setName] = useState("");

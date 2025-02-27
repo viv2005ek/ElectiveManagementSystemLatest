@@ -1,14 +1,14 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import FacultiesTable from '../components/tables/FacultiesTable.tsx';
-import useFetchFaculties from '../hooks/facultyHooks/useFetchFaculties.ts';
-import { Link } from 'react-router-dom';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import FacultiesTable from "../components/tables/FacultiesTable.tsx";
+import useFetchFaculties from "../hooks/facultyHooks/useFetchFaculties.ts";
+import { Link } from "react-router-dom";
 
 export default function FacultiesPage() {
   const { faculties, loading } = useFetchFaculties();
   return (
     <MainLayout>
-      <div className={"p-8"}>
+      <div className={"py-8"}>
         <PageHeader title={"Faculties"} />
         <div className={""}>
           <div className={"flex flex-row items-center mt-4 justify-end"}>

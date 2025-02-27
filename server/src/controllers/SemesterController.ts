@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -21,10 +21,6 @@ const SemesterController = {
     try {
       const semester = await prisma.semester.findUnique({
         where: { id },
-        include: {
-          subjects: true,
-          allotments: true,
-        },
       });
 
       if (!semester) {

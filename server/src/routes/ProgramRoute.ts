@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import ProgramController from '../controllers/ProgramController';
+import { Router } from "express";
+import ProgramController from "../controllers/ProgramController";
 
 const router = Router();
 
@@ -27,6 +27,11 @@ const router = Router();
  *         schema:
  *           type: string
  *         description: Filter by school ID
+ *       - in: query
+ *         name: facultyId
+ *         schema:
+ *           type: string
+ *         description: Filter by faculty ID
  *       - in: query
  *         name: programType
  *         schema:

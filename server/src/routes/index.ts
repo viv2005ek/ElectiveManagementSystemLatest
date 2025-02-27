@@ -1,14 +1,16 @@
-import { Express } from 'express';
-import AuthRoute from './AuthRoute';
-import StudentRoute from './StudentRoute';
-import DepartmentRoute from './DepartmentRoute';
-import authMiddleware from '../middleware/authMiddleware';
-import FacultyRoute from './FacultyRoute';
-import SchoolRoute from './SchoolRoute';
-import EnumsRoute from './EnumsRoute';
-import ProgramRoute from './ProgramRoute';
-import BatchRoute from './BatchRoute';
-import SemesterRoute from './SemesterRoute';
+import { Express } from "express";
+import AuthRoute from "./AuthRoute";
+import StudentRoute from "./StudentRoute";
+import DepartmentRoute from "./DepartmentRoute";
+import authMiddleware from "../middleware/authMiddleware";
+import FacultyRoute from "./FacultyRoute";
+import SchoolRoute from "./SchoolRoute";
+import EnumsRoute from "./EnumsRoute";
+import ProgramRoute from "./ProgramRoute";
+import BatchRoute from "./BatchRoute";
+import SemesterRoute from "./SemesterRoute";
+import SubjectTypeRoute from "./SubjectTypeRoute";
+import CourseBucketRoute from "./CourseBucketRoute";
 
 export const setupRoutes = (app: Express) => {
   app.use("/auth", AuthRoute);
@@ -27,4 +29,6 @@ export const setupRoutes = (app: Express) => {
   app.use("/programs", ProgramRoute);
   app.use("/batches", BatchRoute);
   app.use("/semesters", SemesterRoute);
+  app.use("/subject-types", SubjectTypeRoute);
+  app.use("/course-buckets", CourseBucketRoute);
 };

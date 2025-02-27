@@ -1,5 +1,5 @@
-import { prisma } from '../prismaClient';
-import { Request, Response } from 'express';
+import { prisma } from "../prismaClient";
+import { Request, Response } from "express";
 
 const FacultyController = {
   getAllFaculties: async (req: Request, res: Response): Promise<any> => {

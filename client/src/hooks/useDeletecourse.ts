@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import axiosInstance from '../axiosInstance.ts';
+import { useState } from "react";
+import axiosInstance from "../axiosInstance.ts";
 
 const useDeleteCourse = () => {
   const [isDeleting, setIsDeleting] = useState(false);

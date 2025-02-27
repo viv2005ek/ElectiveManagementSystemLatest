@@ -1,5 +1,5 @@
-import express from 'express';
-import SchoolController from '../controllers/SchoolController';
+import express from "express";
+import SchoolController from "../controllers/SchoolController";
 
 /**
  * @swagger

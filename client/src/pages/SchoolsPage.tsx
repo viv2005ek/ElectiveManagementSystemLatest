@@ -1,15 +1,15 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import SchoolsTable from '../components/tables/SchoolsTable.tsx';
-import useFetchSchools from '../hooks/schoolHooks/useFetchSchools.ts';
-import { Link } from 'react-router-dom';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import SchoolsTable from "../components/tables/SchoolsTable.tsx";
+import useFetchSchools from "../hooks/schoolHooks/useFetchSchools.ts";
+import { Link } from "react-router-dom";
 
 export default function SchoolsPage() {
   const { schools, loading } = useFetchSchools();
 
   return (
     <MainLayout>
-      <div className={"p-8"}>
+      <div className={"py-8"}>
         <PageHeader title={"Schools"} />
         <div className={""}>
           <div className={"flex flex-row items-center mt-4 justify-end"}>

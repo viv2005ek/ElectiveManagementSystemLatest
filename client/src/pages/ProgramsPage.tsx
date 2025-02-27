@@ -1,10 +1,10 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import SearchBarWithoutDebounce from '../components/SearchBarWithoutDebounce.tsx';
-import { useFetchPrograms } from '../hooks/programHooks/useFetchPrograms.ts';
-import ProgramsTable from '../components/tables/ProgramsTable.tsx';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import SearchBarWithoutDebounce from "../components/SearchBarWithoutDebounce.tsx";
+import { useFetchPrograms } from "../hooks/programHooks/useFetchPrograms.ts";
+import ProgramsTable from "../components/tables/ProgramsTable.tsx";
 
 export default function ProgramsPage() {
   const { programs, loading } = useFetchPrograms();
@@ -14,7 +14,7 @@ export default function ProgramsPage() {
 
   return (
     <MainLayout>
-      <div className={"p-8"}>
+      <div className={"py-8"}>
         <PageHeader title={"Programs"} />
         <div>
           <div className={"flex flex-row items-center mt-4 justify-end"}>

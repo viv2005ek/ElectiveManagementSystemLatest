@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import currentUser from '../store/currentUserData';
+import { useState } from "react";
+import currentUser from "../store/currentUserData";
 
 export default function UserProfile() {
   const {

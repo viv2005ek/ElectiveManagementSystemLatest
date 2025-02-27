@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from "react";
 
 export default function TextInputField({
   label,
@@ -13,10 +13,7 @@ export default function TextInputField({
 }) {
   return (
     <div>
-      <label
-        htmlFor="email"
-        className="block text-sm/6 font-medium text-gray-900"
-      >
+      <label className="block text-sm/6 font-medium text-gray-900">
         {label}
       </label>
       <div className="mt-2">

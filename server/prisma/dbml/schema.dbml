@@ -82,7 +82,10 @@ Table Student {
   credentialId String [unique, not null]
   credential Credential [not null]
   isDeleted Boolean [not null, default: false]
-  allotments Allotment [not null]
+  StandaloneSubjectPreference StandaloneSubjectPreference [not null]
+  BucketSubjectPreference BucketSubjectPreference [not null]
+  StandaloneAllotment StandaloneAllotment [not null]
+  BucketAllotment BucketAllotment [not null]
 }
 
 Table Professor {
@@ -103,12 +106,6 @@ Table Professor {
   isDeleted Boolean [not null, default: false]
 }
 
-Table CourseCategory {
-  id String [pk]
-  name String [unique, not null]
-  allotmentType AllotmentType [not null]
-}
-
 Table Course {
   id String [pk]
   code String [not null]
@@ -117,9 +114,13 @@ Table Course {
   departmentId String [not null]
   department Department [not null]
   courseBuckets CourseBucket [not null]
-  allotments Allotment [not null]
   courseBucketCourses CourseBucketCourse [not null]
   subjects Subject [not null]
+  isDeleted Boolean [not null]
+  subjectTypes SubjectType [not null]
+  StandaloneSubjectPreference StandaloneSubjectPreference [not null]
+  StandaloneAllotment StandaloneAllotment [not null]
+  BucketAllotment BucketAllotment [not null]
 
   indexes {
     (code, departmentId) [unique]
@@ -132,9 +133,12 @@ Table CourseBucket {
   departmentId String [not null]
   department Department [not null]
   courses Course [not null]
-  allotments Allotment [not null]
   courseBucketCourses CourseBucketCourse [not null]
   subjects Subject [not null]
+  subjectTypes SubjectType [not null]
+  isDeleted Boolean [not null]
+  BucketSubjectPreference BucketSubjectPreference [not null]
+  BucketAllotment BucketAllotment [not null]
 }
 
 Table CourseBucketCourse {
@@ -151,18 +155,95 @@ Table CourseBucketCourse {
   }
 }
 
+Table SubjectType {
+  id String [pk]
+  name String [unique, not null]
+  description String
+  allotmentType AllotmentType [not null]
+  scope SubjectScope [not null]
+  subjects Subject [not null]
+  courses Course [not null]
+  courseBuckets CourseBucket [not null]
+}
+
 Table Subject {
   id String [pk]
   name String [not null]
-  allotmentType AllotmentType [not null]
   semester Int
-  semesters Semester [not null]
-  programs Program [not null]
-  allotments Allotment [not null]
-  courses Course [not null]
   batchId String [not null]
   batch Batch [not null]
+  subjectTypeId String [not null]
+  subjectType SubjectType [not null]
+  isPreferenceWindowOpen Boolean [not null, default: false]
+  isAllotmentFinalized Boolean [not null, default: false]
+  semesters Semester [not null]
+  programs Program [not null]
+  courses Course [not null]
   courseBuckets CourseBucket [not null]
+  StandaloneSubjectPreference StandaloneSubjectPreference [not null]
+  BucketSubjectPreference BucketSubjectPreference [not null]
+  StandaloneAllotment StandaloneAllotment [not null]
+  BucketAllotment BucketAllotment [not null]
+}
+
+Table StandaloneSubjectPreference {
+  id String [pk]
+  subjectId String [not null]
+  subject Subject [not null]
+  studentId String [not null]
+  student Student [not null]
+  courseId String [not null]
+  course Course [not null]
+  preferenceRank Int [not null]
+
+  indexes {
+    (subjectId, studentId, preferenceRank) [unique]
+    (subjectId, studentId, courseId) [unique]
+  }
+}
+
+Table BucketSubjectPreference {
+  id String [pk]
+  subjectId String [not null]
+  subject Subject [not null]
+  studentId String [not null]
+  student Student [not null]
+  courseBucketId String [not null]
+  courseBucket CourseBucket [not null]
+  preferenceRank Int [not null]
+
+  indexes {
+    (subjectId, studentId, preferenceRank) [unique]
+    (subjectId, studentId, courseBucketId) [unique]
+  }
+}
+
+Table StandaloneAllotment {
+  id String [pk]
+  subjectId String [not null]
+  subject Subject [not null]
+  studentId String [not null]
+  student Student [not null]
+  courseId String [not null]
+  course Course [not null]
+  semesterId String [not null]
+  semester Semester [not null]
+  allotmentStatus AllotmentStatus [not null]
+}
+
+Table BucketAllotment {
+  id String [pk]
+  studentId String [not null]
+  student Student [not null]
+  subjectId String [not null]
+  subject Subject [not null]
+  courseBucketId String [not null]
+  courseBucket CourseBucket [not null]
+  courseId String [not null]
+  course Course [not null]
+  semesterId String [not null]
+  semester Semester [not null]
+  allotmentStatus AllotmentStatus [not null]
 }
 
 Table Batch {
@@ -176,22 +257,8 @@ Table Semester {
   id String [pk]
   number Int [unique, not null]
   subjects Subject [not null]
-  allotments Allotment [not null]
-}
-
-Table Allotment {
-  id String [pk]
-  studentId String [not null]
-  student Student [not null]
-  subjectId String [not null]
-  subject Subject [not null]
-  courseBucketId String
-  courseBucket CourseBucket
-  courseId String [not null]
-  course Course [not null]
-  semesterId String [not null]
-  semester Semester [not null]
-  allotmentStatus AllotmentStatus [not null]
+  StandaloneAllotment StandaloneAllotment [not null]
+  BucketAllotment BucketAllotment [not null]
 }
 
 Table ProfessorRank {
@@ -216,8 +283,18 @@ Table SubjectCourses {
   coursesId String [ref: > Course.id]
 }
 
+Table CourseToSubjectCategory {
+  subjecttypesId String [ref: > SubjectType.id]
+  coursesId String [ref: > Course.id]
+}
+
 Table SubjectCourseBuckets {
   subjectsId String [ref: > Subject.id]
+  coursebucketsId String [ref: > CourseBucket.id]
+}
+
+Table CourseBucketToSubjectTypes {
+  subjecttypesId String [ref: > SubjectType.id]
   coursebucketsId String [ref: > CourseBucket.id]
 }
 
@@ -254,6 +331,13 @@ Enum AllotmentStatus {
   Confirmed
 }
 
+Enum SubjectScope {
+  AnyDepartment
+  SameFaculty
+  SameSchool
+  SameDepartment
+}
+
 Ref: Admin.credentialId - Credential.id
 
 Ref: School.facultyId > Faculty.id
@@ -284,12 +368,34 @@ Ref: CourseBucketCourse.courseId > Course.id
 
 Ref: Subject.batchId > Batch.id
 
-Ref: Allotment.studentId > Student.id
+Ref: Subject.subjectTypeId > SubjectType.id
 
-Ref: Allotment.subjectId > Subject.id
+Ref: StandaloneSubjectPreference.subjectId > Subject.id
 
-Ref: Allotment.courseBucketId > CourseBucket.id
+Ref: StandaloneSubjectPreference.studentId > Student.id
 
-Ref: Allotment.courseId > Course.id
+Ref: StandaloneSubjectPreference.courseId > Course.id
 
-Ref: Allotment.semesterId > Semester.id
+Ref: BucketSubjectPreference.subjectId > Subject.id
+
+Ref: BucketSubjectPreference.studentId > Student.id
+
+Ref: BucketSubjectPreference.courseBucketId > CourseBucket.id
+
+Ref: StandaloneAllotment.subjectId > Subject.id
+
+Ref: StandaloneAllotment.studentId > Student.id
+
+Ref: StandaloneAllotment.courseId > Course.id
+
+Ref: StandaloneAllotment.semesterId > Semester.id
+
+Ref: BucketAllotment.studentId > Student.id
+
+Ref: BucketAllotment.subjectId > Subject.id
+
+Ref: BucketAllotment.courseBucketId > CourseBucket.id
+
+Ref: BucketAllotment.courseId > Course.id
+
+Ref: BucketAllotment.semesterId > Semester.id

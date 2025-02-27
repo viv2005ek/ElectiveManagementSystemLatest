@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import axiosInstance from '../../axiosInstance';
-import { useNotification } from '../../contexts/NotificationContext.tsx';
-import { Faculty } from '../facultyHooks/useFetchFaculties.ts';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../axiosInstance";
+import { useNotification } from "../../contexts/NotificationContext.tsx";
+import { Faculty } from "../facultyHooks/useFetchFaculties.ts";
+import axios from "axios";
 
 export interface School {
   id: string;

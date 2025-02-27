@@ -1,10 +1,10 @@
-import MainLayout from '../layouts/MainLayout.tsx';
-import PageHeader from '../components/PageHeader.tsx';
-import CoursesTable from '../components/tables/CoursesTable.tsx';
-import useFetchCourses from '../hooks/useFetchCourses.ts';
-import { useState } from 'react';
-import SearchBarWithDebounce from '../components/SearchBarWithDebounce.tsx';
-import { Link } from 'react-router-dom';
+import MainLayout from "../layouts/MainLayout.tsx";
+import PageHeader from "../components/PageHeader.tsx";
+import CoursesTable from "../components/tables/CoursesTable.tsx";
+import useFetchCourses from "../hooks/useFetchCourses.ts";
+import { useState } from "react";
+import SearchBarWithDebounce from "../components/SearchBarWithDebounce.tsx";
+import { Link } from "react-router-dom";
 
 export default function CoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +16,7 @@ export default function CoursesPage() {
 
   return (
     <MainLayout>
-      <div className={"p-8"}>
+      <div className={"py-8"}>
         <PageHeader title={"Courses"} />
         <div className={"flex flex-row my-8 items-center justify-center"}>
           <div className={"flex flex-row gap-4 items-end"}>
@@ -44,12 +44,12 @@ export default function CoursesPage() {
             {/*/>*/}
           </div>
           <div className={"flex flex-row flex-grow justify-end"}>
-            <Link to={"/branches/create"}>
+            <Link to={"/courses/create"}>
               <button
                 type="button"
                 className="block rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
               >
-                Add student
+                Add Course
               </button>
             </Link>
           </div>
