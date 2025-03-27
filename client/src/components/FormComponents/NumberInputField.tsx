@@ -8,8 +8,8 @@ export default function NumberInputField({
 }: {
   label?: string;
   placeholder?: string;
-  value: number | undefined;
-  setValue: Dispatch<SetStateAction<number | undefined>>;
+  value: number | null;
+  setValue: Dispatch<SetStateAction<number | null>>;
 }) {
   return (
     <div>

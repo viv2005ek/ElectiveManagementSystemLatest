@@ -127,7 +127,7 @@ model Course {
   courseBuckets               CourseBucket[]                @relation("CourseBucketToCourse")
   courseBucketCourses         CourseBucketCourse[]
   subjects                    Subject[]                     @relation("SubjectCourses")
-  isDeleted                   Boolean
+  isDeleted                   Boolean                       @default(false)
   subjectTypes                SubjectType[]                 @relation("CourseToSubjectCategory")
   StandaloneSubjectPreference StandaloneSubjectPreference[]
   StandaloneAllotment         StandaloneAllotment[]
@@ -174,23 +174,25 @@ model SubjectType {
 }
 
 model Subject {
-  id                          String                        @id @default(uuid())
-  name                        String
-  semester                    Int?
-  batchId                     String
-  batch                       Batch                         @relation(fields: [batchId], references: [id])
-  subjectTypeId               String
-  subjectType                 SubjectType                   @relation(fields: [subjectTypeId], references: [id])
-  isPreferenceWindowOpen      Boolean                       @default(false)
-  isAllotmentFinalized        Boolean                       @default(false)
-  semesters                   Semester[]                    @relation("SubjectSemesters")
-  programs                    Program[]                     @relation("ProgramToSubject")
-  courses                     Course[]                      @relation("SubjectCourses")
-  courseBuckets               CourseBucket[]                @relation("SubjectCourseBuckets")
-  StandaloneSubjectPreference StandaloneSubjectPreference[]
-  BucketSubjectPreference     BucketSubjectPreference[]
-  StandaloneAllotment         StandaloneAllotment[]
-  BucketAllotment             BucketAllotment[]
+  id                           String                        @id @default(uuid())
+  name                         String
+  subjectScope                 SubjectScope
+  semester                     Semester?                     @relation(fields: [semesterId], references: [id])
+  semesterId                   String?
+  batchId                      String
+  batch                        Batch                         @relation(fields: [batchId], references: [id])
+  subjectTypeId                String
+  subjectType                  SubjectType                   @relation(fields: [subjectTypeId], references: [id])
+  isPreferenceWindowOpen       Boolean                       @default(false)
+  isAllotmentFinalized         Boolean                       @default(false)
+  semesters                    Semester[]                    @relation("SubjectSemesters")
+  programs                     Program[]                     @relation("ProgramToSubject")
+  courses                      Course[]                      @relation("SubjectCourses")
+  courseBuckets                CourseBucket[]                @relation("SubjectCourseBuckets")
+  standaloneSubjectPreferences StandaloneSubjectPreference[]
+  bucketSubjectPreferences     BucketSubjectPreference[]
+  standaloneAllotments         StandaloneAllotment[]
+  bucketAllotments             BucketAllotment[]
 }
 
 model StandaloneSubjectPreference {
@@ -257,18 +259,19 @@ model Batch {
 }
 
 model Semester {
-  id                  String                @id @default(uuid())
-  number              Int                   @unique
-  subjects            Subject[]             @relation("SubjectSemesters")
-  StandaloneAllotment StandaloneAllotment[]
-  BucketAllotment     BucketAllotment[]
+  id                   String                @id @default(uuid())
+  number               Int                   @unique
+  subjects             Subject[]             @relation("SubjectSemesters")
+  standaloneAllotments StandaloneAllotment[]
+  bucketAllotments     BucketAllotment[]
+  Subject              Subject[]
 }
 
 model ProfessorRank {
-  id        String      @id @default(uuid())
-  name      String      @unique
-  priority  Int         @unique
-  Professor Professor[]
+  id         String      @id @default(uuid())
+  name       String      @unique
+  priority   Int         @unique
+  professors Professor[]
 }
 
 enum Gender {

@@ -1,41 +1,9 @@
-/*
-import express from "express";
+import express from 'express';
 import SubjectController from "../controllers/SubjectController";
-import { authorizeRoles } from "../middleware/roleMiddleware";
-import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
-/!**
- * @swagger
- * tags:
- *   name: Subjects
- *   description: Subject management API
- *!/
-
-/!**
- * @swagger
- * /subjects:
- *   get:
- *     summary: Retrieve a list of subjects
- *     tags: [Subjects]
- *     responses:
- *       200:
- *         description: A list of subjects
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Subject'
- *!/
-router.get(
-  "/",
-  authorizeRoles([UserRole.Admin]),
-  SubjectController.getSubjects,
-);
-
-/!**
+/**
  * @swagger
  * /subjects:
  *   post:
@@ -49,73 +17,129 @@ router.get(
  *             type: object
  *             required:
  *               - name
- *               - batch
- *               - categoryId
- *               - branchIds
+ *               - subjectTypeId
+ *               - batchId
  *             properties:
  *               name:
  *                 type: string
  *                 description: Name of the subject
  *               semester:
  *                 type: integer
+ *                 minimum: 1
  *                 nullable: true
- *                 description: Semester for standalone subjects (required if category allotment type is standalone)
- *               batch:
- *                 type: integer
- *                 description: Batch year of the subject
- *               categoryId:
+ *                 description: Optional semester number
+ *               batchId:
  *                 type: string
- *                 description: ID of the category the subject belongs to
- *               branchIds:
+ *                 description: ID of the batch the subject belongs to
+ *               subjectTypeId:
+ *                 type: string
+ *                 description: ID of the subject type
+ *               programIds:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: List of branch IDs associated with the subject
+ *                 description: List of program IDs associated with the subject
  *               courseIds:
  *                 type: array
  *                 items:
  *                   type: string
- *                 nullable: true
- *                 description: List of course IDs associated with the subject (for standalone or bucket-based subjects)
+ *                 description: List of course IDs associated with the subject
  *               courseBucketIds:
  *                 type: array
  *                 items:
  *                   type: string
- *                 nullable: true
- *                 description: List of course bucket IDs (required for bucket-based subjects)
- *               semesters:
- *                 type: array
- *                 items:
- *                   type: integer
- *                 nullable: true
- *                 description: List of semesters applicable for bucket-based subjects
- *               departmentId:
- *                 type: string
- *                 description: ID of the department the subject belongs to
- *               canOptOutsideDepartment:
+ *                 description: List of course bucket IDs associated with the subject
+ *               isPreferenceWindowOpen:
  *                 type: boolean
- *                 default: false
- *                 description: Whether students outside the department can opt for this subject
+ *                 description: Whether the preference window is open
+ *               isAllotmentFinalized:
+ *                 type: boolean
+ *                 description: Whether the allotment is finalized
  *     responses:
  *       201:
- *         description: Subject created successfully
+ *         description: Successfully created
  *       400:
- *         description: Bad request (e.g., missing required fields, invalid data)
+ *         description: Validation error (missing required fields)
  *       500:
- *         description: Internal server error
- *!/
-router.post(
-  "/",
-  authorizeRoles([UserRole.Admin]),
-  SubjectController.createSubject,
-);
+ *         description: Failed to create subject
+ */
+router.post('/', SubjectController.createSubject);
 
-/!**
+
+/**
  * @swagger
  * /subjects:
- *   put:
- *     summary: Update an existing subject
+ *   get:
+ *     summary: Get all subjects with optional filtering and search
  *     tags: [Subjects]
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by subject name
+ *       - in: query
+ *         name: subjectTypeId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: semesterId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: batchId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: isAllotmentWindowOpen
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: isAllotmentFinalized
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: A list of subjects
+ *       500:
+ *         description: Failed to fetch subjects
+ */
+router.get('/', SubjectController.getAllSubjects);
+
+/**
+ * @swagger
+ * /subjects/{id}:
+ *   get:
+ *     summary: Get a single subject by ID
+ *     tags: [Subjects]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Subject details
+ *       404:
+ *         description: Subject not found
+ *       500:
+ *         description: Failed to fetch subject
+ */
+router.get('/:id', SubjectController.getSubjectById);
+
+/**
+ * @swagger
+ * /subjects/{id}:
+ *   patch:
+ *     summary: Update a subject
+ *     tags: [Subjects]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -123,101 +147,47 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               id:
- *                 type: string
  *               name:
  *                 type: string
  *               semester:
  *                 type: integer
- *               batch:
- *                 type: integer
- *               categoryId:
+ *                 minimum: 1
+ *               batchId:
  *                 type: string
- *               branchIds:
- *                 type: array
- *                 items:
- *                   type: string
- *               courseIds:
- *                 type: array
- *                 items:
- *                   type: string
- *     responses:
- *       200:
- *         description: Subject updated successfully
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
- *!/
-router.put(
-  "/",
-  authorizeRoles([UserRole.Admin]),
-  SubjectController.updateSubject,
-);
-
-/!**
- * @swagger
- * /subjects/enrollment:
- *   patch:
- *     summary: Open enrollment for a subject
- *     tags: [Subjects]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
+ *               subjectTypeId:
  *                 type: string
- *                 description: The subject ID
- *               isEnrollOpen:
+ *               isPreferenceWindowOpen:
  *                 type: boolean
- *                 description: Set to true to open enrollment
- *               enrollmentDeadline:
- *                 type: string
- *                 format: date-time
- *                 description: Enrollment deadline (optional)
+ *               isAllotmentFinalized:
+ *                 type: boolean
  *     responses:
  *       200:
- *         description: Enrollment status updated successfully
+ *         description: Successfully updated
  *       400:
- *         description: Bad request
- *       404:
- *         description: Subject not found
- *!/
-router.patch(
-  "/enrollment",
-  authorizeRoles([UserRole.Admin]),
-  SubjectController.updateEnrollmentStatus,
-);
+ *         description: Validation error
+ *       500:
+ *         description: Failed to update subject
+ */
+router.patch('/:id', SubjectController.updateSubject);
 
-/!**
+/**
  * @swagger
- * /subjects:
+ * /subjects/{id}:
  *   delete:
- *     summary: Delete a subject by ID
+ *     summary: Delete a subject
  *     tags: [Subjects]
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: The subject ID
  *     responses:
- *       200:
- *         description: Subject deleted successfully
- *       400:
- *         description: Bad request
+ *       204:
+ *         description: Successfully deleted
  *       500:
- *         description: Internal server error
- *!/
-router.delete(
-  "/",
-  authorizeRoles([UserRole.Admin]),
-  SubjectController.deleteSubject,
-);
+ *         description: Failed to delete subject
+ */
+router.delete('/:id', SubjectController.deleteSubject);
 
 export default router;
-*/
