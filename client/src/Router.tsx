@@ -24,7 +24,8 @@ import ProgramsPage from "./pages/ProgramsPage.tsx";
 import CreateSubjectPage from "./pages/CreateSubjectPage.tsx";
 import CreateCoursePage from "./pages/CreateCoursePage.tsx";
 import CreateSubjectTypePage from "./pages/CreateSubjectTypePage.tsx";
-
+import SubjectsPage from "./pages/SubjectPage.tsx";
+import SubjectReference from "./pages/SubjectPreference.tsx";
 export default function Router() {
   return (
     <BrowserRouter>
@@ -46,6 +47,8 @@ export default function Router() {
         <Route path="/emsadmin" element={<EMSAdmin />} />
         <Route path={"/*"} element={<NotFoundPage />} />
         <Route path={"/subjects/create"} element={<CreateSubjectPage />} />
+        <Route path={"/subjectReference"} element={<SubjectReference />} />
+
         <Route
           path={"/subject-types/create"}
           element={<CreateSubjectTypePage />}
@@ -54,6 +57,7 @@ export default function Router() {
         <Route path={"/students"} element={<StudentsPage />} />
         <Route path={"/courses"} element={<CoursesPage />} />
         <Route path={"/courses/create"} element={<CreateCoursePage />} />
+        <Route path={"/subjects"} element={<SubjectsPage />} />
         <Route path={"/faculties/create"} element={<CreateFacultyPage />} />
         <Route path={"/faculties"} element={<FacultiesPage />} />
         <Route path={"/schools"} element={<SchoolsPage />} />
