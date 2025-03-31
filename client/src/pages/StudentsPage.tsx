@@ -1,21 +1,14 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import StudentsTable from "../components/tables/StudentsTable.tsx";
-import { useFetchStudents } from "../hooks/studentHooks/useFetchStudents.ts";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import {useFetchStudents} from "../hooks/studentHooks/useFetchStudents.ts";
+import {useEffect, useState} from "react";
 import SearchBarWithDebounce from "../components/SearchBarWithDebounce.tsx";
-import useFetchDepartments, {
-  Department,
-} from "../hooks/departmentHooks/useFetchDepartments.ts";
-import useFetchSemesters, {
-  Semester,
-} from "../hooks/semesterHooks/useFetchSemesters.ts";
-import useFetchBatches, { Batch } from "../hooks/batchHooks/useFetchBatches.ts";
-import { Program } from "../hooks/programHooks/useFetchPrograms.ts";
-import useFetchSchools, {
-  School,
-} from "../hooks/schoolHooks/useFetchSchools.ts";
+import useFetchDepartments, {Department,} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import useFetchSemesters, {Semester,} from "../hooks/semesterHooks/useFetchSemesters.ts";
+import useFetchBatches, {Batch} from "../hooks/batchHooks/useFetchBatches.ts";
+import {Program} from "../hooks/programHooks/useFetchPrograms.ts";
+import useFetchSchools, {School,} from "../hooks/schoolHooks/useFetchSchools.ts";
 
 export default function StudentsPage() {
   // const [department, setDepartment] = useState<Department | null>(null);

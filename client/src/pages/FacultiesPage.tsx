@@ -2,7 +2,7 @@ import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import FacultiesTable from "../components/tables/FacultiesTable.tsx";
 import useFetchFaculties from "../hooks/facultyHooks/useFetchFaculties.ts";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 
 export default function FacultiesPage() {
   const { faculties, loading } = useFetchFaculties();

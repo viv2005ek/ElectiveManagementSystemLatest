@@ -1,7 +1,7 @@
-import { useState } from "react";
+import {useState} from "react";
 import axiosInstance from "../../axiosInstance.ts";
 import axios from "axios";
-import { useNotification } from "../../contexts/NotificationContext.tsx";
+import {useNotification} from "../../contexts/NotificationContext.tsx";
 
 interface SubjectData {
   name: string;

@@ -1,40 +1,27 @@
-import { ReactNode, useState, useEffect } from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
+  Disclosure,
   Menu,
   MenuButton,
   MenuItem,
   MenuItems,
   TransitionChild,
-  Disclosure,
 } from "@headlessui/react";
-import {
-  Bars3Icon,
-  BellIcon,
-  Cog6ToothIcon,
-  HomeIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store.ts";
-import {
-  BookIcon,
-  BuildingIcon,
-  GraduationCap,
-  SchoolIcon,
-  UniversityIcon,
-  UserIcon,
-} from "lucide-react";
-import { BsBucket } from "react-icons/bs";
-import { PiBooks, PiStudentBold } from "react-icons/pi";
-import { Link, useLocation } from "react-router-dom";
+import {Bars3Icon, BellIcon, Cog6ToothIcon, HomeIcon, XMarkIcon,} from "@heroicons/react/24/outline";
+import {ChevronDownIcon} from "@heroicons/react/20/solid";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store.ts";
+import {BookIcon, BuildingIcon, GraduationCap, SchoolIcon, UniversityIcon, UserIcon,} from "lucide-react";
+import {BsBucket} from "react-icons/bs";
+import {PiBooks, PiStudentBold} from "react-icons/pi";
+import {Link, useLocation} from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import { GiTeacher } from "react-icons/gi";
-import { RiAdminFill } from "react-icons/ri";
-import { UserRole } from "../types/UserTypes.ts";
+import {GiTeacher} from "react-icons/gi";
+import {RiAdminFill} from "react-icons/ri";
+import {UserRole} from "../types/UserTypes.ts";
 
 const navigation = [
   {

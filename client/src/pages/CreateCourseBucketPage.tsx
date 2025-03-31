@@ -1,15 +1,10 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useState } from "react";
-import useFetchDepartments, {
-  Department,
-} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import {useState} from "react";
+import useFetchDepartments, {Department,} from "../hooks/departmentHooks/useFetchDepartments.ts";
 import SingleSelectMenuWithSearch from "../components/FormComponents/SingleSelectMenuWithSearch.tsx";
-import useFetchSubjectTypes, {
-  AllotmentType,
-  SubjectType,
-} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
+import useFetchSubjectTypes, {AllotmentType, SubjectType,} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import MultiSelectMenu from "../components/FormComponents/MultiSelectMenu.tsx";
 import NumberInputField from "../components/FormComponents/NumberInputField.tsx";
 import useFetchCourses from "../hooks/courseHooks/useFetchCourses.ts";

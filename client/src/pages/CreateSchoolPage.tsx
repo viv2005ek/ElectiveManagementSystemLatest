@@ -1,11 +1,9 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useState } from "react";
+import {useState} from "react";
 import SingleSelectMenu from "../components/FormComponents/SingleSelectMenu.tsx";
-import useFetchFaculties, {
-  Faculty,
-} from "../hooks/facultyHooks/useFetchFaculties.ts";
+import useFetchFaculties, {Faculty,} from "../hooks/facultyHooks/useFetchFaculties.ts";
 import useCreateSchool from "../hooks/schoolHooks/useCreateSchool.ts";
 
 export default function CreateSchoolPage() {

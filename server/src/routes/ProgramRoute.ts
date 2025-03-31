@@ -1,4 +1,4 @@
-import { Router } from "express";
+import {Router} from "express";
 import ProgramController from "../controllers/ProgramController";
 
 const router = Router();

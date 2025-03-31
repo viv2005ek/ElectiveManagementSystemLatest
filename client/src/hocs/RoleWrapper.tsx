@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../redux/store";
-import { Navigate } from "react-router-dom";
-import { UserRole } from "../types/UserTypes.ts";
-import { fetchUser } from "../redux/slices/authSlice.ts";
+import React, {useEffect, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {AppDispatch, RootState} from "../redux/store";
+import {Navigate} from "react-router-dom";
+import {UserRole} from "../types/UserTypes.ts";
+import {fetchUser} from "../redux/slices/authSlice.ts";
 import "../BouncingDots.css";
 
 interface RoleWrapperProps {

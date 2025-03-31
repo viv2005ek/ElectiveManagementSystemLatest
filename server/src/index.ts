@@ -1,8 +1,8 @@
-import express, { Request, Response } from "express";
-import { env } from "./config/env";
+import express, {Request, Response} from "express";
+import {env} from "./config/env";
 import logger from "./utils/logger";
-import { setupMiddleware } from "./middleware";
-import { setupRoutes } from "./routes";
+import {setupMiddleware} from "./middleware";
+import {setupRoutes} from "./routes";
 import swaggerDocs from "./utils/swagger";
 
 const app = express();

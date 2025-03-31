@@ -1,7 +1,7 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useState } from "react";
+import {useState} from "react";
 import TextAreaInputField from "../components/FormComponents/TextAreaInputField.tsx";
 import useFetchAllotmentTypes from "../hooks/enumHooks/useFetchAllotmentTypes.ts";
 import SingleSelectEnumSelector from "../components/FormComponents/SingleSelectEnumSelector.tsx";

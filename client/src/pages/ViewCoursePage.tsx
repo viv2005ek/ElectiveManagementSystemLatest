@@ -1,20 +1,16 @@
-import { useState, useEffect } from "react";
+import {useEffect, useState} from "react";
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
 import NumberInputField from "../components/FormComponents/NumberInputField.tsx";
-import useFetchDepartments, {
-  Department,
-} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import useFetchDepartments, {Department,} from "../hooks/departmentHooks/useFetchDepartments.ts";
 import SingleSelectMenuWithSearch from "../components/FormComponents/SingleSelectMenuWithSearch.tsx";
 import MultiSelectMenu from "../components/FormComponents/MultiSelectMenu.tsx";
-import useFetchSubjectTypes, {
-  SubjectType,
-} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
+import useFetchSubjectTypes, {SubjectType,} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import useFetchCourse from "../hooks/courseHooks/useFetchCourse.ts";
 import useUpdateCourse from "../hooks/courseHooks/useUpdateCourse.ts";
-import { useNotification } from "../contexts/NotificationContext.tsx";
-import { useParams } from "react-router-dom";
+import {useNotification} from "../contexts/NotificationContext.tsx";
+import {useParams} from "react-router-dom";
 
 export default function ViewCoursePage() {
   const { id } = useParams<{ id: string }>();

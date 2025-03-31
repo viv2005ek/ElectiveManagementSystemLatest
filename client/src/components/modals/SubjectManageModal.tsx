@@ -1,13 +1,8 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
-import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
+import {Dispatch, SetStateAction, useEffect, useState} from "react";
+import {Dialog, DialogBackdrop, DialogPanel, DialogTitle,} from "@headlessui/react";
+import {Subject} from "../../hooks/subjectHooks/useFetchSubjects.ts";
 import ToggleWithDescription from "../FormComponents/ToggleWithDescription.tsx";
-import { useUpdateSubjectStatus } from "../../hooks/subjectHooks/useUpdateSubjectStatus.ts";
+import {useUpdateSubjectStatus} from "../../hooks/subjectHooks/useUpdateSubjectStatus.ts";
 
 interface SubjectManageModalProps {
   open: boolean;

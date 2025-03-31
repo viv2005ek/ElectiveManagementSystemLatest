@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {useEffect, useState} from "react";
 import axiosInstance from "../../axiosInstance.ts";
 
 export default function useFetchAllotmentTypes() {

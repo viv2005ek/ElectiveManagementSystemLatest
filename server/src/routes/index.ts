@@ -1,4 +1,4 @@
-import { Express } from "express";
+import {Express} from "express";
 import AuthRoute from "./AuthRoute";
 import StudentRoute from "./StudentRoute";
 import DepartmentRoute from "./DepartmentRoute";

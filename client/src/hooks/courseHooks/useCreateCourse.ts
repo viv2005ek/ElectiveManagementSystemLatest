@@ -1,6 +1,6 @@
-import { useState } from "react";
+import {useState} from "react";
 import axios from "axios";
-import { useNotification } from "../../contexts/NotificationContext.tsx";
+import {useNotification} from "../../contexts/NotificationContext.tsx";
 import axiosInstance from "../../axiosInstance.ts";
 
 interface CourseData {

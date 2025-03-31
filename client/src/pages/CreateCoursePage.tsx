@@ -1,17 +1,13 @@
-import { useState } from "react";
+import {useState} from "react";
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
 import NumberInputField from "../components/FormComponents/NumberInputField.tsx";
-import useFetchDepartments, {
-  Department,
-} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import useFetchDepartments, {Department,} from "../hooks/departmentHooks/useFetchDepartments.ts";
 import SingleSelectMenuWithSearch from "../components/FormComponents/SingleSelectMenuWithSearch.tsx";
 import useCreateCourse from "../hooks/courseHooks/useCreateCourse.ts";
-import { useNotification } from "../contexts/NotificationContext.tsx";
-import useFetchSubjectTypes, {
-  SubjectType,
-} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
+import {useNotification} from "../contexts/NotificationContext.tsx";
+import useFetchSubjectTypes, {SubjectType,} from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import MultiSelectMenu from "../components/FormComponents/MultiSelectMenu.tsx";
 
 export default function CreateCoursePage() {

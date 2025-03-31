@@ -2,8 +2,8 @@ import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import useFetchDepartments from "../hooks/departmentHooks/useFetchDepartments.ts";
 import DepartmentsTable from "../components/tables/DepartmentsTable.tsx";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import {useState} from "react";
+import {Link} from "react-router-dom";
 import SearchBarWithoutDebounce from "../components/SearchBarWithoutDebounce.tsx";
 
 export default function DepartmentsPage() {

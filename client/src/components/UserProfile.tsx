@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from "react";
 import currentUser from "../store/currentUserData";
 
 export default function UserProfile() {

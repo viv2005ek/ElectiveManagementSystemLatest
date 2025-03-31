@@ -1,14 +1,7 @@
-import {
-  Label,
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
-} from "@headlessui/react";
-import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
-import { CheckIcon, InformationCircleIcon } from "@heroicons/react/20/solid";
-import { Dispatch, SetStateAction, useState } from "react";
-import { pascalToNormal } from "../../utils/StringUtils.ts";
+import {Label, Listbox, ListboxButton, ListboxOption, ListboxOptions,} from "@headlessui/react";
+import {ChevronUpDownIcon} from "@heroicons/react/16/solid";
+import {CheckIcon, InformationCircleIcon} from "@heroicons/react/20/solid";
+import {Dispatch, SetStateAction, useState} from "react";
 
 interface SingleSelectMenuProps {
   label?: string;

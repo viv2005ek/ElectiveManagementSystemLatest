@@ -1,11 +1,9 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useState } from "react";
+import {useState} from "react";
 import SingleSelectMenu from "../components/FormComponents/SingleSelectMenu.tsx";
-import useFetchSchools, {
-  School,
-} from "../hooks/schoolHooks/useFetchSchools.ts";
+import useFetchSchools, {School,} from "../hooks/schoolHooks/useFetchSchools.ts";
 import useCreateDepartment from "../hooks/departmentHooks/useCreateDepartment.ts";
 
 export default function CreateDepartmentPage() {

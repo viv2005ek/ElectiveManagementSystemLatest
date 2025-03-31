@@ -1,9 +1,9 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useState } from "react";
+import {useState} from "react";
 import useCreateFaculty from "../hooks/facultyHooks/useCreateFaculty.ts";
-import { useNotification } from "../contexts/NotificationContext.tsx";
+import {useNotification} from "../contexts/NotificationContext.tsx";
 
 export default function CreateFacultyPage() {
   const { notify } = useNotification();

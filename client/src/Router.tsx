@@ -1,8 +1,7 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
 import LoginPage from "./pages/LoginPage.tsx";
 import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
 import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
-import AllStudentList from "./pages/AllStudentListPage.tsx";
 import UserProfilePage from "./pages/UserProfilePage.tsx";
 import MinorSpecializationsPage from "./pages/MinorSpecializationsPage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
@@ -31,7 +30,7 @@ import ViewCoursePage from "./pages/ViewCoursePage.tsx";
 import SubjectPreferencesPage from "./pages/SubjectPreferencesPage.tsx";
 import RoleWrapper from "./hocs/RoleWrapper.tsx";
 import UnauthorizedPage from "./pages/UnauthorizedPage.tsx";
-import { UserRole } from "./types/UserTypes.ts";
+import {UserRole} from "./types/UserTypes.ts";
 
 export default function Router() {
   return (

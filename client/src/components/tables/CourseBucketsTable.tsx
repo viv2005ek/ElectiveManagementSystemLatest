@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { EyeIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import {Dispatch, SetStateAction, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
+import {ChevronDownIcon, EyeIcon} from "@heroicons/react/24/outline";
 import PaginationFooter from "../PaginationFooter.tsx";
-import { Dispatch, SetStateAction } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { CourseBucket } from "../../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
+import {CourseBucket} from "../../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
 
 export default function CourseBucketsTable({
   buckets,

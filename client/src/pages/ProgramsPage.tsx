@@ -1,9 +1,9 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import {useState} from "react";
+import {Link} from "react-router-dom";
 import SearchBarWithoutDebounce from "../components/SearchBarWithoutDebounce.tsx";
-import { useFetchPrograms } from "../hooks/programHooks/useFetchPrograms.ts";
+import {useFetchPrograms} from "../hooks/programHooks/useFetchPrograms.ts";
 import ProgramsTable from "../components/tables/ProgramsTable.tsx";
 
 export default function ProgramsPage() {

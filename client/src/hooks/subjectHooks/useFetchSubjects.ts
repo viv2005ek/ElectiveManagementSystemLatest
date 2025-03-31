@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import {useCallback, useEffect, useState} from "react";
 import axiosInstance from "../../axiosInstance.ts";
-import { Batch } from "../batchHooks/useFetchBatches.ts";
+import {Batch} from "../batchHooks/useFetchBatches.ts";
 
 export interface Subject {
   id: string;

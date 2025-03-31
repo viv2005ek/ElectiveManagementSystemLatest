@@ -1,5 +1,5 @@
 import MainLayout from "../layouts/MainLayout.tsx";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import img from "../assets/back.png";
 
 export default function ElectiveManagementSystem() {

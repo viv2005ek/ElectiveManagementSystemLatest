@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { oeChangeRequests } from "../store/OEChangeRequests";
+import React, {useState} from "react";
+import {oeChangeRequests} from "../store/OEChangeRequests";
 import MainLayout from "../layouts/MainLayout.tsx";
 import InfoStudentPopUp from "../components/InfoStudentPopUp";
 

@@ -1,7 +1,7 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {Link} from "react-router-dom";
+import {useEffect, useState} from "react";
 import useFetchSubjects from "../hooks/subjectHooks/useFetchSubjects.ts";
 import "react-loading-skeleton/dist/skeleton.css";
 import SearchBarWithDebounce from "../components/SearchBarWithDebounce.tsx";

@@ -1,8 +1,8 @@
 import Skeleton from "react-loading-skeleton";
 import PaginationFooter from "../PaginationFooter.tsx";
-import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import {Subject} from "../../hooks/subjectHooks/useFetchSubjects.ts";
+import {Link} from "react-router-dom";
+import {useState} from "react";
 import SubjectManageModal from "../modals/SubjectManageModal.tsx";
 
 export default function SubjectsTable({

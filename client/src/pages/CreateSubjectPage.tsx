@@ -1,43 +1,28 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import TextInputField from "../components/FormComponents/TextInputField.tsx";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import useFetchSubjectTypes, {
-  AllotmentType,
-  SubjectScope,
-  SubjectType,
+    AllotmentType,
+    SubjectScope,
+    SubjectType,
 } from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import SingleSelectMenu from "../components/FormComponents/SingleSelectMenu.tsx";
-import useFetchSemesters, {
-  Semester,
-} from "../hooks/semesterHooks/useFetchSemesters.ts";
-import useFetchBatches, { Batch } from "../hooks/batchHooks/useFetchBatches.ts";
-import useFetchDepartments, {
-  Department,
-} from "../hooks/departmentHooks/useFetchDepartments.ts";
+import useFetchSemesters, {Semester,} from "../hooks/semesterHooks/useFetchSemesters.ts";
+import useFetchBatches, {Batch} from "../hooks/batchHooks/useFetchBatches.ts";
+import useFetchDepartments, {Department,} from "../hooks/departmentHooks/useFetchDepartments.ts";
 import SingleSelectMenuWithSearch from "../components/FormComponents/SingleSelectMenuWithSearch.tsx";
-import {
-  Program,
-  useFetchPrograms,
-} from "../hooks/programHooks/useFetchPrograms.ts";
-import useFetchFaculties, {
-  Faculty,
-} from "../hooks/facultyHooks/useFetchFaculties.ts";
-import useFetchSchools, {
-  School,
-} from "../hooks/schoolHooks/useFetchSchools.ts";
+import {Program, useFetchPrograms,} from "../hooks/programHooks/useFetchPrograms.ts";
+import useFetchFaculties, {Faculty,} from "../hooks/facultyHooks/useFetchFaculties.ts";
+import useFetchSchools, {School,} from "../hooks/schoolHooks/useFetchSchools.ts";
 import MultiSelectMenuWithSearch from "../components/FormComponents/MultiSelectMenuWithSearch.tsx";
-import useFetchCourses, {
-  Course,
-} from "../hooks/courseHooks/useFetchCourses.ts";
-import useFetchCourseBuckets, {
-  CourseBucket,
-} from "../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
+import useFetchCourses, {Course,} from "../hooks/courseHooks/useFetchCourses.ts";
+import useFetchCourseBuckets, {CourseBucket,} from "../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
 import NumberInputField from "../components/FormComponents/NumberInputField.tsx";
 import SingleSelectMenuAlternate from "../components/FormComponents/SingleSelectMenuAlternate.tsx";
 import useFetchProgramTypes from "../hooks/programHooks/useFetchProgramTypes.ts";
 import SingleSelectEnumSelector from "../components/FormComponents/SingleSelectEnumSelector.tsx";
-import { useNotification } from "../contexts/NotificationContext.tsx";
+import {useNotification} from "../contexts/NotificationContext.tsx";
 import useCreateSubject from "../hooks/subjectHooks/useCreateSubject.ts";
 import useFetchSubjectScopes from "../hooks/enumHooks/useFetchSubjectScopes.ts";
 

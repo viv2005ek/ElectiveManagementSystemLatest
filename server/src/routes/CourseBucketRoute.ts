@@ -1,7 +1,7 @@
 import express from "express";
 import CourseBucketController from "../controllers/CourseBucketController";
-import { authorizeRoles } from "../middleware/roleMiddleware";
-import { UserRole } from "@prisma/client";
+import {authorizeRoles} from "../middleware/roleMiddleware";
+import {UserRole} from "@prisma/client";
 
 const router = express.Router();
 

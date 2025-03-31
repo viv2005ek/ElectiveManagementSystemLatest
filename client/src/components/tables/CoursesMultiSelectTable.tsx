@@ -1,7 +1,7 @@
 import Skeleton from "react-loading-skeleton";
-import { Dispatch, SetStateAction, useEffect } from "react";
-import { Course } from "../../hooks/courseHooks/useFetchCourses.ts";
-import { CourseWithOrder } from "../../pages/CreateCourseBucketPage.tsx";
+import {Dispatch, SetStateAction, useEffect} from "react";
+import {Course} from "../../hooks/courseHooks/useFetchCourses.ts";
+import {CourseWithOrder} from "../../pages/CreateCourseBucketPage.tsx";
 
 export default function CoursesMultiSelectTable({
   courses,

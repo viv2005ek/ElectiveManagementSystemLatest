@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { School } from "../../hooks/schoolHooks/useFetchSchools.ts";
+import {School} from "../../hooks/schoolHooks/useFetchSchools.ts";
 
 export default function SchoolsTable({
   schools,

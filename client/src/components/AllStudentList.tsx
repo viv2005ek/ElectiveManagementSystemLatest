@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import InfoStudentPopUp from "./InfoStudentPopUp";
 import axiosInstance from "../axiosInstance.ts";
 

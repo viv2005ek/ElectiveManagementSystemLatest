@@ -1,14 +1,8 @@
-import React, { useState } from "react";
-import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
+import React, {useState} from "react";
+import {Menu, MenuItem, Sidebar, SubMenu} from "react-pro-sidebar";
 // import 'react-pro-sidebar/dist/css/styles.css';
-import {
-  FaHome,
-  FaUserGraduate,
-  FaUniversity,
-  FaBook,
-  FaCog,
-} from "react-icons/fa";
-import { Link } from "react-router-dom";
+import {FaBook, FaCog, FaHome, FaUniversity, FaUserGraduate,} from "react-icons/fa";
+import {Link} from "react-router-dom";
 
 export default function MainSidebar() {
   const [collapsed] = useState(false);

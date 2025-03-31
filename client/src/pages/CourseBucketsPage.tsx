@@ -2,8 +2,8 @@ import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import useFetchCourseBuckets from "../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
 import CourseBucketsTable from "../components/tables/CourseBucketsTable.tsx";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import {useState} from "react";
+import {Link} from "react-router-dom";
 
 export default function CourseBucketsPage() {
   const [currentPage, setCurrentPage] = useState(1);

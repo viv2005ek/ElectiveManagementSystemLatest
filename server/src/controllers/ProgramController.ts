@@ -1,6 +1,6 @@
-import { Prisma, ProgramType } from "@prisma/client";
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import {Prisma, ProgramType} from "@prisma/client";
+import {Request, Response} from "express";
+import {prisma} from "../prismaClient";
 
 const ProgramController = {
   getPrograms: async (req: Request, res: Response): Promise<any> => {

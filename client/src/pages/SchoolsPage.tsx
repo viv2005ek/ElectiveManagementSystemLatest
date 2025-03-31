@@ -2,7 +2,7 @@ import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import SchoolsTable from "../components/tables/SchoolsTable.tsx";
 import useFetchSchools from "../hooks/schoolHooks/useFetchSchools.ts";
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 
 export default function SchoolsPage() {
   const { schools, loading } = useFetchSchools();

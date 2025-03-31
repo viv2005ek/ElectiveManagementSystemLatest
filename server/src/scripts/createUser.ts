@@ -1,13 +1,5 @@
-import {
-  PrismaClient,
-  UserRole,
-  Gender,
-  ProgramType,
-  AllotmentType,
-  AllotmentStatus,
-  SubjectScope,
-} from "@prisma/client";
-import bcrypt from "bcrypt";
+import {Gender, PrismaClient, UserRole,} from "@prisma/client";
+import * as bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 

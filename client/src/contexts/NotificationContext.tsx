@@ -1,5 +1,5 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
-import { toast } from "react-toastify";
+import React, {createContext, ReactNode, useContext, useState} from "react";
+import {toast} from "react-toastify";
 
 interface NotificationContextType {
   notify: (
