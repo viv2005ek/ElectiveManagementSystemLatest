@@ -4,7 +4,7 @@ import PaginationFooter from "../PaginationFooter.tsx";
 import { Dispatch, SetStateAction } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Course } from "../../hooks/useFetchCourses.ts";
+import { Course } from "../../hooks/courseHooks/useFetchCourses.ts";
 
 export default function CoursesTable({
   courses,
@@ -119,17 +119,23 @@ export default function CoursesTable({
                         <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
                           {course.department.name}
                         </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {course.courseCategories?.map((category) => (
-                            <div
-                              className={
-                                "text-xs bg-blue-200 text-blue-700 w-min px-1 rounded-full"
-                              }
-                            >
-                              {category.name}
-                            </div>
-                          ))}
+                        <td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">
+                          {course.subjectTypes?.length > 0 ? (
+                            course.subjectTypes.map((type) => (
+                              <div
+                                key={type.id} // Adding a key for better React performance
+                                className="text-xs bg-blue-200 text-blue-700 w-min px-1 rounded-full"
+                              >
+                                {type.name}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-500">
+                              No types added
+                            </span>
+                          )}
                         </td>
+
                         <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
                           <div className="flex flex-row justify-end gap-4">
                             <EyeIcon className="h-6 w-6 stroke-gray-500" />

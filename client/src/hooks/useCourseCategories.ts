@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance.ts";
 
-export interface CourseCategory {
+export interface SubjectType {
   id: string;
   name: string;
   allotmentType: "BUCKET" | "STANDALONE";
 }
 
 interface UseCourseCategoriesReturn {
-  courseCategories: CourseCategory[] | null;
+  courseCategories: SubjectType[] | null;
   isLoading: boolean;
   error: string | null;
 }
 
 export const useCourseCategories = (): UseCourseCategoriesReturn => {
   const [courseCategories, setCourseCategories] = useState<
-    CourseCategory[] | null
+    SubjectType[] | null
   >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

@@ -41,6 +41,8 @@ model Faculty {
   id      String   @id @default(uuid())
   name    String   @unique
   schools School[]
+
+  Subject Subject[]
 }
 
 model School {
@@ -49,6 +51,8 @@ model School {
   facultyId   String
   faculty     Faculty      @relation(fields: [facultyId], references: [id])
   departments Department[]
+
+  Subject Subject[]
 }
 
 model Department {
@@ -59,7 +63,8 @@ model Department {
   professors    Professor[]
   courses       Course[]
   courseBuckets CourseBucket[]
-  Program       Program[]
+  programs      Program[]
+  Subject       Subject[]
 }
 
 model Program {
@@ -69,32 +74,33 @@ model Program {
   department   Department  @relation(fields: [departmentId], references: [id])
   programType  ProgramType
   students     Student[]
-  subjects     Subject[]   @relation("ProgramToSubject")
+  subjects     Subject[]   @relation("programToSubject")
+  semesters    Semester[]  @relation("programToSemesters")
 }
 
 model Student {
-  id                          String                        @id @default(uuid())
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt
-  registrationNumber          String                        @unique
-  programId                   String
-  program                     Program                       @relation(fields: [programId], references: [id])
-  email                       String                        @unique
-  firstName                   String
-  middleName                  String?
-  lastName                    String?
-  gender                      Gender
-  semester                    Int
-  batchId                     String
-  batch                       Batch                         @relation(fields: [batchId], references: [id])
-  contactNumber               String                        @unique @db.VarChar(15)
-  credentialId                String                        @unique
-  credential                  Credential                    @relation(fields: [credentialId], references: [id])
-  isDeleted                   Boolean                       @default(false)
-  StandaloneSubjectPreference StandaloneSubjectPreference[]
-  BucketSubjectPreference     BucketSubjectPreference[]
-  StandaloneAllotment         StandaloneAllotment[]
-  BucketAllotment             BucketAllotment[]
+  id                           String                        @id @default(uuid())
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  registrationNumber           String                        @unique
+  programId                    String
+  program                      Program                       @relation(fields: [programId], references: [id])
+  email                        String                        @unique
+  firstName                    String
+  middleName                   String?
+  lastName                     String?
+  gender                       Gender
+  semester                     Int
+  batchId                      String
+  batch                        Batch                         @relation(fields: [batchId], references: [id])
+  contactNumber                String                        @unique @db.VarChar(15)
+  credentialId                 String                        @unique
+  credential                   Credential                    @relation(fields: [credentialId], references: [id])
+  isDeleted                    Boolean                       @default(false)
+  standaloneSubjectPreferences StandaloneSubjectPreference[]
+  bucketSubjectPreferences     BucketSubjectPreference[]
+  standaloneAllotments         StandaloneAllotment[]
+  bucketAllotments             BucketAllotment[]
 
   @@index([registrationNumber])
 }
@@ -118,36 +124,38 @@ model Professor {
 }
 
 model Course {
-  id                          String                        @id @default(uuid())
-  code                        String
-  name                        String
-  credits                     Int
-  departmentId                String
-  department                  Department                    @relation(fields: [departmentId], references: [id])
-  courseBuckets               CourseBucket[]                @relation("CourseBucketToCourse")
-  courseBucketCourses         CourseBucketCourse[]
-  subjects                    Subject[]                     @relation("SubjectCourses")
-  isDeleted                   Boolean                       @default(false)
-  subjectTypes                SubjectType[]                 @relation("CourseToSubjectCategory")
-  StandaloneSubjectPreference StandaloneSubjectPreference[]
-  StandaloneAllotment         StandaloneAllotment[]
-  BucketAllotment             BucketAllotment[]
+  id                           String                        @id @default(uuid())
+  code                         String
+  name                         String
+  credits                      Int
+  departmentId                 String
+  department                   Department                    @relation(fields: [departmentId], references: [id])
+  courseBucketCourses          CourseBucketCourse[]
+  isDeleted                    Boolean                       @default(false)
+  subjectTypes                 SubjectType[]                 @relation("courseToSubjectCategory")
+  standaloneSubjectPreferences StandaloneSubjectPreference[]
+  standaloneAllotments         StandaloneAllotment[]
+  bucketAllotments             BucketAllotment[]
+  coursesWithSeats             SubjectCourseWithSeats[]      @relation("courseWithSeats")
 
   @@unique([code, departmentId])
 }
 
 model CourseBucket {
-  id                      String                    @id @default(uuid())
-  name                    String
-  departmentId            String
-  department              Department                @relation(fields: [departmentId], references: [id])
-  courses                 Course[]                  @relation("CourseBucketToCourse")
-  courseBucketCourses     CourseBucketCourse[]
-  subjects                Subject[]                 @relation("SubjectCourseBuckets")
-  subjectTypes            SubjectType[]             @relation("CourseBucketToSubjectTypes")
-  isDeleted               Boolean
-  BucketSubjectPreference BucketSubjectPreference[]
-  BucketAllotment         BucketAllotment[]
+  id                       String                         @id @default(uuid())
+  name                     String
+  departmentId             String
+  totalCredits             Int
+  numberOfCourses          Int
+  department               Department                     @relation(fields: [departmentId], references: [id])
+  courseBucketCourses      CourseBucketCourse[]
+  subjectTypes             SubjectType[]                  @relation("courseBucketToSubjectTypes")
+  isDeleted                Boolean                        @default(false)
+  bucketSubjectPreferences BucketSubjectPreference[]
+  bucketAllotments         BucketAllotment[]
+  courseBucketsWithSeats   SubjectCourseBucketWithSeats[] @relation("courseBucketWithSeats")
+
+  @@unique([name, departmentId])
 }
 
 model CourseBucketCourse {
@@ -169,55 +177,93 @@ model SubjectType {
   allotmentType AllotmentType
   scope         SubjectScope
   subjects      Subject[]
-  courses       Course[]       @relation("CourseToSubjectCategory")
-  courseBuckets CourseBucket[] @relation("CourseBucketToSubjectTypes")
+  courses       Course[]       @relation("courseToSubjectCategory")
+  courseBuckets CourseBucket[] @relation("courseBucketToSubjectTypes")
 }
 
 model Subject {
-  id                           String                        @id @default(uuid())
+  id                           String                         @id @default(uuid())
   name                         String
-  subjectScope                 SubjectScope
-  semester                     Semester?                     @relation(fields: [semesterId], references: [id])
+  semester                     Semester?                      @relation(fields: [semesterId], references: [id])
   semesterId                   String?
   batchId                      String
-  batch                        Batch                         @relation(fields: [batchId], references: [id])
+  batch                        Batch                          @relation(fields: [batchId], references: [id])
+  departmentId                 String?
+  department                   Department?                    @relation(fields: [departmentId], references: [id])
+  schoolId                     String?
+  school                       School?                        @relation(fields: [schoolId], references: [id])
+  facultyId                    String?
+  faculty                      Faculty?                       @relation(fields: [facultyId], references: [id])
   subjectTypeId                String
-  subjectType                  SubjectType                   @relation(fields: [subjectTypeId], references: [id])
-  isPreferenceWindowOpen       Boolean                       @default(false)
-  isAllotmentFinalized         Boolean                       @default(false)
-  semesters                    Semester[]                    @relation("SubjectSemesters")
-  programs                     Program[]                     @relation("ProgramToSubject")
-  courses                      Course[]                      @relation("SubjectCourses")
-  courseBuckets                CourseBucket[]                @relation("SubjectCourseBuckets")
+  subjectType                  SubjectType                    @relation(fields: [subjectTypeId], references: [id])
+  isPreferenceWindowOpen       Boolean                        @default(false)
+  dueDate                      DateTime?
+  isAllotmentFinalized         Boolean                        @default(false)
+  semesters                    Semester[]                     @relation("subjectSemesters")
+  programs                     Program[]                      @relation("programToSubject")
   standaloneSubjectPreferences StandaloneSubjectPreference[]
   bucketSubjectPreferences     BucketSubjectPreference[]
   standaloneAllotments         StandaloneAllotment[]
   bucketAllotments             BucketAllotment[]
+  coursesWithSeats             SubjectCourseWithSeats[]       @relation("subjectCoursesWithSeats")
+  courseBucketsWithSeats       SubjectCourseBucketWithSeats[] @relation("subjectCourseBucketsWithSeats")
+}
+
+model SubjectCourseWithSeats {
+  id             String  @id @default(uuid())
+  courseId       String
+  course         Course  @relation("courseWithSeats", fields: [courseId], references: [id])
+  subjectId      String
+  subject        Subject @relation("subjectCoursesWithSeats", fields: [subjectId], references: [id])
+  totalSeats     Int
+  availableSeats Int
+
+  @@unique([courseId, subjectId])
+}
+
+model SubjectCourseBucketWithSeats {
+  id             String       @id @default(uuid())
+  courseBucketId String
+  courseBucket   CourseBucket @relation("courseBucketWithSeats", fields: [courseBucketId], references: [id])
+  subjectId      String
+  subject        Subject      @relation("subjectCourseBucketsWithSeats", fields: [subjectId], references: [id])
+  totalSeats     Int
+  availableSeats Int
+
+  @@unique([courseBucketId, subjectId])
 }
 
 model StandaloneSubjectPreference {
-  id             String  @id @default(uuid())
-  subjectId      String
-  subject        Subject @relation(fields: [subjectId], references: [id])
-  studentId      String
-  student        Student @relation(fields: [studentId], references: [id])
-  courseId       String
-  course         Course  @relation(fields: [courseId], references: [id])
-  preferenceRank Int
+  id              String   @id @default(uuid())
+  subjectId       String
+  subject         Subject  @relation(fields: [subjectId], references: [id])
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id])
+  courseId        String
+  course          Course   @relation(fields: [courseId], references: [id])
+  preferenceRank  Int
+  changeRequested Boolean  @default(false)
+  runAllotment    Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
 
   @@unique([subjectId, studentId, preferenceRank])
   @@unique([subjectId, studentId, courseId])
 }
 
 model BucketSubjectPreference {
-  id             String       @id @default(uuid())
-  subjectId      String
-  subject        Subject      @relation(fields: [subjectId], references: [id])
-  studentId      String
-  student        Student      @relation(fields: [studentId], references: [id])
-  courseBucketId String
-  courseBucket   CourseBucket @relation(fields: [courseBucketId], references: [id])
-  preferenceRank Int
+  id              String       @id @default(uuid())
+  subjectId       String
+  subject         Subject      @relation(fields: [subjectId], references: [id])
+  studentId       String
+  student         Student      @relation(fields: [studentId], references: [id])
+  courseBucketId  String
+  courseBucket    CourseBucket @relation(fields: [courseBucketId], references: [id])
+  preferenceRank  Int
+  runAllotment    Boolean      @default(true)
+  changeRequested Boolean      @default(false)
+  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime     @default(now())
 
   @@unique([subjectId, studentId, preferenceRank])
   @@unique([subjectId, studentId, courseBucketId])
@@ -261,10 +307,11 @@ model Batch {
 model Semester {
   id                   String                @id @default(uuid())
   number               Int                   @unique
-  subjects             Subject[]             @relation("SubjectSemesters")
+  subjects             Subject[]             @relation("subjectSemesters")
   standaloneAllotments StandaloneAllotment[]
   bucketAllotments     BucketAllotment[]
-  Subject              Subject[]
+  subject              Subject[]
+  programs             Program[]             @relation("programToSemesters")
 }
 
 model ProfessorRank {

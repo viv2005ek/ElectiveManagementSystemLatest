@@ -5,6 +5,11 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
+router.get(
+  "/:id",
+  authorizeRoles([UserRole.Admin]),
+  CourseController.getCourseById,
+);
 /**
  * @swagger
  * /courses:
@@ -133,6 +138,11 @@ router.get("/", authorizeRoles([UserRole.Admin]), CourseController.getCourses);
  */
 router.post("/", authorizeRoles([UserRole.Admin]), CourseController.addCourse);
 
+router.patch(
+  "/:id",
+  authorizeRoles([UserRole.Admin]),
+  CourseController.updateCourse,
+);
 
 /**
  * @swagger

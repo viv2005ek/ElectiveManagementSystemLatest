@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import SubjectController from "../controllers/SubjectController";
 
 const router = express.Router();
@@ -63,131 +63,10 @@ const router = express.Router();
  *       500:
  *         description: Failed to create subject
  */
-router.post('/', SubjectController.createSubject);
+router.post("/", SubjectController.createSubject);
 
+router.get("/", SubjectController.getAllSubjects);
 
-/**
- * @swagger
- * /subjects:
- *   get:
- *     summary: Get all subjects with optional filtering and search
- *     tags: [Subjects]
- *     parameters:
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search by subject name
- *       - in: query
- *         name: subjectTypeId
- *         schema:
- *           type: string
- *       - in: query
- *         name: semesterId
- *         schema:
- *           type: string
- *       - in: query
- *         name: batchId
- *         schema:
- *           type: string
- *       - in: query
- *         name: isAllotmentWindowOpen
- *         schema:
- *           type: boolean
- *       - in: query
- *         name: isAllotmentFinalized
- *         schema:
- *           type: boolean
- *     responses:
- *       200:
- *         description: A list of subjects
- *       500:
- *         description: Failed to fetch subjects
- */
-router.get('/', SubjectController.getAllSubjects);
-
-/**
- * @swagger
- * /subjects/{id}:
- *   get:
- *     summary: Get a single subject by ID
- *     tags: [Subjects]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Subject details
- *       404:
- *         description: Subject not found
- *       500:
- *         description: Failed to fetch subject
- */
-router.get('/:id', SubjectController.getSubjectById);
-
-/**
- * @swagger
- * /subjects/{id}:
- *   patch:
- *     summary: Update a subject
- *     tags: [Subjects]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               semester:
- *                 type: integer
- *                 minimum: 1
- *               batchId:
- *                 type: string
- *               subjectTypeId:
- *                 type: string
- *               isPreferenceWindowOpen:
- *                 type: boolean
- *               isAllotmentFinalized:
- *                 type: boolean
- *     responses:
- *       200:
- *         description: Successfully updated
- *       400:
- *         description: Validation error
- *       500:
- *         description: Failed to update subject
- */
-router.patch('/:id', SubjectController.updateSubject);
-
-/**
- * @swagger
- * /subjects/{id}:
- *   delete:
- *     summary: Delete a subject
- *     tags: [Subjects]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       204:
- *         description: Successfully deleted
- *       500:
- *         description: Failed to delete subject
- */
-router.delete('/:id', SubjectController.deleteSubject);
+router.patch("/:id/status", SubjectController.updateSubjectStatus);
 
 export default router;

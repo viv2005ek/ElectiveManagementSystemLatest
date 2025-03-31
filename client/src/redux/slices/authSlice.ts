@@ -1,10 +1,11 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../axiosInstance.ts";
+import { UserRole } from "../../types/UserTypes.ts";
 
 interface User {
   firstName: string;
   lastName: string;
-  role: string;
+  role: UserRole;
 }
 
 interface UserState {
@@ -30,7 +31,8 @@ export const fetchUser = createAsyncThunk<User, void, { rejectValue: string }>(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch user",
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to fetch user",
       );
     }
   },
@@ -50,14 +52,17 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUser.fulfilled, (state, action) => {
+      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
       })
-      .addCase(fetchUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to fetch user";
-      });
+      .addCase(
+        fetchUser.rejected,
+        (state, action: PayloadAction<string | undefined>) => {
+          state.loading = false;
+          state.error = action.payload || "Failed to fetch user";
+        },
+      );
   },
 });
 

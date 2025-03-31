@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../axiosInstance.ts";
+import axiosInstance from "../../axiosInstance.ts";
 
 interface Department {
   id: string;
   name: string;
 }
 
-interface CourseCategory {
+interface SubjectType {
   id: string;
   name: string;
   allotmentType: string;
@@ -21,7 +21,7 @@ export interface Course {
   createdAt: string;
   updatedAt: string;
   department: Department;
-  courseCategories: CourseCategory[];
+  subjectTypes: SubjectType[];
 }
 
 interface ApiResponse {
@@ -30,7 +30,8 @@ interface ApiResponse {
 }
 
 const useFetchCourses = (options?: {
-  category?: CourseCategory | null;
+  category?: SubjectType | null;
+  categories?: SubjectType[] | null;
   department?: Department | null;
   credits?: number;
   search?: string;
@@ -49,8 +50,13 @@ const useFetchCourses = (options?: {
       try {
         const queryParams = new URLSearchParams();
 
-        if (options?.category)
-          queryParams.append("categoryId", options.category.id);
+        // Ensure categoryIds is always an array
+        const categoryIds = options?.category
+          ? [options.category.id]
+          : options?.categories?.map((cat) => cat.id) || [];
+
+        categoryIds.forEach((id) => queryParams.append("categoryIds", id));
+
         if (options?.department)
           queryParams.append("departmentId", options.department.id);
         if (options?.credits)
@@ -73,7 +79,15 @@ const useFetchCourses = (options?: {
     };
 
     fetchCourses();
-  }, [JSON.stringify(options)]);
+  }, [
+    options?.categories,
+    options?.category,
+    options?.credits,
+    options?.department,
+    options?.limit,
+    options?.page,
+    options?.search,
+  ]);
 
   return { courses, loading, error, totalPages };
 };

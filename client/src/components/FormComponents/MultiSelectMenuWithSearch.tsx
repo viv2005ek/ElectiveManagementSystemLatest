@@ -17,6 +17,7 @@ interface MultiSelectMenuProps<T extends Identifiable> {
   selected: T[];
   setSelected: Dispatch<SetStateAction<T[]>>;
   onChange?: (items: T[]) => void;
+  maxSelections?: number;
 }
 
 export default function MultiSelectMenuWithSearch<T extends Identifiable>({
@@ -25,10 +26,18 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
   selected,
   setSelected,
   onChange,
+  maxSelections,
 }: MultiSelectMenuProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleChange = (newSelected: T[]) => {
+  const handleChange = (item: T) => {
+    let newSelected;
+    if (selected.some((i) => i.id === item.id)) {
+      newSelected = selected.filter((i) => i.id !== item.id);
+    } else {
+      if (maxSelections && selected.length >= maxSelections) return;
+      newSelected = [...selected, item];
+    }
     setSelected(newSelected);
     if (onChange) {
       onChange(newSelected);
@@ -42,7 +51,7 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
     : [];
 
   return (
-    <Listbox value={selected} onChange={handleChange} multiple>
+    <Listbox value={selected} multiple>
       <div className={"flex flex-col items-between w-full justify-start"}>
         {label && (
           <Label className="block text-sm/6 font-medium text-gray-900">
@@ -64,7 +73,7 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
 
           <ListboxOptions
             transition
-            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
+            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
           >
             <div className="sticky top-0 z-10 bg-white px-3 py-2">
               <input
@@ -80,9 +89,16 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((item) => (
                   <ListboxOption
-                    key={item.id}
                     value={item}
-                    className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
+                    key={item.id}
+                    onClick={() => handleChange(item)}
+                    className={`group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none ${
+                      maxSelections !== undefined &&
+                      selected.length >= maxSelections &&
+                      !selected.some((i) => i.id === item.id)
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     <span className="block truncate font-normal group-data-[selected]:font-semibold">
                       {item.name}

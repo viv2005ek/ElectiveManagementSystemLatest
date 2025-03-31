@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { AllotmentType, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,7 +7,15 @@ const SubjectTypeController = {
   // Get all subject types
   getAllSubjectTypes: async (req: Request, res: Response): Promise<any> => {
     try {
-      const subjectTypes = await prisma.subjectType.findMany({});
+      const { allotmentType } = req.query;
+
+      // Ensure allotmentType is a valid enum value
+      const filter = allotmentType
+        ? { where: { allotmentType: allotmentType as AllotmentType } }
+        : undefined;
+
+      const subjectTypes = await prisma.subjectType.findMany(filter);
+
       res.json(subjectTypes);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch subject types" });

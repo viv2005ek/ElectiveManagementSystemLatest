@@ -17,7 +17,7 @@ export const setupMiddleware = (app: Express) => {
         "X-Requested-With",
         "Accept",
       ],
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
   );
 

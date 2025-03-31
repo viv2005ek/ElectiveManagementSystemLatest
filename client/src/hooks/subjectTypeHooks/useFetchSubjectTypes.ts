@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import axiosInstance from "../../axiosInstance.ts";
 
 export interface SubjectType {
@@ -9,6 +8,7 @@ export interface SubjectType {
   allotmentType: AllotmentType;
   scope: string;
 }
+
 export enum SubjectScope {
   ANY_DEPARTMENT = "AnyDepartment",
   SAME_DEPARTMENT = "SameDepartment",
@@ -21,7 +21,11 @@ export enum AllotmentType {
   BUCKET = "Bucket",
 }
 
-const useFetchSubjectTypes = () => {
+type UseFetchSubjectTypesProps = {
+  allotmentType?: string;
+};
+
+const useFetchSubjectTypes = (options?: UseFetchSubjectTypesProps) => {
   const [subjectTypes, setSubjectTypes] = useState<SubjectType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +33,12 @@ const useFetchSubjectTypes = () => {
   useEffect(() => {
     const fetchSubjectTypes = async () => {
       try {
-        const response = await axiosInstance.get("/subject-types");
+        const queryParam = options?.allotmentType
+          ? `allotmentType=${encodeURIComponent(options.allotmentType)}`
+          : "";
+        const response = await axiosInstance.get(
+          `/subject-types${queryParam ? `?${queryParam}` : ""}`,
+        );
         setSubjectTypes(response.data);
       } catch (err) {
         setError("Failed to fetch subject types");
@@ -39,7 +48,7 @@ const useFetchSubjectTypes = () => {
     };
 
     fetchSubjectTypes();
-  }, []);
+  }, [options?.allotmentType]); // Include allotmentType in dependencies to refetch when it changes
 
   return { subjectTypes, loading, error };
 };

@@ -1,7 +1,7 @@
 import MainLayout from "../layouts/MainLayout.tsx";
 import PageHeader from "../components/PageHeader.tsx";
 import CoursesTable from "../components/tables/CoursesTable.tsx";
-import useFetchCourses from "../hooks/useFetchCourses.ts";
+import useFetchCourses from "../hooks/courseHooks/useFetchCourses.ts";
 import { useState } from "react";
 import SearchBarWithDebounce from "../components/SearchBarWithDebounce.tsx";
 import { Link } from "react-router-dom";

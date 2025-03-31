@@ -19,13 +19,13 @@ export default function SearchBarWithDebounce({
   return (
     <div
       className={
-        "ring-gray-200 ring-1 rounded-lg h-10 flex flex-row items-center px-2"
+        "ring-gray-200 ring-1 rounded-lg h-10 flex flex-row items-center px-2 max-w-md justify-between"
       }
     >
       <input
         placeholder={"Search"}
         className={
-          "border-none text-sm outline-none h-10 ring-none rounded-lg focus:ring-0 focus:outline-0 focus:border-0"
+          "border-none text-sm outline-none w-full h-10 ring-none rounded-lg focus:ring-0 focus:outline-0 focus:border-0"
         }
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}

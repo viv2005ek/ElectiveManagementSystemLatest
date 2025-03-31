@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../axiosInstance.ts";
 
 export interface Batch {
   id: string;
@@ -16,14 +17,9 @@ const useFetchBatches = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/batches`,
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await axiosInstance.get("/batches");
 
-        setBatches(response.data.batches);
+        setBatches(response.data);
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to fetch batches");
       } finally {

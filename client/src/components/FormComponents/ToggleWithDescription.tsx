@@ -1,5 +1,3 @@
-"use client";
-
 import { Dispatch, SetStateAction } from "react";
 import { Description, Field, Label, Switch } from "@headlessui/react";
 
@@ -8,6 +6,8 @@ interface ToggleWithDescriptionProps {
   setEnabled: Dispatch<SetStateAction<boolean>>;
   title?: string;
   description?: string;
+  warning?: boolean;
+  disabled?: boolean;
 }
 
 export default function ToggleWithDescription({
@@ -15,22 +15,28 @@ export default function ToggleWithDescription({
   setEnabled,
   title,
   description,
+  disabled = false,
+  warning = false,
 }: ToggleWithDescriptionProps) {
   return (
     <Field className={"flex items-center flex-row gap-4 w-full"}>
-      <span className="flex grow flex-col gap-2">
+      <span className="flex grow flex-col gap-1">
         {title && (
           <Label as="span" className="text-sm font-medium text-gray-900">
             {title}
           </Label>
         )}
         {description && (
-          <Description as="span" className="text-sm text-gray-500">
+          <Description
+            as="span"
+            className={`text-sm text-gray-500 ${warning ? "text-red-500" : ""}`}
+          >
             {description}
           </Description>
         )}
       </span>
       <Switch
+        disabled={disabled}
         checked={enabled}
         onChange={setEnabled}
         className={`${enabled ? "bg-indigo-600" : "bg-gray-200"} relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2`}

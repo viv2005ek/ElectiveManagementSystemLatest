@@ -41,7 +41,7 @@ export default function CreateProgramPage() {
   return (
     <MainLayout>
       <div className={"p-8"}>
-        <PageHeader title={"Create Department"} />
+        <PageHeader title={"Create Program"} />
         <div className={"mt-16 grid grid-cols-2 gap-x-32 gap-y-16"}>
           <TextInputField value={name} setValue={setName} label={"Name"} />
           <SingleSelectMenu

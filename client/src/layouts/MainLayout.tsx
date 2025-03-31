@@ -1,6 +1,4 @@
-"use client";
-
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -10,6 +8,7 @@ import {
   MenuItem,
   MenuItems,
   TransitionChild,
+  Disclosure,
 } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -27,37 +26,121 @@ import {
   GraduationCap,
   SchoolIcon,
   UniversityIcon,
+  UserIcon,
 } from "lucide-react";
 import { BsBucket } from "react-icons/bs";
 import { PiBooks, PiStudentBold } from "react-icons/pi";
 import { Link, useLocation } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
+import { GiTeacher } from "react-icons/gi";
+import { RiAdminFill } from "react-icons/ri";
+import { UserRole } from "../types/UserTypes.ts";
 
 const navigation = [
-  { name: "Home", href: "/home", icon: HomeIcon, current: true },
-  { name: "Students", href: "/students", icon: PiStudentBold, current: false },
   {
-    name: "Faculties",
-    href: "/faculties",
+    name: "Home",
+    href: "/home",
+    icon: HomeIcon,
+    current: true,
+    requiredRoles: [UserRole.ADMIN, UserRole.STUDENT],
+  },
+  {
+    name: "Users",
+    href: "#",
+    icon: UserIcon,
+    current: false,
+    requiredRoles: [UserRole.ADMIN],
+    children: [
+      {
+        name: "Professors",
+        href: "/professors",
+        icon: GiTeacher,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Students",
+        href: "/students",
+        icon: PiStudentBold,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Admins",
+        href: "/admins",
+        icon: RiAdminFill,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+    ],
+  },
+  {
+    name: "Management",
+    href: "#",
     icon: UniversityIcon,
     current: false,
+    requiredRoles: [UserRole.ADMIN],
+    children: [
+      {
+        name: "Faculties",
+        href: "/faculties",
+        icon: UniversityIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Schools",
+        href: "/schools",
+        icon: SchoolIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Departments",
+        href: "/departments",
+        icon: BuildingIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+    ],
   },
-  { name: "Schools", href: "/schools", icon: SchoolIcon, current: false },
   {
-    name: "Departments",
-    href: "/departments",
-    icon: BuildingIcon,
+    name: "Academics",
+    href: "#",
+    icon: GraduationCap,
     current: false,
+    requiredRoles: [UserRole.ADMIN],
+    children: [
+      {
+        name: "Programs",
+        href: "/programs",
+        icon: GraduationCap,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Courses",
+        href: "/courses",
+        icon: BookIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Course Buckets",
+        href: "/course-buckets",
+        icon: BsBucket,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Subjects",
+        href: "/subjects",
+        icon: PiBooks,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+    ],
   },
-  { name: "Programs", href: "/programs", icon: GraduationCap, current: false },
-  { name: "Courses", href: "/courses", icon: BookIcon, current: false },
-  {
-    name: "Course Buckets",
-    href: "/course-buckets",
-    icon: BsBucket,
-    current: false,
-  },
-  { name: "Subjects", href: "/subjects", icon: PiBooks, current: false },
 ];
 
 const userNavigation = [
@@ -71,8 +154,33 @@ function classNames(...classes: string[]) {
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+  const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
+
+  useEffect(() => {
+    const savedOpenSections = localStorage.getItem("openSections");
+    if (savedOpenSections) {
+      setOpenSections(JSON.parse(savedOpenSections));
+    }
+  }, []);
+
+  const toggleSection = (sectionName: string) => {
+    setOpenSections((prevState) => {
+      const newState = {
+        ...prevState,
+        [sectionName]: !prevState[sectionName],
+      };
+      localStorage.setItem("openSections", JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  const hasRequiredRole = (requiredRoles: UserRole[]) => {
+    return requiredRoles.some((role: UserRole) => user?.role.includes(role));
+  };
 
   return (
     <>
@@ -107,8 +215,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                   </button>
                 </div>
               </TransitionChild>
-              {/* Sidebar component, swap this element with another sidebar if you like */}
-              <div className="flex grow  flex-col gap-y-5 overflow-y-auto  px-6 pb-4">
+              <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4">
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
@@ -120,40 +227,105 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">
                     <li>
                       <ul role="list" className="-mx-2 space-y-1">
-                        {navigation.map((item) => (
-                          <li key={item.name}>
-                            <Link
-                              to={item.href}
-                              className={classNames(
-                                location.pathname === item.href
-                                  ? "bg-gray-50 text-indigo-600"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
-                                "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-                              )}
-                            >
-                              <item.icon
-                                aria-hidden="true"
-                                className={classNames(
-                                  location.pathname === item.href
-                                    ? "text-indigo-600"
-                                    : "text-gray-400 group-hover:text-indigo-600",
-                                  "size-6 shrink-0",
+                        {navigation.map(
+                          (item) =>
+                            hasRequiredRole(item.requiredRoles) && (
+                              <li key={item.name}>
+                                {item.children ? (
+                                  <Disclosure
+                                    as="div"
+                                    className="space-y-1"
+                                    defaultOpen={openSections[item.name]}
+                                  >
+                                    {({ open }) => (
+                                      <>
+                                        <Disclosure.Button
+                                          className="flex w-full justify-between text-white font-semibold"
+                                          onClick={() =>
+                                            toggleSection(item.name)
+                                          }
+                                        >
+                                          {item.name}
+                                          <ChevronDownIcon
+                                            className={classNames(
+                                              open
+                                                ? "rotate-180 transform"
+                                                : "",
+                                              "size-5",
+                                            )}
+                                          />
+                                        </Disclosure.Button>
+                                        <Disclosure.Panel className="ml-4 space-y-1">
+                                          {item.children.map(
+                                            (child) =>
+                                              hasRequiredRole(
+                                                child.requiredRoles,
+                                              ) && (
+                                                <li key={child.name}>
+                                                  <Link
+                                                    to={child.href}
+                                                    className={classNames(
+                                                      location.pathname ===
+                                                        child.href
+                                                        ? "bg-gray-50 text-indigo-600"
+                                                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
+                                                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                                    )}
+                                                  >
+                                                    <child.icon
+                                                      aria-hidden="true"
+                                                      className={classNames(
+                                                        location.pathname ===
+                                                          child.href
+                                                          ? "text-indigo-600"
+                                                          : "text-white-400 group-hover:text-indigo-600",
+                                                        "size-6 shrink-0",
+                                                      )}
+                                                    />
+                                                    {child.name}
+                                                  </Link>
+                                                </li>
+                                              ),
+                                          )}
+                                        </Disclosure.Panel>
+                                      </>
+                                    )}
+                                  </Disclosure>
+                                ) : (
+                                  <Link
+                                    to={item.href}
+                                    className={classNames(
+                                      location.pathname === item.href
+                                        ? "bg-gray-50 text-indigo-600"
+                                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
+                                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                    )}
+                                  >
+                                    <item.icon
+                                      aria-hidden="true"
+                                      className={classNames(
+                                        location.pathname === item.href
+                                          ? "text-indigo-600"
+                                          : "text-white-400 group-hover:text-indigo-600",
+                                        "size-6 shrink-0",
+                                      )}
+                                    />
+                                    {item.name}
+                                  </Link>
                                 )}
-                              />
-                              {item.name}
-                            </Link>
-                          </li>
-                        ))}
+                              </li>
+                            ),
+                        )}
                       </ul>
                     </li>
                     <li className="mt-auto">
                       <Link
                         to="#"
-                        className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                        className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-white hover:bg-gray-50 hover:text-indigo-600"
                       >
                         <Cog6ToothIcon
                           aria-hidden="true"
-                          className="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600"
+                          className="size-6 shrink-0 text-white group-hover:text-indigo-600"
                         />
                         Settings
                       </Link>
@@ -165,41 +337,100 @@ export default function MainLayout({ children }: { children: ReactNode }) {
           </div>
         </Dialog>
 
-        {/* Static sidebar for desktop */}
-        <div className="hidden lg:fixed lg:inset-y-0  lg:z-50 lg:flex lg:w-72 lg:flex-col bg-muj-orange">
-          {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex grow flex-col gap-y-5  overflow-y-auto border-r border-gray-200 px-6 pb-4">
-            <div className="flex h-16 shrink-0 items-center pt-12 mb-8 ">
+        <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col bg-muj-orange">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6 pb-4">
+            <div className="flex h-16 shrink-0 items-center pt-12 mb-8">
               <img alt="Your Company" src="/MUJ_logo.png" className="w-max" />
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
                   <ul role="list" className="-mx-2 space-y-4">
-                    {navigation.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          to={item.href}
-                          className={classNames(
-                            location.pathname === item.href
-                              ? "bg-gray-50 text-indigo-600"
-                              : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                            "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-                          )}
-                        >
-                          <item.icon
-                            aria-hidden="true"
-                            className={classNames(
-                              location.pathname === item.href
-                                ? "text-indigo-600"
-                                : "text-white-400 group-hover:text-indigo-600",
-                              "size-6 shrink-0",
+                    {navigation.map(
+                      (item) =>
+                        hasRequiredRole(item.requiredRoles) && (
+                          <li key={item.name}>
+                            {item.children ? (
+                              <Disclosure
+                                as="div"
+                                className="space-y-1"
+                                defaultOpen={openSections[item.name]}
+                              >
+                                {({ open }) => (
+                                  <>
+                                    <Disclosure.Button
+                                      className="flex w-full justify-between text-white font-semibold"
+                                      onClick={() => toggleSection(item.name)}
+                                    >
+                                      {item.name}
+                                      <ChevronDownIcon
+                                        className={classNames(
+                                          open ? "rotate-180 transform" : "",
+                                          "size-5",
+                                        )}
+                                      />
+                                    </Disclosure.Button>
+                                    <Disclosure.Panel className="ml-4 space-y-1">
+                                      {item.children.map(
+                                        (child) =>
+                                          hasRequiredRole(
+                                            child.requiredRoles,
+                                          ) && (
+                                            <li key={child.name}>
+                                              <Link
+                                                to={child.href}
+                                                className={classNames(
+                                                  location.pathname ===
+                                                    child.href
+                                                    ? "bg-gray-50 text-indigo-600"
+                                                    : "text-white hover:bg-gray-50 hover:text-indigo-600",
+                                                  "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                                )}
+                                              >
+                                                <child.icon
+                                                  aria-hidden="true"
+                                                  className={classNames(
+                                                    location.pathname ===
+                                                      child.href
+                                                      ? "text-indigo-600"
+                                                      : "text-white-400 group-hover:text-indigo-600",
+                                                    "size-6 shrink-0",
+                                                  )}
+                                                />
+                                                {child.name}
+                                              </Link>
+                                            </li>
+                                          ),
+                                      )}
+                                    </Disclosure.Panel>
+                                  </>
+                                )}
+                              </Disclosure>
+                            ) : (
+                              <Link
+                                to={item.href}
+                                className={classNames(
+                                  location.pathname === item.href
+                                    ? "bg-gray-50 text-indigo-600"
+                                    : "text-white hover:bg-gray-50 hover:text-indigo-600",
+                                  "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                )}
+                              >
+                                <item.icon
+                                  aria-hidden="true"
+                                  className={classNames(
+                                    location.pathname === item.href
+                                      ? "text-indigo-600"
+                                      : "text-white-400 group-hover:text-indigo-600",
+                                    "size-6 shrink-0",
+                                  )}
+                                />
+                                {item.name}
+                              </Link>
                             )}
-                          />
-                          {item.name}
-                        </Link>
-                      </li>
-                    ))}
+                          </li>
+                        ),
+                    )}
                   </ul>
                 </li>
                 <li className="mt-auto">
@@ -231,7 +462,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                 <Bars3Icon aria-hidden="true" className="size-6" />
               </button>
 
-              {/* Separator */}
               <div
                 aria-hidden="true"
                 className="h-6 w-px bg-gray-200 lg:hidden"
@@ -254,13 +484,11 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                     <BellIcon aria-hidden="true" className="size-6" />
                   </button>
 
-                  {/* Separator */}
                   <div
                     aria-hidden="true"
                     className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"
                   />
 
-                  {/* Profile dropdown */}
                   <Menu as="div" className="relative">
                     <MenuButton className="-m-1.5 flex items-center p-1.5">
                       <span className="sr-only">Open user menu</span>

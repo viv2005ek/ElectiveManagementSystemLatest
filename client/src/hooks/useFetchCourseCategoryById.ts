@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance.ts";
 
-import { CourseCategory } from "./useCourseCategories.ts";
+import { SubjectType } from "./useCourseCategories.ts";
 
 const useFetchCourseCategoryById = (id: string | null) => {
-  const [category, setCategory] = useState<CourseCategory | null>(null);
+  const [category, setCategory] = useState<SubjectType | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 

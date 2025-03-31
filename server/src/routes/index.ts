@@ -12,6 +12,7 @@ import SemesterRoute from "./SemesterRoute";
 import SubjectTypeRoute from "./SubjectTypeRoute";
 import CourseBucketRoute from "./CourseBucketRoute";
 import CourseRoute from "./CourseRoute";
+import SubjectRoute from "./SubjectRoute";
 
 export const setupRoutes = (app: Express) => {
   app.use("/auth", AuthRoute);
@@ -20,7 +21,7 @@ export const setupRoutes = (app: Express) => {
   // app.use("/course-buckets", CourseBucketRoute);
   // app.use("/branches", BranchRoute);
   // app.use("/course-categories", CourseCategoryRoute);
-  // app.use("/subjects", SubjectRoute);
+  app.use("/subjects", SubjectRoute);
   app.use("/courses", CourseRoute);
   app.use("/students", StudentRoute);
   app.use("/departments", DepartmentRoute);

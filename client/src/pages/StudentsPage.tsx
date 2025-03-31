@@ -61,14 +61,14 @@ export default function StudentsPage() {
             {/*<SingleSelectMenu items={departments} selected={department} setSelected={setDepartment}/>*/}
           </div>
           <div className={"flex flex-row flex-grow justify-end"}>
-            <Link to={"/branches/create"}>
-              <button
-                type="button"
-                className="block rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
-              >
-                Add student
-              </button>
-            </Link>
+            {/*<Link to={"/students/create"}>*/}
+            {/*  <button*/}
+            {/*    type="button"*/}
+            {/*    className="block rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"*/}
+            {/*  >*/}
+            {/*    Add student*/}
+            {/*  </button>*/}
+            {/*</Link>*/}
           </div>
         </div>
         <StudentsTable
