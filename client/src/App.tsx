@@ -9,7 +9,6 @@ import { fetchUser } from "./redux/slices/authSlice.ts";
 import { ToastContainer } from "react-toastify";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import * as dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"; // Correct import here
 
 function App() {

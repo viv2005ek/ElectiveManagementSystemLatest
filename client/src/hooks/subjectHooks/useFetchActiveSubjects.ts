@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../axiosInstance.ts";
 import { Semester } from "../semesterHooks/useFetchSemesters.ts";
 import { SubjectType } from "../subjectTypeHooks/useFetchSubjectTypes.ts";
