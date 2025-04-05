@@ -1,7 +1,7 @@
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import {Department} from "../../hooks/departmentHooks/useFetchDepartments.ts";
+import { Department } from "../../hooks/departmentHooks/useFetchDepartments.ts";
 
 export default function DepartmentsTable({
   departments,

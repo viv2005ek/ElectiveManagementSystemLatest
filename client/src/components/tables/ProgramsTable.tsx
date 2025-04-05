@@ -1,7 +1,10 @@
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import {Program, ProgramType,} from "../../hooks/programHooks/useFetchPrograms.ts";
+import {
+  Program,
+  ProgramType,
+} from "../../hooks/programHooks/useFetchPrograms.ts";
 
 const mapProgramTypeTag = (programType: ProgramType): string => {
   switch (programType) {

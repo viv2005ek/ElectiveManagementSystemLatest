@@ -1,13 +1,16 @@
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 import Router from "./Router.tsx";
-import {UserProvider} from "./contexts/UserContext.tsx";
-import {useDispatch} from "react-redux";
-import {AppDispatch} from "./redux/store.ts";
-import {useEffect} from "react";
-import {fetchUser} from "./redux/slices/authSlice.ts";
-import {ToastContainer} from "react-toastify";
-import {NotificationProvider} from "./contexts/NotificationContext.tsx"; // Correct import here
+import { UserProvider } from "./contexts/UserContext.tsx";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "./redux/store.ts";
+import { useEffect } from "react";
+import { fetchUser } from "./redux/slices/authSlice.ts";
+import { ToastContainer } from "react-toastify";
+import { NotificationProvider } from "./contexts/NotificationContext.tsx";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import * as dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"; // Correct import here
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,10 +21,12 @@ function App() {
 
   return (
     <UserProvider>
-      <NotificationProvider>
-        <Router />
-        <ToastContainer position={"bottom-right"} />
-      </NotificationProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <NotificationProvider>
+          <Router />
+          <ToastContainer position={"bottom-right"} />
+        </NotificationProvider>
+      </LocalizationProvider>
     </UserProvider>
   );
 }

@@ -1,5 +1,5 @@
-import {Request, Response} from "express";
-import {prisma} from "../prismaClient";
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 const CourseBucketsController = {
   getAllCourseBuckets: async (req: Request, res: Response): Promise<any> => {
@@ -101,7 +101,7 @@ const CourseBucketsController = {
               name: true,
             },
           },
-          courseBucketCourses: {
+          courses: {
             select: {
               course: {
                 select: {
@@ -135,7 +135,7 @@ const CourseBucketsController = {
       const courseBucket = await prisma.courseBucket.findUnique({
         where: { id },
         include: {
-          courseBucketCourses: true,
+          courses: true,
           department: {
             include: {
               school: {

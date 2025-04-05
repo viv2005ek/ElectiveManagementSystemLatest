@@ -120,10 +120,13 @@ Table Course {
   courseBucketCourses CourseBucketCourse [not null]
   isDeleted Boolean [not null, default: false]
   subjectTypes SubjectType [not null]
-  standaloneSubjectPreferences StandaloneSubjectPreference [not null]
   standaloneAllotments StandaloneAllotment [not null]
   bucketAllotments BucketAllotment [not null]
   coursesWithSeats SubjectCourseWithSeats [not null]
+  firstPreferenceCourses StandaloneSubjectPreference [not null]
+  secondPreferenceCourses StandaloneSubjectPreference [not null]
+  thirdPreferenceCourses StandaloneSubjectPreference [not null]
+  StandaloneSubjectPreference StandaloneSubjectPreference [not null]
 
   indexes {
     (code, departmentId) [unique]
@@ -137,12 +140,14 @@ Table CourseBucket {
   totalCredits Int [not null]
   numberOfCourses Int [not null]
   department Department [not null]
-  courseBucketCourses CourseBucketCourse [not null]
+  courses CourseBucketCourse [not null]
   subjectTypes SubjectType [not null]
   isDeleted Boolean [not null, default: false]
-  bucketSubjectPreferences BucketSubjectPreference [not null]
   bucketAllotments BucketAllotment [not null]
   courseBucketsWithSeats SubjectCourseBucketWithSeats [not null]
+  firstPreferenceCourseBuckets BucketSubjectPreference [not null]
+  secondPreferenceCourseBuckets BucketSubjectPreference [not null]
+  thirdPreferenceCourseBuckets BucketSubjectPreference [not null]
 
   indexes {
     (name, departmentId) [unique]
@@ -208,8 +213,8 @@ Table SubjectCourseWithSeats {
   course Course [not null]
   subjectId String [not null]
   subject Subject [not null]
-  totalSeats Int [not null]
-  availableSeats Int [not null]
+  totalSeats Int
+  availableSeats Int
 
   indexes {
     (courseId, subjectId) [unique]
@@ -222,8 +227,8 @@ Table SubjectCourseBucketWithSeats {
   courseBucket CourseBucket [not null]
   subjectId String [not null]
   subject Subject [not null]
-  totalSeats Int [not null]
-  availableSeats Int [not null]
+  totalSeats Int
+  availableSeats Int
 
   indexes {
     (courseBucketId, subjectId) [unique]
@@ -236,17 +241,21 @@ Table StandaloneSubjectPreference {
   subject Subject [not null]
   studentId String [not null]
   student Student [not null]
-  courseId String [not null]
-  course Course [not null]
-  preferenceRank Int [not null]
+  firstPreferenceCourseId String [not null]
+  firstPreferenceCourse Course [not null]
+  secondPreferenceCourseId String [not null]
+  secondPreferenceCourse Course [not null]
+  thirdPreferenceCourseId String [not null]
+  thirdPreferenceCourse Course [not null]
   changeRequested Boolean [not null, default: false]
   runAllotment Boolean [not null, default: true]
   updatedAt DateTime [not null]
   createdAt DateTime [default: `now()`, not null]
+  Course Course
+  courseId String
 
   indexes {
-    (subjectId, studentId, preferenceRank) [unique]
-    (subjectId, studentId, courseId) [unique]
+    (subjectId, studentId) [unique]
   }
 }
 
@@ -256,17 +265,19 @@ Table BucketSubjectPreference {
   subject Subject [not null]
   studentId String [not null]
   student Student [not null]
-  courseBucketId String [not null]
-  courseBucket CourseBucket [not null]
-  preferenceRank Int [not null]
+  firstPreferenceCourseBucketId String [not null]
+  firstPreferenceCourseBucket CourseBucket [not null]
+  secondPreferenceCourseBucketId String [not null]
+  secondPreferenceCourseBucket CourseBucket [not null]
+  thirdPreferenceCourseBucketId String [not null]
+  thirdPreferenceCourseBucket CourseBucket [not null]
   runAllotment Boolean [not null, default: true]
   changeRequested Boolean [not null, default: false]
   updatedAt DateTime [not null]
   createdAt DateTime [default: `now()`, not null]
 
   indexes {
-    (subjectId, studentId, preferenceRank) [unique]
-    (subjectId, studentId, courseBucketId) [unique]
+    (subjectId, studentId) [unique]
   }
 }
 
@@ -422,25 +433,35 @@ Ref: Subject.facultyId > Faculty.id
 
 Ref: Subject.subjectTypeId > SubjectType.id
 
-Ref: SubjectCourseWithSeats.courseId > Course.id
+Ref: SubjectCourseWithSeats.courseId > Course.id [delete: Cascade]
 
-Ref: SubjectCourseWithSeats.subjectId > Subject.id
+Ref: SubjectCourseWithSeats.subjectId > Subject.id [delete: Cascade]
 
-Ref: SubjectCourseBucketWithSeats.courseBucketId > CourseBucket.id
+Ref: SubjectCourseBucketWithSeats.courseBucketId > CourseBucket.id [delete: Cascade]
 
-Ref: SubjectCourseBucketWithSeats.subjectId > Subject.id
+Ref: SubjectCourseBucketWithSeats.subjectId > Subject.id [delete: Cascade]
 
-Ref: StandaloneSubjectPreference.subjectId > Subject.id
+Ref: StandaloneSubjectPreference.subjectId > Subject.id [delete: Cascade]
 
 Ref: StandaloneSubjectPreference.studentId > Student.id
 
-Ref: StandaloneSubjectPreference.courseId > Course.id
+Ref: StandaloneSubjectPreference.firstPreferenceCourseId > Course.id [delete: Cascade]
 
-Ref: BucketSubjectPreference.subjectId > Subject.id
+Ref: StandaloneSubjectPreference.secondPreferenceCourseId > Course.id [delete: Cascade]
 
-Ref: BucketSubjectPreference.studentId > Student.id
+Ref: StandaloneSubjectPreference.thirdPreferenceCourseId > Course.id [delete: Cascade]
 
-Ref: BucketSubjectPreference.courseBucketId > CourseBucket.id
+Ref: StandaloneSubjectPreference.courseId > Course.id [delete: Cascade]
+
+Ref: BucketSubjectPreference.subjectId > Subject.id [delete: Cascade]
+
+Ref: BucketSubjectPreference.studentId > Student.id [delete: Cascade]
+
+Ref: BucketSubjectPreference.firstPreferenceCourseBucketId > CourseBucket.id [delete: Cascade]
+
+Ref: BucketSubjectPreference.secondPreferenceCourseBucketId > CourseBucket.id [delete: Cascade]
+
+Ref: BucketSubjectPreference.thirdPreferenceCourseBucketId > CourseBucket.id [delete: Cascade]
 
 Ref: StandaloneAllotment.subjectId > Subject.id
 

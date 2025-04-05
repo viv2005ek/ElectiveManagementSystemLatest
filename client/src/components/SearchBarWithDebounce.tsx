@@ -1,5 +1,5 @@
-import {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import useDebounce from "../hooks/useDebounce.ts";
 
 export default function SearchBarWithDebounce({

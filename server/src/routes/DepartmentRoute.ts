@@ -25,6 +25,12 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: List of departments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Department'
  *       500:
  *         description: Internal server error
  */
@@ -46,6 +52,10 @@ router.get("/", DepartmentController.getAllDepartments);
  *     responses:
  *       200:
  *         description: Department details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Department'
  *       404:
  *         description: Department not found
  *       500:
@@ -76,6 +86,10 @@ router.get("/:id", DepartmentController.getDepartmentById);
  *     responses:
  *       201:
  *         description: Department created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Department'
  *       400:
  *         description: Missing required fields
  *       500:
@@ -110,6 +124,10 @@ router.post("/", DepartmentController.createDepartment);
  *     responses:
  *       200:
  *         description: Department updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Department'
  *       404:
  *         description: Department not found
  *       500:

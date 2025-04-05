@@ -1,5 +1,5 @@
-import React, {createContext, ReactNode, useContext, useState} from "react";
-import {toast} from "react-toastify";
+import React, { createContext, ReactNode, useContext, useState } from "react";
+import { toast } from "react-toastify";
 
 interface NotificationContextType {
   notify: (
@@ -27,7 +27,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const notify = (
     type: "success" | "error" | "info" | "default" | "promise",
     message: string,
-    promise?: Promise<any>,
+    promise?: Promise<void>,
     errorMessage?: string, // Optional error message
   ) => {
     switch (type) {

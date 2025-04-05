@@ -1,4 +1,4 @@
-import {Router} from "express";
+import { Router } from "express";
 import ProgramController from "../controllers/ProgramController";
 
 const router = Router();
@@ -46,6 +46,14 @@ const router = Router();
  *     responses:
  *       200:
  *         description: List of programs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Program'
+ *       500:
+ *         description: Internal server error
  */
 router.get("/", ProgramController.getPrograms);
 
@@ -65,8 +73,14 @@ router.get("/", ProgramController.getPrograms);
  *     responses:
  *       200:
  *         description: Program details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Program'
  *       404:
  *         description: Program not found
+ *       500:
+ *         description: Internal server error
  */
 router.get("/:id", ProgramController.getProgramById);
 
@@ -94,6 +108,14 @@ router.get("/:id", ProgramController.getProgramById);
  *     responses:
  *       201:
  *         description: Program created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Program'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
  */
 router.post("/", ProgramController.createProgram);
 
@@ -127,8 +149,16 @@ router.post("/", ProgramController.createProgram);
  *     responses:
  *       200:
  *         description: Program updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Program'
+ *       400:
+ *         description: Invalid input
  *       404:
  *         description: Program not found
+ *       500:
+ *         description: Internal server error
  */
 router.put("/:id", ProgramController.updateProgram);
 
@@ -150,6 +180,8 @@ router.put("/:id", ProgramController.updateProgram);
  *         description: Program deleted successfully
  *       404:
  *         description: Program not found
+ *       500:
+ *         description: Internal server error
  */
 router.delete("/:id", ProgramController.deleteProgram);
 

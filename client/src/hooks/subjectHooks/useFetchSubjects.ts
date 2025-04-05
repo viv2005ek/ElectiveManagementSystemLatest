@@ -1,6 +1,6 @@
-import {useCallback, useEffect, useState} from "react";
+import { useCallback, useEffect, useState } from "react";
 import axiosInstance from "../../axiosInstance.ts";
-import {Batch} from "../batchHooks/useFetchBatches.ts";
+import { Batch } from "../batchHooks/useFetchBatches.ts";
 
 export interface Subject {
   id: string;
@@ -11,6 +11,7 @@ export interface Subject {
   batch: Batch;
   isPreferenceWindowOpen: boolean;
   isAllotmentFinalized: boolean;
+  dueDate: string;
   // Add other fields as needed
 }
 

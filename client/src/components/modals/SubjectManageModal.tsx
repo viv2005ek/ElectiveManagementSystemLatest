@@ -1,8 +1,18 @@
-import {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {Dialog, DialogBackdrop, DialogPanel, DialogTitle,} from "@headlessui/react";
-import {Subject} from "../../hooks/subjectHooks/useFetchSubjects.ts";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
+import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
 import ToggleWithDescription from "../FormComponents/ToggleWithDescription.tsx";
-import {useUpdateSubjectStatus} from "../../hooks/subjectHooks/useUpdateSubjectStatus.ts";
+import { useUpdateSubjectStatus } from "../../hooks/subjectHooks/useUpdateSubjectStatus.ts";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
+import DeletionModal from "./DeletionModal.tsx";
+import { useDeleteSubject } from "../../hooks/subjectHooks/useDeleteSubject.ts";
+import { TrashIcon } from "@heroicons/react/24/solid";
 
 interface SubjectManageModalProps {
   open: boolean;
@@ -18,29 +28,58 @@ export default function SubjectManageModal({
   refresh,
 }: SubjectManageModalProps) {
   const { updateSubjectStatus } = useUpdateSubjectStatus();
+  const [showDeletionModal, setShowDeletionModal] = useState(false);
 
-  const [isPreferenceWindowOpen, setIsPreferenceWindowOpen] = useState(false);
-  const [isAllotmentFinalized, setIsAllotmentFinalized] = useState(false);
+  const [isPreferenceWindowOpen, setIsPreferenceWindowOpen] = useState(
+    subject?.isPreferenceWindowOpen || false,
+  );
+  const [isAllotmentFinalized, setIsAllotmentFinalized] = useState(
+    subject?.isAllotmentFinalized || false,
+  );
+  const [dueDate, setDueDate] = useState<string | null>(
+    subject?.dueDate || null,
+  );
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [focusDate, setFocusDate] = useState(false);
+
+  const { deleteSubject } = useDeleteSubject();
 
   useEffect(() => {
     if (subject) {
       setIsPreferenceWindowOpen(subject.isPreferenceWindowOpen);
       setIsAllotmentFinalized(subject.isAllotmentFinalized);
+      setDueDate(subject.dueDate);
     }
   }, [subject]);
 
-  useEffect(() => {
-    if (!open) {
-      setIsPreferenceWindowOpen(false);
-      setIsAllotmentFinalized(false);
+  const handleDeletion = async () => {
+    if (subject) {
+      await deleteSubject(subject?.id);
+      setShowDeletionModal(false);
+      setOpen(false);
+      refresh();
     }
-  }, [open]);
+  };
 
-  useEffect(() => {
-    if (isAllotmentFinalized) {
-      setIsPreferenceWindowOpen(false);
+  const handleSubmit = async () => {
+    if (subject) {
+      if (!dueDate) {
+        setFocusDate(true);
+      }
+      setSubmitLoading(true);
+      const result = await updateSubjectStatus({
+        id: subject.id,
+        isPreferenceWindowOpen,
+        isAllotmentFinalized,
+        dueDate: dueDate,
+      });
+      setSubmitLoading(false);
+      if (result) {
+        refresh();
+        setOpen(false);
+      }
     }
-  }, [isAllotmentFinalized]);
+  };
 
   useEffect(() => {
     if (isPreferenceWindowOpen) {
@@ -48,19 +87,11 @@ export default function SubjectManageModal({
     }
   }, [isPreferenceWindowOpen]);
 
-  const handleSubmit = async () => {
-    if (subject) {
-      const result = await updateSubjectStatus({
-        id: subject.id,
-        isPreferenceWindowOpen,
-        isAllotmentFinalized,
-      });
-      if (result) {
-        setOpen(false);
-        refresh();
-      }
+  useEffect(() => {
+    if (isAllotmentFinalized) {
+      setIsPreferenceWindowOpen(false);
     }
-  };
+  }, [isAllotmentFinalized]);
 
   return (
     <Dialog
@@ -85,6 +116,16 @@ export default function SubjectManageModal({
                 enabled={isPreferenceWindowOpen}
                 setEnabled={setIsPreferenceWindowOpen}
               />
+              {isPreferenceWindowOpen && (
+                <DatePicker
+                  label={"Due date"}
+                  autoFocus={focusDate}
+                  value={dueDate ? dayjs(dueDate) : null}
+                  onChange={(date: Dayjs | null) =>
+                    setDueDate(date?.toISOString() || null)
+                  }
+                />
+              )}
               <ToggleWithDescription
                 warning={true}
                 title="Are allotments finalized?"
@@ -93,7 +134,17 @@ export default function SubjectManageModal({
                 setEnabled={setIsAllotmentFinalized}
               />
             </div>
-            <div className="mt-8 flex justify-end gap-4">
+            <div className="mt-12 flex justify-end gap-4">
+              <div className={"flex flex-row flex-grow"}>
+                <button
+                  onClick={() => setShowDeletionModal(true)}
+                  className="inline-flex justify-center gap-1  rounded-md border bg-red-400 hover:bg-red-300  px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                  <div className={"text-white"}>Delete</div>
+                  <TrashIcon className={"h-5 w-5 text-white"} />
+                </button>
+              </div>
+
               <button
                 type="button"
                 className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -103,15 +154,26 @@ export default function SubjectManageModal({
               </button>
               <button
                 type="button"
+                disabled={isPreferenceWindowOpen && !dueDate}
                 className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={handleSubmit}
               >
-                Save
+                {submitLoading ? "Saving..." : "Save"}
               </button>
             </div>
           </DialogPanel>
         </div>
       </div>
+      <DeletionModal
+        open={showDeletionModal}
+        setOpen={setShowDeletionModal}
+        onDelete={handleDeletion}
+        title={"Delete Subject"}
+        description={`Are you sure you want to delete the subject ${subject?.name} ?`}
+        note={
+          "Note: Deleting this subject will also result in deletion of all the preference related data"
+        }
+      />
     </Dialog>
   );
 }

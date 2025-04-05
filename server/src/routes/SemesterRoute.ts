@@ -1,7 +1,7 @@
 import express from "express";
 import SemesterController from "../controllers/SemesterController";
-import {authorizeRoles} from "../middleware/roleMiddleware";
-import {UserRole} from "@prisma/client";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -21,6 +21,14 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: List of all semesters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Semester'
+ *       500:
+ *         description: Unable to fetch semesters
  */
 router.get(
   "/",
@@ -40,9 +48,18 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
+ *         description: The semester ID
  *     responses:
  *       200:
  *         description: Semester details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Semester'
+ *       404:
+ *         description: Semester not found
+ *       500:
+ *         description: Unable to fetch semester
  */
 router.get(
   "/:id",
@@ -70,6 +87,14 @@ router.get(
  *     responses:
  *       201:
  *         description: Semester created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Semester'
+ *       400:
+ *         description: Semester number already exists
+ *       500:
+ *         description: Unable to create semester
  */
 router.post(
   "/",
@@ -89,6 +114,7 @@ router.post(
  *         required: true
  *         schema:
  *           type: string
+ *         description: The semester ID
  *     requestBody:
  *       required: true
  *       content:
@@ -103,6 +129,12 @@ router.post(
  *     responses:
  *       200:
  *         description: Semester updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Semester'
+ *       500:
+ *         description: Unable to update semester
  */
 router.put(
   "/:id",
@@ -122,9 +154,12 @@ router.put(
  *         required: true
  *         schema:
  *           type: string
+ *         description: The semester ID
  *     responses:
  *       200:
  *         description: Semester deleted successfully
+ *       500:
+ *         description: Unable to delete semester
  */
 router.delete(
   "/:id",

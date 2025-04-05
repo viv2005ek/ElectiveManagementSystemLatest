@@ -1,7 +1,7 @@
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import {Faculty} from "../../hooks/facultyHooks/useFetchFaculties.ts";
+import { Faculty } from "../../hooks/facultyHooks/useFetchFaculties.ts";
 
 export default function FacultiesTable({
   faculties,

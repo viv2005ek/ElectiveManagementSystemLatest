@@ -1,6 +1,6 @@
-import {NextFunction, Request, Response} from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import {prisma} from "../prismaClient";
+import { prisma } from "../prismaClient";
 
 const authMiddleware = async (
   req: Request,
@@ -32,7 +32,10 @@ const authMiddleware = async (
     }
 
     req.user = {
-      id: credential.id,
+      id:
+        credential.student?.id ||
+        credential.professor?.id ||
+        credential.admin?.id,
       role: credential.role,
       student: credential.student,
       faculty: credential.professor,

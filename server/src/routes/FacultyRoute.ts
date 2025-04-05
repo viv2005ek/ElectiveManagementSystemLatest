@@ -28,6 +28,11 @@ const router = express.Router();
  *               name:
  *                 type: string
  *                 example: "Engineering Faculty"
+ *               schoolIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["123e4567-e89b-12d3-a456-426614174000"]
  *     responses:
  *       201:
  *         description: Faculty created successfully
@@ -59,6 +64,17 @@ router.post("/", FacultyController.createFaculty);
  *                   name:
  *                     type: string
  *                     example: "Engineering"
+ *                   schools:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "123e4567-e89b-12d3-a456-426614174000"
+ *                         name:
+ *                           type: string
+ *                           example: "School of Engineering"
  *       500:
  *         description: Internal server error
  */
@@ -107,6 +123,11 @@ router.get("/:id", FacultyController.getFacultyById);
  *               name:
  *                 type: string
  *                 example: "Updated Faculty Name"
+ *               schoolIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["123e4567-e89b-12d3-a456-426614174000"]
  *     responses:
  *       200:
  *         description: Faculty updated successfully

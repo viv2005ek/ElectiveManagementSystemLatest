@@ -1,36 +1,30 @@
-import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
-import LoginPage from "./pages/LoginPage.tsx";
-import StudentsLandingPage from "./pages/StudentsLandingPage.tsx";
-import ElectiveChoicePage from "./pages/ElectiveChoicePage.tsx";
-import UserProfilePage from "./pages/UserProfilePage.tsx";
-import MinorSpecializationsPage from "./pages/MinorSpecializationsPage.tsx";
-import AdminPage from "./pages/AdminPage.tsx";
-import ElectiveManagementSystem from "./pages/ElectiveManagementSystemPage.tsx";
-import OpenElective from "./pages/OpenelectivePage.tsx";
-import ManageOEPage from "./pages/ManageOEPage.tsx";
-import EMSAdmin from "./pages/EMSAdminPage.tsx";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/AuthPages/LoginPage.tsx";
+import ActiveSubjectsPage from "./pages/SubjectPages/ActiveSubjectsPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
-import DepartmentsPage from "./pages/DepartmentsPage.tsx";
-import StudentsPage from "./pages/StudentsPage.tsx";
-import CoursesPage from "./pages/CoursesPage.tsx";
-import CreateFacultyPage from "./pages/CreateFacultyPage.tsx";
-import FacultiesPage from "./pages/FacultiesPage.tsx";
-import CreateSchoolPage from "./pages/CreateSchoolPage.tsx";
-import SchoolsPage from "./pages/SchoolsPage.tsx";
-import CreateDepartmentPage from "./pages/CreateDepartmentPage.tsx";
-import CreateProgramPage from "./pages/CreateProgramPage.tsx";
-import ProgramsPage from "./pages/ProgramsPage.tsx";
-import CreateSubjectPage from "./pages/CreateSubjectPage.tsx";
-import CreateCoursePage from "./pages/CreateCoursePage.tsx";
-import CreateSubjectTypePage from "./pages/CreateSubjectTypePage.tsx";
-import SubjectsPage from "./pages/SubjectsPage.tsx";
-import CreateCourseBucketPage from "./pages/CreateCourseBucketPage.tsx";
-import CourseBucketsPage from "./pages/CourseBucketsPage.tsx";
-import ViewCoursePage from "./pages/ViewCoursePage.tsx";
-import SubjectPreferencesPage from "./pages/SubjectPreferencesPage.tsx";
+import DepartmentsPage from "./pages/DepartmentPages/DepartmentsPage.tsx";
+import StudentsPage from "./pages/StudentPages/StudentsPage.tsx";
+import CoursesPage from "./pages/CoursePages/CoursesPage.tsx";
+import CreateFacultyPage from "./pages/FacultyPage/CreateFacultyPage.tsx";
+import FacultiesPage from "./pages/FacultyPage/FacultiesPage.tsx";
+import CreateSchoolPage from "./pages/SchoolPages/CreateSchoolPage.tsx";
+import SchoolsPage from "./pages/SchoolPages/SchoolsPage.tsx";
+import CreateDepartmentPage from "./pages/DepartmentPages/CreateDepartmentPage.tsx";
+import CreateProgramPage from "./pages/ProgramPages/CreateProgramPage.tsx";
+import ProgramsPage from "./pages/ProgramPages/ProgramsPage.tsx";
+import CreateSubjectPage from "./pages/SubjectPages/CreateSubjectPage.tsx";
+import CreateCoursePage from "./pages/CoursePages/CreateCoursePage.tsx";
+import CreateSubjectTypePage from "./pages/SubjectPages/CreateSubjectTypePage.tsx";
+import SubjectsPage from "./pages/SubjectPages/SubjectsPage.tsx";
+import CreateCourseBucketPage from "./pages/CourseBucketPages/CreateCourseBucketPage.tsx";
+import CourseBucketsPage from "./pages/CourseBucketPages/CourseBucketsPage.tsx";
+import ViewCoursePage from "./pages/CoursePages/ViewCoursePage.tsx";
+import SubjectViewPage from "./pages/SubjectPages/SubjectViewPage.tsx";
 import RoleWrapper from "./hocs/RoleWrapper.tsx";
 import UnauthorizedPage from "./pages/UnauthorizedPage.tsx";
-import {UserRole} from "./types/UserTypes.ts";
+import { UserRole } from "./types/UserTypes.ts";
+import SubjectPreferencesFillingPage from "./pages/SubjectPages/SubjectPreferencesFillingPage.tsx";
+import SubjectPreferencesPage from "./pages/SubjectPages/SubjectPreferencesPage.tsx";
 
 export default function Router() {
   return (
@@ -42,71 +36,7 @@ export default function Router() {
           path="/home"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN, UserRole.STUDENT]}>
-              <StudentsLandingPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/choose/:id"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <ElectiveChoicePage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/minor-specializations"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <MinorSpecializationsPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/user-profile"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <UserProfilePage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <AdminPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/ems"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <ElectiveManagementSystem />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/oe"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <OpenElective />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/oemanage"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <ManageOEPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/emsadmin"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <EMSAdmin />
+              <ActiveSubjectsPage />
             </RoleWrapper>
           }
         />
@@ -251,6 +181,22 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <ViewCoursePage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subjects/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <SubjectViewPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subjects/:id/preferences-fill"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.STUDENT]}>
+              <SubjectPreferencesFillingPage />
             </RoleWrapper>
           }
         />

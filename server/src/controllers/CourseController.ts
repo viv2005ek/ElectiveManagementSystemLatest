@@ -1,5 +1,5 @@
-import {Request, Response} from "express";
-import {prisma} from "../prismaClient";
+import { Request, Response } from "express";
+import { prisma } from "../prismaClient";
 
 // Utility function for error handling
 const handleServerError = (res: Response, error: any, message: string) => {

@@ -1,7 +1,7 @@
 import express from "express";
 import CourseBucketController from "../controllers/CourseBucketController";
-import {authorizeRoles} from "../middleware/roleMiddleware";
-import {UserRole} from "@prisma/client";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -43,15 +43,47 @@ const router = express.Router();
  *           type: string
  *         required: false
  *         description: Filter by subject type ID
+ *       - in: query
+ *         name: totalCredits
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter by total credits
+ *       - in: query
+ *         name: numberOfCourses
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter by number of courses
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by course bucket name
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination
  *     responses:
  *       200:
  *         description: Successfully retrieved course buckets
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/CourseBucket'
+ *               type: object
+ *               properties:
+ *                 courseBuckets:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CourseBucket'
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
  *       500:
  *         description: Internal server error
  */
@@ -92,6 +124,57 @@ router.get(
   CourseBucketController.getCourseBucketById,
 );
 
+/**
+ * @swagger
+ * /course-buckets:
+ *   post:
+ *     summary: Add a new course bucket
+ *     tags: [CourseBuckets]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - departmentId
+ *               - numberOfCourses
+ *             properties:
+ *               name:
+ *                 type: string
+ *               departmentId:
+ *                 type: string
+ *               numberOfCourses:
+ *                 type: integer
+ *               subjectTypeIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               courses:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - id
+ *                     - orderIndex
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     orderIndex:
+ *                       type: integer
+ *     responses:
+ *       201:
+ *         description: Course bucket created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CourseBucket'
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Internal server error
+ */
 router.post(
   "/",
   authorizeRoles([UserRole.Admin]),

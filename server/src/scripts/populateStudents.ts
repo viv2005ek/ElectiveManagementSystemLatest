@@ -1,7 +1,7 @@
-import {PrismaClient} from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import * as csv from "csv-parser";
-import {formatName} from "./formatName";
-import {hash} from "bcrypt";
+import { formatName } from "./formatName";
+import { hash } from "bcrypt";
 import * as fs from "node:fs";
 
 const prisma = new PrismaClient();

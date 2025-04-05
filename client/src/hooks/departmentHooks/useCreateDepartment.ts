@@ -1,6 +1,6 @@
-import {useState} from "react";
+import { useState } from "react";
 import axiosInstance from "../../axiosInstance";
-import {useNotification} from "../../contexts/NotificationContext.tsx";
+import { useNotification } from "../../contexts/NotificationContext.tsx";
 import axios from "axios";
 
 interface DepartmentResponse {
