@@ -37,7 +37,9 @@ type AllotmentResponse = {
 
 export default function AllotmentPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    null,
+  );
   const [allotments, setAllotments] = useState<AllotmentResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function AllotmentPage() {
     const fetchSubjects = async () => {
       try {
         const res = await axiosInstance.get("/subjects");
-        setSubjects((res.data.subjects || []));
+        setSubjects(res.data.subjects || []);
       } catch (err) {
         console.error(" Error fetching subjects", err);
         setError("Failed to load subjects.");
@@ -97,7 +99,9 @@ export default function AllotmentPage() {
         <h1 className="text-2xl font-bold">Allotment Viewer</h1>
 
         <div>
-          <label className="block mb-2 font-medium text-sm">Select a Subject:</label>
+          <label className="block mb-2 font-medium text-sm">
+            Select a Subject:
+          </label>
           <select
             className="border rounded p-2 w-full"
             value={selectedSubjectId || ""}
@@ -123,11 +127,7 @@ export default function AllotmentPage() {
 
         {loading && <p>Loading...</p>}
 
-        {error && (
-          <p className="text-red-600 font-medium">
-            ⚠️ {error}
-          </p>
-        )}
+        {error && <p className="text-red-600 font-medium">⚠️ {error}</p>}
 
         {!loading && allotments && (
           <div className="space-y-6">
@@ -137,7 +137,9 @@ export default function AllotmentPage() {
 
             {allotments.standaloneAllotments.length > 0 && (
               <div>
-                <h3 className="font-medium text-lg mb-2">Standalone Allotments</h3>
+                <h3 className="font-medium text-lg mb-2">
+                  Standalone Allotments
+                </h3>
                 <ul className="space-y-2">
                   {allotments.standaloneAllotments.map((entry, idx) => (
                     <li key={idx} className="border p-2 rounded shadow-sm">

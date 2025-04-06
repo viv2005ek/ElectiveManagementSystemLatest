@@ -36,7 +36,6 @@ services:
 # Volumes should be defined at the top level.
 volumes:
   db-data:
-
 # secrets:
 #   db-password:
 #     file: db/password.txt

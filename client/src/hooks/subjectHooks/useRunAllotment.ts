@@ -10,7 +10,10 @@ interface UseRunAllotmentOptions {
   onError?: (error: string) => void;
 }
 
-const useRunAllotment = ({ onSuccess, onError }: UseRunAllotmentOptions = {}) => {
+const useRunAllotment = ({
+  onSuccess,
+  onError,
+}: UseRunAllotmentOptions = {}) => {
   const [loading, setLoading] = useState(false);
 
   const runAllotment = async ({ subjectId }: RunAllotmentParams) => {

@@ -36,7 +36,9 @@ export default function PreferencePage() {
   };
 
   const runAllotment = async (subjectId: string) => {
-    const confirmRun = confirm(`Are you sure you want to run and finalize the allotment? ${subjectId}`);
+    const confirmRun = confirm(
+      `Are you sure you want to run and finalize the allotment? ${subjectId}`,
+    );
     if (!confirmRun) return;
 
     try {
@@ -75,22 +77,29 @@ export default function PreferencePage() {
                       : "bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {subject.isPreferenceWindowOpen ? "Preference Open" : "Closed"}
+                  {subject.isPreferenceWindowOpen
+                    ? "Preference Open"
+                    : "Closed"}
                 </span>
               </div>
 
-              <p className="text-sm text-gray-600">Batch: {subject.batch.year}</p>
+              <p className="text-sm text-gray-600">
+                Batch: {subject.batch.year}
+              </p>
               <p className="text-sm text-gray-600">
                 Due Date: {new Date(subject.dueDate).toLocaleString()}
               </p>
               <p className="text-sm text-gray-600">
-                Preferences Filled: {subject.preferencesFilled} / {subject.totalStudents}
+                Preferences Filled: {subject.preferencesFilled} /{" "}
+                {subject.totalStudents}
               </p>
               <p className="text-sm text-gray-600">
                 Allotment Finalized:{" "}
                 <span
                   className={`font-semibold ${
-                    subject.isAllotmentFinalized ? "text-green-600" : "text-red-600"
+                    subject.isAllotmentFinalized
+                      ? "text-green-600"
+                      : "text-red-600"
                   }`}
                 >
                   {subject.isAllotmentFinalized ? "Yes" : "No"}
@@ -100,7 +109,8 @@ export default function PreferencePage() {
               <button
                 className="mt-2 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:bg-gray-400 border-rounded"
                 disabled={
-                  subject.isAllotmentFinalized || !subject.isPreferenceWindowOpen
+                  subject.isAllotmentFinalized ||
+                  !subject.isPreferenceWindowOpen
                 }
                 onClick={() => runAllotment(subject.id)}
               >

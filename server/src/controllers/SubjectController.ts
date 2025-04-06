@@ -149,8 +149,8 @@ const SubjectController = {
           ({ id, seats }: { id: string; seats: number }) => ({
             courseId: id,
             subjectId: subject.id,
-            totalSeats: seats !== 0 ? seats : null,
-            availableSeats: seats,
+            totalSeats: seats && seats !== 0 ? seats : null,
+            availableSeats: seats && seats !== 0 ? seats : null,
           }),
         ),
       });
@@ -365,6 +365,8 @@ const SubjectController = {
                 },
               },
             },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
           },
           courseBucketsWithSeats: {
             include: {
@@ -386,6 +388,8 @@ const SubjectController = {
                 },
               },
             },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
           },
           subjectType: true,
           semesters: true,
@@ -399,10 +403,33 @@ const SubjectController = {
         return;
       }
 
-      const totalCourses = subject.coursesWithSeats.length;
-      const totalCourseBuckets = subject.courseBucketsWithSeats.length;
+      const totalCourses = await prisma.subjectCourseWithSeats.count({
+        where: {
+          subjectId: id,
+          course: {
+            name: {
+              contains: search as string,
+              mode: "insensitive",
+            },
+          },
+        },
+      });
+
+      const totalCourseBuckets =
+        await prisma.subjectCourseBucketWithSeats.count({
+          where: {
+            subjectId: id,
+            courseBucket: {
+              name: {
+                contains: search as string,
+                mode: "insensitive",
+              },
+            },
+          },
+        });
+
       const totalItems = totalCourses + totalCourseBuckets;
-      const totalPages = Math.ceil(totalItems / pageSize);
+      const totalPages = Math.ceil(totalItems / Number(pageSize));
 
       const offerings = {
         subjectName: subject.name,
@@ -443,7 +470,6 @@ const SubjectController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
-
   deleteSubject: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
@@ -471,6 +497,8 @@ const SubjectController = {
     const { subjectId } = req.params;
 
     try {
+      console.log(`Starting allotments for subject ID: ${subjectId}`);
+
       const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
         include: {
@@ -509,13 +537,20 @@ const SubjectController = {
       });
 
       if (!subject) {
+        console.log(`Subject not found: ${subjectId}`);
         res.status(404).json({ error: "Subject not found" });
         return;
       }
 
+      console.log(`Subject found: ${subject.name}`);
+
       if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
         const standaloneAllotments = [];
         for (const preference of subject.standaloneSubjectPreferences) {
+          console.log(
+            `Processing preference for student ID: ${preference.studentId}`,
+          );
+
           const course = await prisma.subjectCourseWithSeats.findUnique({
             where: {
               courseId_subjectId: {
@@ -529,6 +564,9 @@ const SubjectController = {
             course &&
             (course.availableSeats === null || course.availableSeats > 0)
           ) {
+            console.log(
+              `Allocating course ID: ${preference.firstPreferenceCourseId} to student ID: ${preference.studentId}`,
+            );
             standaloneAllotments.push({
               subjectId: subject.id,
               studentId: preference.studentId,
@@ -545,15 +583,30 @@ const SubjectController = {
                     : null,
               },
             });
+          } else {
+            console.log(
+              `No available seats for course ID: ${preference.firstPreferenceCourseId}`,
+            );
           }
         }
 
-        await prisma.standaloneAllotment.createMany({
-          data: standaloneAllotments,
-        });
+        if (standaloneAllotments.length > 0) {
+          console.log(
+            `Creating ${standaloneAllotments.length} standalone allotments`,
+          );
+          await prisma.standaloneAllotment.createMany({
+            data: standaloneAllotments,
+          });
+        } else {
+          console.log("No standalone allotments to create");
+        }
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
         const bucketAllotments = [];
         for (const preference of subject.bucketSubjectPreferences) {
+          console.log(
+            `Processing bucket preference for student ID: ${preference.studentId}`,
+          );
+
           const courseBucketWithSeats =
             await prisma.subjectCourseBucketWithSeats.findUnique({
               where: {
@@ -580,6 +633,9 @@ const SubjectController = {
               ? courseBucketWithSeats.courseBucket.courses[0]
               : null;
             if (course) {
+              console.log(
+                `Allocating course bucket ID: ${preference.firstPreferenceCourseBucketId} to student ID: ${preference.studentId}`,
+              );
               bucketAllotments.push({
                 subjectId: subject.id,
                 studentId: preference.studentId,
@@ -597,13 +653,26 @@ const SubjectController = {
                       : null,
                 },
               });
+            } else {
+              console.log(
+                `No courses found in course bucket ID: ${preference.firstPreferenceCourseBucketId}`,
+              );
             }
+          } else {
+            console.log(
+              `No available seats for course bucket ID: ${preference.firstPreferenceCourseBucketId}`,
+            );
           }
         }
 
-        await prisma.bucketAllotment.createMany({
-          data: bucketAllotments,
-        });
+        if (bucketAllotments.length > 0) {
+          console.log(`Creating ${bucketAllotments.length} bucket allotments`);
+          await prisma.bucketAllotment.createMany({
+            data: bucketAllotments,
+          });
+        } else {
+          console.log("No bucket allotments to create");
+        }
       }
 
       res.status(200).json({ message: "Allotments created successfully" });

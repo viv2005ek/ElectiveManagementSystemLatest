@@ -126,7 +126,6 @@ Table Course {
   firstPreferenceCourses StandaloneSubjectPreference [not null]
   secondPreferenceCourses StandaloneSubjectPreference [not null]
   thirdPreferenceCourses StandaloneSubjectPreference [not null]
-  StandaloneSubjectPreference StandaloneSubjectPreference [not null]
 
   indexes {
     (code, departmentId) [unique]
@@ -251,8 +250,6 @@ Table StandaloneSubjectPreference {
   runAllotment Boolean [not null, default: true]
   updatedAt DateTime [not null]
   createdAt DateTime [default: `now()`, not null]
-  Course Course
-  courseId String
 
   indexes {
     (subjectId, studentId) [unique]
@@ -450,8 +447,6 @@ Ref: StandaloneSubjectPreference.firstPreferenceCourseId > Course.id [delete: Ca
 Ref: StandaloneSubjectPreference.secondPreferenceCourseId > Course.id [delete: Cascade]
 
 Ref: StandaloneSubjectPreference.thirdPreferenceCourseId > Course.id [delete: Cascade]
-
-Ref: StandaloneSubjectPreference.courseId > Course.id [delete: Cascade]
 
 Ref: BucketSubjectPreference.subjectId > Subject.id [delete: Cascade]
 

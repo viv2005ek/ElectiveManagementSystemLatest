@@ -124,22 +124,21 @@ model Professor {
 }
 
 model Course {
-  id                          String                        @id @default(uuid())
-  code                        String
-  name                        String
-  credits                     Int
-  departmentId                String
-  department                  Department                    @relation(fields: [departmentId], references: [id])
-  courseBucketCourses         CourseBucketCourse[]
-  isDeleted                   Boolean                       @default(false)
-  subjectTypes                SubjectType[]                 @relation("courseToSubjectCategory")
-  standaloneAllotments        StandaloneAllotment[]
-  bucketAllotments            BucketAllotment[]
-  coursesWithSeats            SubjectCourseWithSeats[]      @relation("courseWithSeats")
-  firstPreferenceCourses      StandaloneSubjectPreference[] @relation("FirstPreferenceCourse")
-  secondPreferenceCourses     StandaloneSubjectPreference[] @relation("SecondPreferenceCourse")
-  thirdPreferenceCourses      StandaloneSubjectPreference[] @relation("ThirdPreferenceCourse")
-  StandaloneSubjectPreference StandaloneSubjectPreference[]
+  id                      String                        @id @default(uuid())
+  code                    String
+  name                    String
+  credits                 Int
+  departmentId            String
+  department              Department                    @relation(fields: [departmentId], references: [id])
+  courseBucketCourses     CourseBucketCourse[]
+  isDeleted               Boolean                       @default(false)
+  subjectTypes            SubjectType[]                 @relation("courseToSubjectCategory")
+  standaloneAllotments    StandaloneAllotment[]
+  bucketAllotments        BucketAllotment[]
+  coursesWithSeats        SubjectCourseWithSeats[]      @relation("courseWithSeats")
+  firstPreferenceCourses  StandaloneSubjectPreference[] @relation("FirstPreferenceCourse")
+  secondPreferenceCourses StandaloneSubjectPreference[] @relation("SecondPreferenceCourse")
+  thirdPreferenceCourses  StandaloneSubjectPreference[] @relation("ThirdPreferenceCourse")
 
   @@unique([code, departmentId])
 }
@@ -254,8 +253,6 @@ model StandaloneSubjectPreference {
   runAllotment             Boolean  @default(true)
   updatedAt                DateTime @updatedAt
   createdAt                DateTime @default(now())
-  Course                   Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId                 String?
 
   @@unique([subjectId, studentId])
 }

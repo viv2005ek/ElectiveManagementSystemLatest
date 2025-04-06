@@ -106,7 +106,7 @@ export default function Router() {
             </RoleWrapper>
           }
         />
-         <Route
+        <Route
           path="/allotments"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
