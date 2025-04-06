@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ReactNode, useEffect, useState } from "react";
 import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Disclosure,
   Menu,
   MenuButton,
   MenuItem,
@@ -139,6 +139,20 @@ const navigation = [
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
+      {
+        name: "Allotments",
+        href: "/allotments",
+        icon: BuildingIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+      {
+        name: "Preferences",
+        href: "/preferences",
+        icon: BookIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
     ],
   },
 ];
@@ -152,30 +166,107 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+
+const SidebarDisclosure = ({
+  item,
+  isOpen,
+  onToggle,
+  location,
+  hasRequiredRole,
+}: {
+  item: any;
+  isOpen: boolean;
+  onToggle: () => void;
+  location: any;
+  hasRequiredRole: (roles: UserRole[]) => boolean;
+}) => {
+  return (
+    <div className="space-y-1">
+      <button
+        className="flex w-full justify-between text-white font-semibold"
+        onClick={onToggle}
+      >
+        {item.name}
+        <ChevronDownIcon
+          className={classNames(
+            isOpen ? "rotate-180 transform" : "",
+            "size-5"
+          )}
+        />
+      </button>
+      {isOpen && (
+        <div className="ml-4 space-y-1">
+          {item.children.map(
+            (child: any) =>
+              hasRequiredRole(child.requiredRoles) && (
+                <li key={child.name}>
+                  <Link
+                    to={child.href}
+                    className={classNames(
+                      location.pathname === child.href
+                        ? "bg-gray-50 text-indigo-600"
+                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
+                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
+                    )}
+                  >
+                    <child.icon
+                      aria-hidden="true"
+                      className={classNames(
+                        location.pathname === child.href
+                          ? "text-indigo-600"
+                          : "text-white-400 group-hover:text-indigo-600",
+                        "size-6 shrink-0"
+                      )}
+                    />
+                    {child.name}
+                  </Link>
+                </li>
+              )
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function MainLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
+  const [activeSections, setActiveSections] = useState<{ [key: string]: boolean }>(
     {},
   );
   const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
 
   useEffect(() => {
-    const savedOpenSections = localStorage.getItem("openSections");
-    if (savedOpenSections) {
-      setOpenSections(JSON.parse(savedOpenSections));
+    const savedActiveSections = localStorage.getItem("activeSections");
+    if (savedActiveSections) {
+      setActiveSections(JSON.parse(savedActiveSections));
     }
-  }, []);
+    
+    navigation.forEach(item => {
+      if (item.children) {
+        const isPathInSection = item.children.some(
+          (child: any) => location.pathname === child.href
+        );
+        if (isPathInSection) {
+          setActiveSections(prev => ({
+            ...prev,
+            [item.name]: true
+          }));
+        }
+      }
+    });
+  }, [location.pathname]);
+
+  useEffect(() => {
+    localStorage.setItem("activeSections", JSON.stringify(activeSections));
+  }, [activeSections]);
 
   const toggleSection = (sectionName: string) => {
-    setOpenSections((prevState) => {
-      const newState = {
-        ...prevState,
-        [sectionName]: !prevState[sectionName],
-      };
-      localStorage.setItem("openSections", JSON.stringify(newState));
-      return newState;
-    });
+    setActiveSections(prevState => ({
+      ...prevState,
+      [sectionName]: !prevState[sectionName]
+    }));
   };
 
   const hasRequiredRole = (requiredRoles: UserRole[]) => {
@@ -221,7 +312,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                     alt="Your Company"
                     src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                     className="h-8 w-auto"
-                  />
+                                      />
                 </div>
                 <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -232,65 +323,13 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                             hasRequiredRole(item.requiredRoles) && (
                               <li key={item.name}>
                                 {item.children ? (
-                                  <Disclosure
-                                    as="div"
-                                    className="space-y-1"
-                                    defaultOpen={openSections[item.name]}
-                                  >
-                                    {({ open }) => (
-                                      <>
-                                        <Disclosure.Button
-                                          className="flex w-full justify-between text-white font-semibold"
-                                          onClick={() =>
-                                            toggleSection(item.name)
-                                          }
-                                        >
-                                          {item.name}
-                                          <ChevronDownIcon
-                                            className={classNames(
-                                              open
-                                                ? "rotate-180 transform"
-                                                : "",
-                                              "size-5",
-                                            )}
-                                          />
-                                        </Disclosure.Button>
-                                        <Disclosure.Panel className="ml-4 space-y-1">
-                                          {item.children.map(
-                                            (child) =>
-                                              hasRequiredRole(
-                                                child.requiredRoles,
-                                              ) && (
-                                                <li key={child.name}>
-                                                  <Link
-                                                    to={child.href}
-                                                    className={classNames(
-                                                      location.pathname ===
-                                                        child.href
-                                                        ? "bg-gray-50 text-indigo-600"
-                                                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                                                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-                                                    )}
-                                                  >
-                                                    <child.icon
-                                                      aria-hidden="true"
-                                                      className={classNames(
-                                                        location.pathname ===
-                                                          child.href
-                                                          ? "text-indigo-600"
-                                                          : "text-white-400 group-hover:text-indigo-600",
-                                                        "size-6 shrink-0",
-                                                      )}
-                                                    />
-                                                    {child.name}
-                                                  </Link>
-                                                </li>
-                                              ),
-                                          )}
-                                        </Disclosure.Panel>
-                                      </>
-                                    )}
-                                  </Disclosure>
+                                  <SidebarDisclosure 
+                                    item={item}
+                                    isOpen={!!activeSections[item.name]}
+                                    onToggle={() => toggleSection(item.name)}
+                                    location={location}
+                                    hasRequiredRole={hasRequiredRole}
+                                  />
                                 ) : (
                                   <Link
                                     to={item.href}
@@ -338,10 +377,15 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         </Dialog>
 
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col bg-muj-orange">
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6 pb-4">
-            <div className="flex h-16 shrink-0 items-center pt-12 mb-8">
-              <img alt="Your Company" src="/MUJ_logo.png" className="w-max" />
-            </div>
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6 pb-4 ">
+          <div className="flex h-20 items-center justify-center bg-white rounded-lg shadow-sm p-4 mb-8 mt-2 ">
+  <img 
+    alt="Your Company" 
+    src="/MUJ_logo.png" 
+    className="w-max" 
+  />
+</div>
+
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
@@ -351,61 +395,13 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                         hasRequiredRole(item.requiredRoles) && (
                           <li key={item.name}>
                             {item.children ? (
-                              <Disclosure
-                                as="div"
-                                className="space-y-1"
-                                defaultOpen={openSections[item.name]}
-                              >
-                                {({ open }) => (
-                                  <>
-                                    <Disclosure.Button
-                                      className="flex w-full justify-between text-white font-semibold"
-                                      onClick={() => toggleSection(item.name)}
-                                    >
-                                      {item.name}
-                                      <ChevronDownIcon
-                                        className={classNames(
-                                          open ? "rotate-180 transform" : "",
-                                          "size-5",
-                                        )}
-                                      />
-                                    </Disclosure.Button>
-                                    <Disclosure.Panel className="ml-4 space-y-1">
-                                      {item.children.map(
-                                        (child) =>
-                                          hasRequiredRole(
-                                            child.requiredRoles,
-                                          ) && (
-                                            <li key={child.name}>
-                                              <Link
-                                                to={child.href}
-                                                className={classNames(
-                                                  location.pathname ===
-                                                    child.href
-                                                    ? "bg-gray-50 text-indigo-600"
-                                                    : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                                                  "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
-                                                )}
-                                              >
-                                                <child.icon
-                                                  aria-hidden="true"
-                                                  className={classNames(
-                                                    location.pathname ===
-                                                      child.href
-                                                      ? "text-indigo-600"
-                                                      : "text-white-400 group-hover:text-indigo-600",
-                                                    "size-6 shrink-0",
-                                                  )}
-                                                />
-                                                {child.name}
-                                              </Link>
-                                            </li>
-                                          ),
-                                      )}
-                                    </Disclosure.Panel>
-                                  </>
-                                )}
-                              </Disclosure>
+                              <SidebarDisclosure 
+                                item={item}
+                                isOpen={!!activeSections[item.name]}
+                                onToggle={() => toggleSection(item.name)}
+                                location={location}
+                                hasRequiredRole={hasRequiredRole}
+                              />
                             ) : (
                               <Link
                                 to={item.href}
