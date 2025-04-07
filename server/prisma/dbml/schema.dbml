@@ -240,15 +240,13 @@ Table StandaloneSubjectPreference {
   subject Subject [not null]
   studentId String [not null]
   student Student [not null]
-  firstPreferenceCourseId String [not null]
-  firstPreferenceCourse Course [not null]
-  secondPreferenceCourseId String [not null]
-  secondPreferenceCourse Course [not null]
-  thirdPreferenceCourseId String [not null]
-  thirdPreferenceCourse Course [not null]
-  changeRequested Boolean [not null, default: false]
+  firstPreferenceCourseId String
+  firstPreferenceCourse Course
+  secondPreferenceCourseId String
+  secondPreferenceCourse Course
+  thirdPreferenceCourseId String
+  thirdPreferenceCourse Course
   runAllotment Boolean [not null, default: true]
-  updatedAt DateTime [not null]
   createdAt DateTime [default: `now()`, not null]
 
   indexes {
@@ -262,15 +260,13 @@ Table BucketSubjectPreference {
   subject Subject [not null]
   studentId String [not null]
   student Student [not null]
-  firstPreferenceCourseBucketId String [not null]
-  firstPreferenceCourseBucket CourseBucket [not null]
-  secondPreferenceCourseBucketId String [not null]
-  secondPreferenceCourseBucket CourseBucket [not null]
-  thirdPreferenceCourseBucketId String [not null]
-  thirdPreferenceCourseBucket CourseBucket [not null]
+  firstPreferenceCourseBucketId String
+  firstPreferenceCourseBucket CourseBucket
+  secondPreferenceCourseBucketId String
+  secondPreferenceCourseBucket CourseBucket
+  thirdPreferenceCourseBucketId String
+  thirdPreferenceCourseBucket CourseBucket
   runAllotment Boolean [not null, default: true]
-  changeRequested Boolean [not null, default: false]
-  updatedAt DateTime [not null]
   createdAt DateTime [default: `now()`, not null]
 
   indexes {

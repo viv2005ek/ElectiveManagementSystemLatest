@@ -243,36 +243,32 @@ model StandaloneSubjectPreference {
   subject                  Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   studentId                String
   student                  Student  @relation(fields: [studentId], references: [id])
-  firstPreferenceCourseId  String
-  firstPreferenceCourse    Course   @relation("FirstPreferenceCourse", fields: [firstPreferenceCourseId], references: [id], onDelete: Cascade)
-  secondPreferenceCourseId String
-  secondPreferenceCourse   Course   @relation("SecondPreferenceCourse", fields: [secondPreferenceCourseId], references: [id], onDelete: Cascade)
-  thirdPreferenceCourseId  String
-  thirdPreferenceCourse    Course   @relation("ThirdPreferenceCourse", fields: [thirdPreferenceCourseId], references: [id], onDelete: Cascade)
-  changeRequested          Boolean  @default(false)
+  firstPreferenceCourseId  String?
+  firstPreferenceCourse    Course?  @relation("FirstPreferenceCourse", fields: [firstPreferenceCourseId], references: [id], onDelete: Cascade)
+  secondPreferenceCourseId String?
+  secondPreferenceCourse   Course?  @relation("SecondPreferenceCourse", fields: [secondPreferenceCourseId], references: [id], onDelete: Cascade)
+  thirdPreferenceCourseId  String?
+  thirdPreferenceCourse    Course?  @relation("ThirdPreferenceCourse", fields: [thirdPreferenceCourseId], references: [id], onDelete: Cascade)
   runAllotment             Boolean  @default(true)
-  updatedAt                DateTime @updatedAt
   createdAt                DateTime @default(now())
 
   @@unique([subjectId, studentId])
 }
 
 model BucketSubjectPreference {
-  id                             String       @id @default(uuid())
+  id                             String        @id @default(uuid())
   subjectId                      String
-  subject                        Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject                        Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   studentId                      String
-  student                        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  firstPreferenceCourseBucketId  String
-  firstPreferenceCourseBucket    CourseBucket @relation("FirstPreferenceCourseBucket", fields: [firstPreferenceCourseBucketId], references: [id], onDelete: Cascade)
-  secondPreferenceCourseBucketId String
-  secondPreferenceCourseBucket   CourseBucket @relation("SecondPreferenceCourseBucket", fields: [secondPreferenceCourseBucketId], references: [id], onDelete: Cascade)
-  thirdPreferenceCourseBucketId  String
-  thirdPreferenceCourseBucket    CourseBucket @relation("ThirdPreferenceCourseBucket", fields: [thirdPreferenceCourseBucketId], references: [id], onDelete: Cascade)
-  runAllotment                   Boolean      @default(true)
-  changeRequested                Boolean      @default(false)
-  updatedAt                      DateTime     @updatedAt
-  createdAt                      DateTime     @default(now())
+  student                        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  firstPreferenceCourseBucketId  String?
+  firstPreferenceCourseBucket    CourseBucket? @relation("FirstPreferenceCourseBucket", fields: [firstPreferenceCourseBucketId], references: [id], onDelete: Cascade)
+  secondPreferenceCourseBucketId String?
+  secondPreferenceCourseBucket   CourseBucket? @relation("SecondPreferenceCourseBucket", fields: [secondPreferenceCourseBucketId], references: [id], onDelete: Cascade)
+  thirdPreferenceCourseBucketId  String?
+  thirdPreferenceCourseBucket    CourseBucket? @relation("ThirdPreferenceCourseBucket", fields: [thirdPreferenceCourseBucketId], references: [id], onDelete: Cascade)
+  runAllotment                   Boolean       @default(true)
+  createdAt                      DateTime      @default(now())
 
   @@unique([subjectId, studentId])
 }

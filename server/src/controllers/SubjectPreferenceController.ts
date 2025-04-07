@@ -14,7 +14,7 @@ const SubjectPreferenceController = {
 
     if (
       !Array.isArray(preferences) ||
-      preferences.some((id) => typeof id !== "string")
+      preferences.some((id: string) => false)
     ) {
       res
         .status(400)
@@ -90,6 +90,14 @@ const SubjectPreferenceController = {
           res.status(400).json({ error: "Invalid course preferences" });
           return;
         }
+        await prisma.standaloneSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
 
         await prisma.standaloneSubjectPreference.create({
           data: {
@@ -112,6 +120,15 @@ const SubjectPreferenceController = {
           res.status(400).json({ error: "Invalid bucket preferences" });
           return;
         }
+
+        await prisma.bucketSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
 
         await prisma.bucketSubjectPreference.create({
           data: {
@@ -204,6 +221,179 @@ const SubjectPreferenceController = {
       res.status(200).json(subjectInfo);
     } catch (error) {
       console.error("Error fetching subject preferences:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  updatePreferences: async (req: Request, res: Response): Promise<void> => {
+    const { subjectId } = req.params;
+    const { preferences }: { preferences: string[] } = req.body;
+    const studentId = req.user.id;
+
+    if (
+      !Array.isArray(preferences) ||
+      preferences.some((id) => typeof id !== "string")
+    ) {
+      res
+        .status(400)
+        .json({ error: "Preferences must be an array of strings" });
+      return;
+    }
+
+    try {
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        include: {
+          subjectType: true,
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+      });
+
+      if (!student) {
+        res.status(404).json({ error: "Student not found" });
+        return;
+      }
+
+      if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+        await prisma.standaloneSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
+
+        await prisma.standaloneSubjectPreference.create({
+          data: {
+            subject: { connect: { id: subjectId } },
+            student: { connect: { id: studentId } },
+            firstPreferenceCourse: { connect: { id: preferences[0] } },
+            secondPreferenceCourse: { connect: { id: preferences[1] } },
+            thirdPreferenceCourse: { connect: { id: preferences[2] } },
+          },
+        });
+      } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+        await prisma.bucketSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
+
+        await prisma.bucketSubjectPreference.create({
+          data: {
+            subject: { connect: { id: subjectId } },
+            student: { connect: { id: studentId } },
+            firstPreferenceCourseBucket: { connect: { id: preferences[0] } },
+            secondPreferenceCourseBucket: { connect: { id: preferences[1] } },
+            thirdPreferenceCourseBucket: { connect: { id: preferences[2] } },
+          },
+        });
+      } else {
+        res.status(400).json({ error: "Invalid subject type" });
+        return;
+      }
+
+      res.status(200).json({ message: "Preference updated successfully" });
+    } catch (error) {
+      console.error("Error updating preference:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  updateSubjectPreferences: async (req: Request, res: Response) => {
+    const { subjectId } = req.params;
+    const { preferences }: { preferences: string[] } = req.body;
+    const studentId = req.user.id;
+
+    if (
+      !Array.isArray(preferences) ||
+      preferences.some((id) => typeof id !== "string")
+    ) {
+      res
+        .status(400)
+        .json({ error: "Preferences must be an array of strings" });
+      return;
+    }
+
+    try {
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        include: {
+          subjectType: true,
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+      });
+
+      if (!student) {
+        res.status(404).json({ error: "Student not found" });
+        return;
+      }
+
+      if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+        await prisma.standaloneSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
+
+        await prisma.standaloneSubjectPreference.create({
+          data: {
+            subject: { connect: { id: subjectId } },
+            student: { connect: { id: studentId } },
+            firstPreferenceCourse: { connect: { id: preferences[0] } },
+            secondPreferenceCourse: { connect: { id: preferences[1] } },
+            thirdPreferenceCourse: { connect: { id: preferences[2] } },
+          },
+        });
+      } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+        await prisma.bucketSubjectPreference.delete({
+          where: {
+            subjectId_studentId: {
+              subjectId: subjectId,
+              studentId: studentId,
+            },
+          },
+        });
+
+        await prisma.bucketSubjectPreference.create({
+          data: {
+            subject: { connect: { id: subjectId } },
+            student: { connect: { id: studentId } },
+            firstPreferenceCourseBucket: { connect: { id: preferences[0] } },
+            secondPreferenceCourseBucket: { connect: { id: preferences[1] } },
+            thirdPreferenceCourseBucket: { connect: { id: preferences[2] } },
+          },
+        });
+      } else {
+        res.status(400).json({ error: "Invalid subject type" });
+        return;
+      }
+
+      res.status(200).json({ message: "Preferences updated successfully" });
+    } catch (error) {
+      console.error("Error updating preferences:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

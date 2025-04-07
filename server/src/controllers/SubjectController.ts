@@ -308,7 +308,6 @@ const SubjectController = {
               standaloneSubjectPreferences: {
                 none: {
                   studentId: student.id,
-                  changeRequested: false,
                 },
               },
             },
@@ -316,7 +315,6 @@ const SubjectController = {
               bucketSubjectPreferences: {
                 none: {
                   studentId: student.id,
-                  changeRequested: false,
                 },
               },
             },
@@ -510,7 +508,7 @@ const SubjectController = {
               secondPreferenceCourse: true,
               thirdPreferenceCourse: true,
             },
-            orderBy: [{ createdAt: "asc" }, { updatedAt: "asc" }],
+            orderBy: [{ createdAt: "asc" }],
           },
           bucketSubjectPreferences: {
             where: { runAllotment: true },
@@ -531,7 +529,7 @@ const SubjectController = {
                 },
               },
             },
-            orderBy: [{ updatedAt: "asc" }, { createdAt: "asc" }],
+            orderBy: [{ createdAt: "asc" }],
           },
         },
       });
@@ -554,7 +552,7 @@ const SubjectController = {
           const course = await prisma.subjectCourseWithSeats.findUnique({
             where: {
               courseId_subjectId: {
-                courseId: preference.firstPreferenceCourseId,
+                courseId: preference.firstPreferenceCourseId!,
                 subjectId: subject.id,
               },
             },
@@ -570,7 +568,7 @@ const SubjectController = {
             standaloneAllotments.push({
               subjectId: subject.id,
               studentId: preference.studentId,
-              courseId: preference.firstPreferenceCourseId,
+              courseId: preference.firstPreferenceCourseId!,
               semesterId: subject.semesterId || "",
               allotmentStatus: AllotmentStatus.Pending,
             });
@@ -611,7 +609,7 @@ const SubjectController = {
             await prisma.subjectCourseBucketWithSeats.findUnique({
               where: {
                 courseBucketId_subjectId: {
-                  courseBucketId: preference.firstPreferenceCourseBucketId,
+                  courseBucketId: preference.firstPreferenceCourseBucketId!,
                   subjectId: subject.id,
                 },
               },
@@ -639,7 +637,7 @@ const SubjectController = {
               bucketAllotments.push({
                 subjectId: subject.id,
                 studentId: preference.studentId,
-                courseBucketId: preference.firstPreferenceCourseBucketId,
+                courseBucketId: preference.firstPreferenceCourseBucketId!,
                 courseId: course.id,
                 semesterId: subject.semesterId || "",
                 allotmentStatus: AllotmentStatus.Pending,
