@@ -153,6 +153,12 @@ const SubjectPreferenceController = {
           batch: true,
           standaloneSubjectPreferences: {
             select: {
+              student: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
               firstPreferenceCourse: true,
               secondPreferenceCourse: true,
               thirdPreferenceCourse: true,
