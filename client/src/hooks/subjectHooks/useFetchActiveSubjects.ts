@@ -3,6 +3,7 @@ import axiosInstance from "../../axiosInstance.ts";
 import { Semester } from "../semesterHooks/useFetchSemesters.ts";
 import { SubjectType } from "../subjectTypeHooks/useFetchSubjectTypes.ts";
 import axios from "axios";
+import { PreferenceFillingStatus } from "../../components/UpcomingDeadlinesList.tsx";
 
 export interface ActiveSubject {
   id: string;
@@ -12,6 +13,7 @@ export interface ActiveSubject {
   isPreferenceWindowOpen: boolean;
   semester: Semester;
   semesters: Semester[];
+  status: PreferenceFillingStatus;
 }
 
 const useActiveSubjects = () => {

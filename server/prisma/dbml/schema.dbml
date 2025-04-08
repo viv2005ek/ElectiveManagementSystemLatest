@@ -386,6 +386,11 @@ Enum SubjectScope {
   SameDepartment
 }
 
+Enum Status {
+  Pending
+  Completed
+}
+
 Ref: Admin.credentialId - Credential.id
 
 Ref: School.facultyId > Faculty.id

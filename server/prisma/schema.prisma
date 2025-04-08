@@ -359,3 +359,8 @@ enum SubjectScope {
   SameSchool
   SameDepartment
 }
+
+enum Status {
+  Pending
+  Completed
+}

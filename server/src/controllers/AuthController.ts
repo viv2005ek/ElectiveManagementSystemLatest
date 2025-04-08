@@ -165,6 +165,7 @@ const AuthController = {
       if (!decoded.id) {
         return res.status(401).json({ message: "Invalid token" });
       }
+      console.log(decoded.id);
 
       const user = await prisma.credential.findUnique({
         where: { id: decoded.id },

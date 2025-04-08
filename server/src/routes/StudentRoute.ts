@@ -1,5 +1,8 @@
 import express from "express";
 import studentController from "../controllers/StudentController";
+import { authorizeRoles } from "../middleware/roleMiddleware";
+import SubjectController from "../controllers/SubjectController";
+import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
@@ -84,6 +87,30 @@ router.get(
   "/",
   // authorizeRoles([UserRole.Admin]),
   studentController.getAllStudents,
+);
+
+/**
+ * @swagger
+ * /subjects/student:
+ *   get:
+ *     summary: Get subjects for a student
+ *     tags: [Subjects]
+ *     responses:
+ *       200:
+ *         description: List of subjects for the student
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Subject'
+ *       500:
+ *         description: Unable to fetch subjects for student
+ */
+router.get(
+  "/active-subjects",
+  authorizeRoles([UserRole.Student]),
+  SubjectController.getSubjectsForStudent,
 );
 
 /**

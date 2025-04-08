@@ -140,7 +140,7 @@ const studentController = {
       });
 
       if (!student || student.isDeleted) {
-        return res.status(404).json({ message: "Student not found" });
+        return res.status(404).json({ message: "Student not found 1" });
       }
 
       res.status(200).json(student);

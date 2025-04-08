@@ -21,6 +21,10 @@ const SubjectPreferenceController = {
         .json({ error: "Preferences must be an array of strings" });
       return;
     }
+    if (preferences.length < 2) {
+      res.status(400).json({ msg: "At least two preferences are required." });
+      return;
+    }
 
     try {
       const subject = await prisma.subject.findUnique({
@@ -90,12 +94,10 @@ const SubjectPreferenceController = {
           res.status(400).json({ error: "Invalid course preferences" });
           return;
         }
-        await prisma.standaloneSubjectPreference.delete({
+        await prisma.standaloneSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 
@@ -103,9 +105,15 @@ const SubjectPreferenceController = {
           data: {
             subject: { connect: { id: subjectId } },
             student: { connect: { id: studentId } },
-            firstPreferenceCourse: { connect: { id: preferences[0] } },
-            secondPreferenceCourse: { connect: { id: preferences[1] } },
-            thirdPreferenceCourse: { connect: { id: preferences[2] } },
+            ...(preferences[0] && {
+              firstPreferenceCourse: { connect: { id: preferences[0] } },
+            }),
+            ...(preferences[1] && {
+              secondPreferenceCourse: { connect: { id: preferences[1] } },
+            }),
+            ...(preferences[2] && {
+              thirdPreferenceCourse: { connect: { id: preferences[2] } },
+            }),
           },
         });
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
@@ -121,12 +129,10 @@ const SubjectPreferenceController = {
           return;
         }
 
-        await prisma.bucketSubjectPreference.delete({
+        await prisma.bucketSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 
@@ -134,9 +140,15 @@ const SubjectPreferenceController = {
           data: {
             subject: { connect: { id: subjectId } },
             student: { connect: { id: studentId } },
-            firstPreferenceCourseBucket: { connect: { id: preferences[0] } },
-            secondPreferenceCourseBucket: { connect: { id: preferences[1] } },
-            thirdPreferenceCourseBucket: { connect: { id: preferences[2] } },
+            ...(preferences[0] && {
+              firstPreferenceCourseBucket: { connect: { id: preferences[0] } },
+            }),
+            ...(preferences[1] && {
+              secondPreferenceCourseBucket: { connect: { id: preferences[1] } },
+            }),
+            ...(preferences[2] && {
+              thirdPreferenceCourseBucket: { connect: { id: preferences[2] } },
+            }),
           },
         });
       } else {
@@ -224,6 +236,129 @@ const SubjectPreferenceController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+
+  getSubjectPreferencesOfStudent: async (req: Request, res: Response) => {
+    const { subjectId } = req.params;
+    const studentId = req.user.id;
+
+    try {
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        include: {
+          subjectType: true,
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      type PreferenceOption = {
+        id: string;
+        name: string;
+      } | null;
+
+      type BucketPreference = {
+        firstPreferenceCourseBucket: PreferenceOption;
+        secondPreferenceCourseBucket: PreferenceOption;
+        thirdPreferenceCourseBucket: PreferenceOption;
+      };
+
+      type CoursePreference = {
+        firstPreferenceCourse: PreferenceOption;
+        secondPreferenceCourse: PreferenceOption;
+        thirdPreferenceCourse: PreferenceOption;
+      };
+
+      let preferences: BucketPreference | CoursePreference | null;
+
+      if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+        preferences = await prisma.bucketSubjectPreference.findUnique({
+          where: {
+            subjectId_studentId: {
+              studentId: studentId,
+              subjectId: subjectId,
+            },
+          },
+          select: {
+            firstPreferenceCourseBucket: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            secondPreferenceCourseBucket: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            thirdPreferenceCourseBucket: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
+      } else {
+        preferences = await prisma.standaloneSubjectPreference.findUnique({
+          where: {
+            subjectId_studentId: {
+              studentId: studentId,
+              subjectId: subjectId,
+            },
+          },
+          select: {
+            firstPreferenceCourse: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            secondPreferenceCourse: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            thirdPreferenceCourse: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
+      }
+
+      if (!preferences) {
+        res
+          .status(404)
+          .json({ error: "No preferences found for the student." });
+        return;
+      }
+
+      const response =
+        subject.subjectType.allotmentType === AllotmentType.Bucket
+          ? [
+              (preferences as BucketPreference).firstPreferenceCourseBucket,
+              (preferences as BucketPreference).secondPreferenceCourseBucket,
+              (preferences as BucketPreference).thirdPreferenceCourseBucket,
+            ].filter(Boolean)
+          : [
+              (preferences as CoursePreference).firstPreferenceCourse,
+              (preferences as CoursePreference).secondPreferenceCourse,
+              (preferences as CoursePreference).thirdPreferenceCourse,
+            ].filter(Boolean);
+
+      res.status(200).json(response);
+    } catch (error) {
+      console.error("Error fetching subject preferences:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
   updatePreferences: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
     const { preferences }: { preferences: string[] } = req.body;
@@ -262,12 +397,10 @@ const SubjectPreferenceController = {
       }
 
       if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
-        await prisma.standaloneSubjectPreference.delete({
+        await prisma.standaloneSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 
@@ -281,12 +414,10 @@ const SubjectPreferenceController = {
           },
         });
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
-        await prisma.bucketSubjectPreference.delete({
+        await prisma.bucketSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 
@@ -349,12 +480,10 @@ const SubjectPreferenceController = {
       }
 
       if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
-        await prisma.standaloneSubjectPreference.delete({
+        await prisma.standaloneSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 
@@ -368,12 +497,10 @@ const SubjectPreferenceController = {
           },
         });
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
-        await prisma.bucketSubjectPreference.delete({
+        await prisma.bucketSubjectPreference.deleteMany({
           where: {
-            subjectId_studentId: {
-              subjectId: subjectId,
-              studentId: studentId,
-            },
+            subjectId: subjectId,
+            studentId: studentId,
           },
         });
 

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
-import { AllotmentStatus, AllotmentType } from "@prisma/client";
+import { AllotmentStatus, AllotmentType, Status } from "@prisma/client";
 
 const SubjectController = {
   getAllSubjects: async (req: Request, res: Response): Promise<void> => {
@@ -303,22 +303,6 @@ const SubjectController = {
           batch: {
             id: student.batchId,
           },
-          AND: [
-            {
-              standaloneSubjectPreferences: {
-                none: {
-                  studentId: student.id,
-                },
-              },
-            },
-            {
-              bucketSubjectPreferences: {
-                none: {
-                  studentId: student.id,
-                },
-              },
-            },
-          ],
         },
         select: {
           id: true,
@@ -328,10 +312,36 @@ const SubjectController = {
           isPreferenceWindowOpen: true,
           semester: true,
           semesters: true,
+          standaloneSubjectPreferences: {
+            where: {
+              studentId: student.id,
+            },
+          },
+          bucketSubjectPreferences: {
+            where: {
+              studentId: student.id,
+            },
+          },
         },
       });
 
-      res.status(200).json(subjects);
+      const subjectsWithStatus = subjects.map((subject) => {
+        const hasPreferences =
+          subject.standaloneSubjectPreferences.length > 0 ||
+          subject.bucketSubjectPreferences.length > 0;
+        return {
+          id: subject.id,
+          name: subject.name,
+          subjectType: subject.subjectType,
+          dueDate: subject.dueDate,
+          isPreferenceWindowOpen: subject.isPreferenceWindowOpen,
+          semester: subject.semester,
+          semesters: subject.semesters,
+          status: hasPreferences ? Status.Completed : Status.Pending,
+        };
+      });
+
+      res.status(200).json(subjectsWithStatus);
     } catch (error) {
       console.error("Error fetching subjects for student:", error);
       res.status(500).json({ error: "Internal server error" });

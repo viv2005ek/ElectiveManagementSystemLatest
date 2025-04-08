@@ -247,30 +247,6 @@ router.patch(
 
 /**
  * @swagger
- * /subjects/student:
- *   get:
- *     summary: Get subjects for a student
- *     tags: [Subjects]
- *     responses:
- *       200:
- *         description: List of subjects for the student
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Subject'
- *       500:
- *         description: Unable to fetch subjects for student
- */
-router.get(
-  "/student",
-  authorizeRoles([UserRole.Student]),
-  SubjectController.getSubjectsForStudent,
-);
-
-/**
- * @swagger
  * /subjects/{id}/offerings:
  *   get:
  *     summary: Get subject offerings
@@ -326,7 +302,7 @@ router.get(
  */
 router.get(
   "/:id/offerings",
-  authorizeRoles([UserRole.Admin]),
+  authorizeRoles([UserRole.Admin, UserRole.Student]),
   SubjectController.getSubjectOfferings,
 );
 

@@ -8,32 +8,27 @@ import CourseBucketOfferingsTable from "../../components/tables/CourseBucketOffe
 import PreferencesList from "../../components/FormComponents/PreferencesList.tsx";
 import SearchBarWithDebounce from "../../components/SearchBarWithDebounce.tsx";
 import { useCreateSubjectPreferences } from "../../hooks/subjectPreferenceHooks/useCreateSubjectPreferences.ts";
+import useStudentsSubjectPreferences from "../../hooks/subjectPreferenceHooks/useStudentsSubjectPreferences.ts";
 
 export class T {
   id: string | undefined;
   name: string | undefined;
 }
 
-export default function SubjectPreferencesFillingPage() {
+export default function SubjectPreferencesUpdatingPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [search, setSearch] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { offerings, loading } = useFetchSubjectOfferings(
-    id || "",
-    currentPage,
-    search,
-  );
+  const { offerings } = useFetchSubjectOfferings(id || "", currentPage, search);
 
-  const {
-    fillPreferences,
-    error,
-    success,
-    loading: createLoading,
-  } = useCreateSubjectPreferences();
+  const { fillPreferences, success, loading } = useCreateSubjectPreferences();
+
+  const { preferences } = useStudentsSubjectPreferences(id);
 
   const [queue, setQueue] = useState<T[]>([]);
+
   const size = 3;
 
   const enqueue = (item: T) => {
@@ -57,10 +52,10 @@ export default function SubjectPreferencesFillingPage() {
   };
 
   const handleSubmit = async () => {
-    if (queue.length < 2) {
-      setValidationError("You need to add at least 2 preferences.");
-      return;
-    }
+    // if (queue.length !== 3) {
+    //   setValidationError("You need to add all three preferences.");
+    //   return;
+    // }
     if (id) {
       setValidationError(null);
       await fillPreferences(id, queue);
@@ -72,6 +67,11 @@ export default function SubjectPreferencesFillingPage() {
       navigate("/home");
     }
   }, [success]);
+
+  useEffect(() => {
+    setQueue(preferences);
+  }, [preferences]);
+
   return (
     <MainLayout>
       <div className={"mt-8"}>
@@ -125,12 +125,12 @@ export default function SubjectPreferencesFillingPage() {
       )}
       <button
         onClick={handleSubmit}
-        disabled={createLoading}
+        disabled={loading}
         className={
           "bg-blue-500 p-2 w-full text-white rounded-lg mb-8 mt-4 hover:bg-blue-400"
         }
       >
-        {createLoading ? "Submitting..." : "Submit"}
+        {loading ? "Updating..." : "Update"}
       </button>
     </MainLayout>
   );

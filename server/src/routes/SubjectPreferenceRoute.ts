@@ -54,6 +54,12 @@ router.post(
   SubjectPreferenceController.fillPreferences,
 );
 
+router.get(
+  "/:subjectId/me",
+  authorizeRoles([UserRole.Student]),
+  SubjectPreferenceController.getSubjectPreferencesOfStudent,
+);
+
 /**
  * @swagger
  * /subject-preferences/{subjectId}:

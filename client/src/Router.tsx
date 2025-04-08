@@ -27,6 +27,7 @@ import SubjectPreferencesFillingPage from "./pages/SubjectPages/SubjectPreferenc
 import SubjectPreferencesPage from "./pages/SubjectPages/SubjectPreferencesPage.tsx";
 import AllotmentPage from "./pages/AllotmentPage/AllotmentPage.tsx";
 import PreferencePage from "./pages/PreferencePage/PreferencePage.tsx";
+import SubjectPreferencesUpdatingPage from "./pages/SubjectPages/SubjectPreferencesUpdatingPage.tsx";
 
 export default function Router() {
   return (
@@ -215,6 +216,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.STUDENT]}>
               <SubjectPreferencesFillingPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subjects/:id/preferences-update"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.STUDENT]}>
+              <SubjectPreferencesUpdatingPage />
             </RoleWrapper>
           }
         />
