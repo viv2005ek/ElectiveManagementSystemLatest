@@ -5,23 +5,32 @@ const prisma = new PrismaClient();
 
 const SubjectTypeController = {
   // Get all subject types
-  getAllSubjectTypes: async (req: Request, res: Response): Promise<any> => {
+  // Get all subject types
+  getAllSubjectTypes: async (req: Request, res: Response): Promise<void> => {
     try {
       const { allotmentType } = req.query;
 
-      // Ensure allotmentType is a valid enum value
-      const filter = allotmentType
-        ? { where: { allotmentType: allotmentType as AllotmentType } }
-        : undefined;
+      // Type validation for allotmentType
+      let filter;
+      if (allotmentType) {
+        if (
+          !Object.values(AllotmentType).includes(allotmentType as AllotmentType)
+        ) {
+          res.status(400).json({ error: "Invalid allotment type" });
+          return;
+        }
+        filter = { where: { allotmentType: allotmentType as AllotmentType } };
+      }
 
       const subjectTypes = await prisma.subjectType.findMany(filter);
+      console.log(`Found ${subjectTypes.length} subject types`);
 
-      res.json(subjectTypes);
+      res.status(200).json(subjectTypes);
     } catch (error) {
+      console.error("Error fetching subject types:", error);
       res.status(500).json({ error: "Failed to fetch subject types" });
     }
   },
-
   // Get a single subject type by ID
   getSubjectTypeById: async (req: Request, res: Response): Promise<any> => {
     const { id } = req.params;

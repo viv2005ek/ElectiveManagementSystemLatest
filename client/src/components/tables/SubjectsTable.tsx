@@ -81,6 +81,12 @@ export default function SubjectsTable({
             >
               Preferences
             </th>
+            <th
+              scope="col"
+              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+            >
+              Allotments
+            </th>
             <th scope="col" className="relative py-3.5 pr-4 pl-3 sm:pr-3">
               <span className="sr-only">View</span>
             </th>
@@ -100,6 +106,12 @@ export default function SubjectsTable({
                     <Skeleton />
                   </td>
                   <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">
+                    <Skeleton />
+                  </td>
+                  <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
+                    <Skeleton />
+                  </td>
+                  <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
                     <Skeleton />
                   </td>
                   <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
@@ -168,6 +180,14 @@ export default function SubjectsTable({
                       View<span className="sr-only">, {subject.name}</span>
                     </Link>
                   </td>
+                  <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
+                    <Link
+                      className="text-indigo-600 hover:text-indigo-900"
+                      to={`/subjects/${subject.id}/allotments`}
+                    >
+                      View<span className="sr-only">, {subject.name}</span>
+                    </Link>
+                  </td>
                 </tr>
               ))}
         </tbody>
@@ -175,8 +195,6 @@ export default function SubjectsTable({
       <PaginationFooter
         totalPages={totalPages}
         currentPage={currentPage}
-        nextPage={nextPage}
-        prevPage={prevPage}
         setPage={setCurrentPage}
       />
       <SubjectManageModal

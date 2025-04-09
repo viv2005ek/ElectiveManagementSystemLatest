@@ -14,7 +14,7 @@ export interface CourseBucket {
   numberOfCourses: number;
   department: { id: string; name: string };
   subjectTypes: { name: string }[];
-  courseBucketCourses: { course: Course; orderIndex: number }[];
+  courses: { course: Course; orderIndex: number }[];
 }
 
 interface UseCourseBucketsProps {

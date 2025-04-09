@@ -285,6 +285,10 @@ Table StandaloneAllotment {
   semesterId String [not null]
   semester Semester [not null]
   allotmentStatus AllotmentStatus [not null]
+
+  indexes {
+    (studentId, subjectId) [unique]
+  }
 }
 
 Table BucketAllotment {
@@ -300,6 +304,10 @@ Table BucketAllotment {
   semesterId String [not null]
   semester Semester [not null]
   allotmentStatus AllotmentStatus [not null]
+
+  indexes {
+    (subjectId, studentId, courseId) [unique]
+  }
 }
 
 Table Batch {

@@ -28,13 +28,6 @@ export default function CourseBucketOfferingsTable({
     setOpenBucketId(openBucketId === bucketId ? null : bucketId);
   };
 
-  const prevPage = () => {
-    setCurrentPage(currentPage - 1);
-  };
-  const nextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
   const handleSelection = (e: React.MouseEvent<HTMLButtonElement>, item: T) => {
     e.stopPropagation();
     handleAddToQueue(item);
@@ -188,8 +181,6 @@ export default function CourseBucketOfferingsTable({
               <PaginationFooter
                 currentPage={currentPage}
                 totalPages={totalPages}
-                nextPage={nextPage}
-                prevPage={prevPage}
                 setPage={setCurrentPage}
               />
             </div>

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, MouseEvent, SetStateAction, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/24/outline";
 import PaginationFooter from "../PaginationFooter.tsx";
@@ -22,7 +22,8 @@ export default function CourseBucketsTable({
   const navigate = useNavigate();
   const [expandedBuckets, setExpandedBuckets] = useState<string[]>([]);
 
-  const toggleAccordion = (bucketId: string) => {
+  const toggleAccordion = (e: MouseEvent, bucketId: string) => {
+    e.stopPropagation();
     setExpandedBuckets((prev) =>
       prev.includes(bucketId)
         ? prev.filter((id) => id !== bucketId)
@@ -75,21 +76,21 @@ export default function CourseBucketsTable({
                   : buckets?.map((bucket) => (
                       <>
                         <tr
-                          onClick={() => toggleAccordion(bucket.id)}
+                          onClick={(e) => toggleAccordion(e, bucket.id)}
                           key={bucket.id}
                           className="hover:bg-gray-100 hover:cursor-pointer transition-all"
                         >
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900 font-semibold">
-                            {bucket.name}
+                            {bucket.name || "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.totalCredits}
+                            {bucket.totalCredits ?? "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.numberOfCourses}
+                            {bucket.numberOfCourses ?? "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.department.name}
+                            {bucket.department?.name || "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">
                             {bucket.subjectTypes?.length > 0 ? (
@@ -118,7 +119,11 @@ export default function CourseBucketsTable({
                               </button>
                               <button className="transition-transform duration-300">
                                 <div
-                                  className={`transform transition-transform duration-300 ${expandedBuckets.includes(bucket.id) ? "rotate-180" : ""}`}
+                                  className={`transform transition-transform duration-300 ${
+                                    expandedBuckets.includes(bucket.id)
+                                      ? "rotate-180"
+                                      : ""
+                                  }`}
                                 >
                                   <ChevronDownIcon className="h-6 w-6 stroke-gray-500" />
                                 </div>
@@ -134,9 +139,9 @@ export default function CourseBucketsTable({
                                   <h3 className="text-sm font-semibold text-gray-800 mb-3">
                                     Courses in this Bucket
                                   </h3>
-                                  {bucket.courseBucketCourses.length > 0 ? (
+                                  {bucket.courses?.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-4">
-                                      {bucket.courseBucketCourses.map(
+                                      {bucket.courses.map(
                                         ({ course, orderIndex }) => (
                                           <Link
                                             to={`/courses/${course.id}`}
@@ -144,13 +149,13 @@ export default function CourseBucketsTable({
                                             className="p-3 border border-gray-200 transition-all rounded-xl hover:bg-blue-100 bg-gray-100"
                                           >
                                             <p className="text-sm font-medium text-gray-900">
-                                              {course.name}
+                                              {course.name || "N/A"}
                                             </p>
                                             <p className="text-xs text-gray-700">
-                                              {course.code}
+                                              {course.code || "N/A"}
                                             </p>
                                             <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                                              Order: {orderIndex}
+                                              Order: {orderIndex ?? "N/A"}
                                             </span>
                                           </Link>
                                         ),
@@ -174,8 +179,6 @@ export default function CourseBucketsTable({
               <PaginationFooter
                 currentPage={currentPage}
                 totalPages={totalPages}
-                nextPage={() => setCurrentPage(currentPage + 1)}
-                prevPage={() => setCurrentPage(currentPage - 1)}
                 setPage={setCurrentPage}
               />
             </div>

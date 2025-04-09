@@ -6,13 +6,13 @@ interface SubjectType {
   allotmentType: AllotmentType;
 }
 
-interface StandaloneSubjectPreference {
+export interface StandaloneSubjectPreference {
   firstPreferenceCourse: { name: string };
   secondPreferenceCourse: { name: string };
   thirdPreferenceCourse: { name: string };
 }
 
-interface BucketSubjectPreference {
+export interface BucketSubjectPreference {
   student: {
     firstName: string;
     lastName: string;

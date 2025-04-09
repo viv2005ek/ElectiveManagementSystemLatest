@@ -25,9 +25,8 @@ import UnauthorizedPage from "./pages/UnauthorizedPage.tsx";
 import { UserRole } from "./types/UserTypes.ts";
 import SubjectPreferencesFillingPage from "./pages/SubjectPages/SubjectPreferencesFillingPage.tsx";
 import SubjectPreferencesPage from "./pages/SubjectPages/SubjectPreferencesPage.tsx";
-import AllotmentPage from "./pages/AllotmentPage/AllotmentPage.tsx";
-import PreferencePage from "./pages/PreferencePage/PreferencePage.tsx";
 import SubjectPreferencesUpdatingPage from "./pages/SubjectPages/SubjectPreferencesUpdatingPage.tsx";
+import ViewSubjectAllotmentsPage from "./pages/AllotmentPage/ViewSubjectAllotmentsPage.tsx";
 
 export default function Router() {
   return (
@@ -104,22 +103,6 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <SubjectsPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/allotments"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <AllotmentPage />
-            </RoleWrapper>
-          }
-        />
-        <Route
-          path="/preferences"
-          element={
-            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
-              <PreferencePage />
             </RoleWrapper>
           }
         />
@@ -232,6 +215,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <SubjectPreferencesPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subjects/:id/allotments"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewSubjectAllotmentsPage />
             </RoleWrapper>
           }
         />

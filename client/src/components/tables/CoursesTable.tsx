@@ -21,13 +21,6 @@ export default function CoursesTable({
 }) {
   const navigate = useNavigate();
 
-  const prevPage = () => {
-    setCurrentPage(currentPage - 1);
-  };
-  const nextPage = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
   return (
     <div className="mt-6">
       <div className="mt-6 flow-root">
@@ -150,8 +143,6 @@ export default function CoursesTable({
               <PaginationFooter
                 currentPage={currentPage}
                 totalPages={totalPages}
-                nextPage={nextPage}
-                prevPage={prevPage}
                 setPage={setCurrentPage}
               />
             </div>

@@ -28,7 +28,7 @@ const SubjectPreferenceController = {
 
     try {
       const subject = await prisma.subject.findUnique({
-        where: { id: subjectId },
+        where: { id: subjectId, isPreferenceWindowOpen: true },
         include: {
           coursesWithSeats: true,
           courseBucketsWithSeats: true,
@@ -165,85 +165,130 @@ const SubjectPreferenceController = {
 
   getSubjectPreferences: async (req: Request, res: Response) => {
     const { subjectId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const size = parseInt(req.query.size as string) || 10;
-    const skip = (page - 1) * size;
+    const page = Number(req.query.page) || 1;
+    const search = String(req.query.search || "").trim();
+    const preferenceStatus = String(
+      req.query.preferenceStatus || "",
+    ).toLowerCase();
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize;
 
     try {
-      const subjectInfo = await prisma.subject.findUnique({
+      const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
         select: {
-          name: true,
-          subjectType: {
-            select: {
-              allotmentType: true,
-            },
-          },
-          batch: true,
-          standaloneSubjectPreferences: {
-            select: {
-              student: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                },
-              },
-              firstPreferenceCourse: true,
-              secondPreferenceCourse: true,
-              thirdPreferenceCourse: true,
-            },
-            skip,
-            take: size,
-          },
-          bucketSubjectPreferences: {
-            select: {
-              student: {
-                select: {
-                  firstName: true,
-                  lastName: true,
-                },
-              },
-              firstPreferenceCourseBucket: {
-                select: {
-                  name: true,
-                },
-              },
-              secondPreferenceCourseBucket: {
-                select: {
-                  name: true,
-                },
-              },
-              thirdPreferenceCourseBucket: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-            skip,
-            take: size,
-          },
+          id: true,
+          batchId: true,
         },
       });
 
-      if (!subjectInfo) {
+      if (!subject) {
         res.status(404).json({ error: "Subject not found" });
         return;
       }
 
-      res.status(200).json(subjectInfo);
+      const whereClause: any = {
+        batchId: subject.batchId,
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+        ],
+      };
+
+      if (preferenceStatus === "filled") {
+        whereClause.AND = [
+          {
+            OR: [
+              { standaloneSubjectPreferences: { some: { subjectId } } },
+              { bucketSubjectPreferences: { some: { subjectId } } },
+            ],
+          },
+        ];
+      } else if (preferenceStatus === "not-filled") {
+        whereClause.AND = [
+          {
+            AND: [
+              { standaloneSubjectPreferences: { none: { subjectId } } },
+              { bucketSubjectPreferences: { none: { subjectId } } },
+            ],
+          },
+        ];
+      }
+
+      const totalStudents = await prisma.student.count({ where: whereClause });
+
+      const studentsWithPreferences = await prisma.student.findMany({
+        where: whereClause,
+        include: {
+          standaloneSubjectPreferences: {
+            where: { subjectId },
+            select: {
+              firstPreferenceCourse: { select: { id: true, name: true } },
+              secondPreferenceCourse: { select: { id: true, name: true } },
+              thirdPreferenceCourse: { select: { id: true, name: true } },
+            },
+          },
+          bucketSubjectPreferences: {
+            where: { subjectId },
+            select: {
+              firstPreferenceCourseBucket: { select: { id: true, name: true } },
+              secondPreferenceCourseBucket: {
+                select: { id: true, name: true },
+              },
+              thirdPreferenceCourseBucket: { select: { id: true, name: true } },
+            },
+          },
+        },
+        skip,
+        take: pageSize,
+      });
+
+      const students = studentsWithPreferences.map((student) => ({
+        id: student.id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        registrationNumber: student.registrationNumber,
+        preferences:
+          student.standaloneSubjectPreferences.length > 0
+            ? student.standaloneSubjectPreferences[0]
+            : student.bucketSubjectPreferences.length > 0
+              ? student.bucketSubjectPreferences[0]
+              : null,
+      }));
+
+      const filledPreferencesCount = await prisma.student.count({
+        where: {
+          batchId: subject.batchId,
+          OR: [
+            { standaloneSubjectPreferences: { some: { subjectId } } },
+            { bucketSubjectPreferences: { some: { subjectId } } },
+          ],
+        },
+      });
+
+      const pendingStudentsCount = totalStudents - filledPreferencesCount;
+      const totalPages = Math.ceil(totalStudents / pageSize);
+
+      res.status(200).json({
+        students,
+        totalStudents,
+        filledPreferencesCount,
+        pendingStudentsCount,
+        totalPages,
+        currentPage: page,
+      });
     } catch (error) {
       console.error("Error fetching subject preferences:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
-
   getSubjectPreferencesOfStudent: async (req: Request, res: Response) => {
     const { subjectId } = req.params;
     const studentId = req.user.id;
 
     try {
       const subject = await prisma.subject.findUnique({
-        where: { id: subjectId },
+        where: { id: subjectId, isPreferenceWindowOpen: true },
         include: {
           subjectType: true,
         },
@@ -378,7 +423,12 @@ const SubjectPreferenceController = {
       const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
         include: {
-          subjectType: true,
+          subjectType: {
+            select: {
+              name: true,
+              allotmentType: true,
+            },
+          },
         },
       });
 

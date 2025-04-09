@@ -160,26 +160,30 @@ const CourseBucketsController = {
     }
   },
 
-  addCourseBucket: async (req: Request, res: Response): Promise<any> => {
+  addCourseBucket: async (req: Request, res: Response): Promise<void> => {
     try {
       const { name, departmentId, numberOfCourses, subjectTypeIds, courses } =
         req.body;
 
+      // Basic validation
       if (!name || !departmentId || numberOfCourses === undefined) {
-        return res.status(400).json({ message: "Missing required fields." });
+        res.status(400).json({ message: "Missing required fields." });
+        return;
       }
 
       if (!Array.isArray(courses) || courses.length === 0) {
-        return res.status(400).json({
+        res.status(400).json({
           message: "Courses must be a non-empty array with id and orderIndex.",
         });
+        return;
       }
 
       for (const course of courses) {
         if (!course.id || course.orderIndex === undefined) {
-          return res
-            .status(400)
-            .json({ message: "Each course must have an id and orderIndex." });
+          res.status(400).json({
+            message: "Each course must have an id and orderIndex.",
+          });
+          return;
         }
       }
 
@@ -190,45 +194,47 @@ const CourseBucketsController = {
         where: { id: departmentId },
       });
       if (!department) {
-        return res.status(404).json({ message: "Department not found." });
+        res.status(404).json({ message: "Department not found." });
+        return;
       }
 
-      // Validate subject types
+      // Validate subject types exist
       if (subjectTypeIds?.length > 0) {
         const subjectTypes = await prisma.subjectType.findMany({
           where: { id: { in: subjectTypeIds } },
         });
         if (subjectTypes.length !== subjectTypeIds.length) {
-          return res
+          res
             .status(400)
             .json({ message: "One or more subject types not found." });
+          return;
         }
       }
 
-      // Validate course existence
+      // Validate courses and their subject types
       const fetchedCourses = await prisma.course.findMany({
         where: { id: { in: courseIds } },
         include: { subjectTypes: true },
       });
 
       if (fetchedCourses.length !== courseIds.length) {
-        return res
-          .status(400)
-          .json({ message: "One or more courses not found." });
+        res.status(400).json({ message: "One or more courses not found." });
+        return;
       }
 
-      // Ensure each course has all subject types provided
-      const missingAssociations = fetchedCourses.some(
-        (course) =>
-          !subjectTypeIds.every((stId: string) =>
-            course.subjectTypes.some((st) => st.id === stId),
-          ),
-      );
+      // Check if each course has at least the required subject types
+      for (const course of fetchedCourses) {
+        const courseSubjectTypeIds = course.subjectTypes.map((st) => st.id);
+        const hasAllRequiredTypes = subjectTypeIds.every((reqTypeId: string) =>
+          courseSubjectTypeIds.includes(reqTypeId),
+        );
 
-      if (missingAssociations) {
-        return res.status(400).json({
-          message: "Each course must have all provided subject types.",
-        });
+        if (!hasAllRequiredTypes) {
+          res.status(400).json({
+            message: `Course ${course.name || course.id} does not have all required subject types.`,
+          });
+          return;
+        }
       }
 
       // Calculate total credits
@@ -237,9 +243,8 @@ const CourseBucketsController = {
         0,
       );
 
-      // Execute both operations in a single transaction
+      // Create course bucket and associations in a transaction
       const createdBucket = await prisma.$transaction(async (tx) => {
-        // Create the course bucket
         const bucket = await tx.courseBucket.create({
           data: {
             name,
@@ -252,7 +257,6 @@ const CourseBucketsController = {
           },
         });
 
-        // Insert courseBucketCourses with orderIndex
         await tx.courseBucketCourse.createMany({
           data: courses.map(({ id, orderIndex }) => ({
             courseBucketId: bucket.id,
@@ -268,13 +272,14 @@ const CourseBucketsController = {
         message: "Course bucket created successfully",
         data: createdBucket,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error adding course bucket:", error);
-      if (error instanceof Error) {
-        res.status(500).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: "Unable to add course bucket" });
-      }
+      res.status(500).json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to add course bucket",
+      });
     }
   },
 };

@@ -5,9 +5,11 @@ import useDebounce from "../hooks/useDebounce.ts";
 export default function SearchBarWithDebounce({
   value,
   setValue,
+  placeholder,
 }: {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
+  placeholder?: string;
 }) {
   const [inputValue, setInputValue] = useState(value);
   const debouncedValue = useDebounce(inputValue, 1000); // Debounce delay of 300ms
@@ -23,7 +25,7 @@ export default function SearchBarWithDebounce({
       }
     >
       <input
-        placeholder={"Search"}
+        placeholder={placeholder ?? "Search"}
         className={
           "border-none text-sm outline-none w-full h-10 ring-none rounded-lg focus:ring-0 focus:outline-0 focus:border-0"
         }

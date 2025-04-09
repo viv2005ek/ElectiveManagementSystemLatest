@@ -1,7 +1,8 @@
 import { ActiveSubject } from "../hooks/subjectHooks/useFetchActiveSubjects.ts";
 import Skeleton from "react-loading-skeleton";
 import { Link } from "react-router-dom";
-import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import dayjs from "dayjs";
+import { CheckBadgeIcon } from "@heroicons/react/16/solid";
 
 export enum PreferenceFillingStatus {
   Completed = "Completed",
@@ -55,7 +56,7 @@ export default function UpcomingDeadlinesList({
   if (subjects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <ExclamationCircleIcon className="h-12 w-12 text-gray-400" />
+        <CheckBadgeIcon className="h-12 w-12 text-gray-400" />
         <p className="mt-4 text-lg font-semibold text-gray-600">
           No active allotments
         </p>
@@ -91,7 +92,7 @@ export default function UpcomingDeadlinesList({
               <p className="whitespace-nowrap">
                 Due on{" "}
                 <time dateTime={subject.dueDate}>
-                  {new Date(subject.dueDate).toLocaleDateString()}
+                  {dayjs(subject.dueDate).format("D MMMM YYYY")}
                 </time>
               </p>
               <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 fill-current">

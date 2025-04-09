@@ -6,15 +6,11 @@ import {
 interface footerProps {
   totalPages: number;
   currentPage: number;
-  nextPage: () => void;
-  prevPage: () => void;
   setPage: (pageNo: number) => void;
 }
 
 export default function PaginationFooter({
   totalPages,
-  nextPage,
-  prevPage,
   currentPage,
   setPage,
 }: footerProps) {
@@ -35,6 +31,13 @@ export default function PaginationFooter({
     }
 
     return pages;
+  };
+
+  const nextPage = async () => {
+    setPage(currentPage + 1);
+  };
+  const prevPage = async () => {
+    setPage(currentPage - 1);
   };
 
   const visiblePages = getVisiblePages();

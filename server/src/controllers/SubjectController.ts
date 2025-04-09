@@ -179,20 +179,24 @@ const SubjectController = {
     try {
       const subject = await prisma.subject.findUnique({
         where: { id },
-        include: {
+        select: {
+          name: true,
           semester: true,
           batch: true,
+          dueDate: true,
           subjectType: true,
           semesters: true,
           programs: true,
           coursesWithSeats: {
-            include: {
+            select: {
               course: true,
+              totalSeats: true,
             },
           },
           courseBucketsWithSeats: {
-            include: {
+            select: {
               courseBucket: true,
+              totalSeats: true,
             },
           },
         },
@@ -250,8 +254,7 @@ const SubjectController = {
         data: {
           isPreferenceWindowOpen,
           isAllotmentFinalized,
-          dueDate:
-            isPreferenceWindowOpen || !isAllotmentFinalized ? dueDate : null,
+          dueDate: isPreferenceWindowOpen ? dueDate : null,
         },
       });
 
@@ -359,7 +362,7 @@ const SubjectController = {
 
     try {
       const subject = await prisma.subject.findUnique({
-        where: { id: id },
+        where: { id: id, isPreferenceWindowOpen: true },
         include: {
           coursesWithSeats: {
             include: {
@@ -511,35 +514,13 @@ const SubjectController = {
         where: { id: subjectId },
         include: {
           subjectType: true,
+          semester: true,
+          semesters: true,
           standaloneSubjectPreferences: {
             where: { runAllotment: true },
-            include: {
-              firstPreferenceCourse: true,
-              secondPreferenceCourse: true,
-              thirdPreferenceCourse: true,
-            },
-            orderBy: [{ createdAt: "asc" }],
           },
           bucketSubjectPreferences: {
             where: { runAllotment: true },
-            include: {
-              firstPreferenceCourseBucket: {
-                include: {
-                  courses: true,
-                },
-              },
-              secondPreferenceCourseBucket: {
-                include: {
-                  courses: true,
-                },
-              },
-              thirdPreferenceCourseBucket: {
-                include: {
-                  courses: true,
-                },
-              },
-            },
-            orderBy: [{ createdAt: "asc" }],
           },
         },
       });
@@ -550,15 +531,34 @@ const SubjectController = {
         return;
       }
 
-      console.log(`Subject found: ${subject.name}`);
+      // Get valid semester ID
+      const semesterId = subject.semesterId || subject.semesters[0]?.id;
+      if (!semesterId) {
+        res
+          .status(400)
+          .json({ error: "No valid semester found for allotment" });
+        return;
+      }
+
+      const hasRunAllotment =
+        subject.standaloneSubjectPreferences.length > 0 ||
+        subject.bucketSubjectPreferences.length > 0;
+
+      if (!hasRunAllotment) {
+        console.log("No preferences with runAllotment set to true. Exiting.");
+        res.status(200).json({ message: "No allotments to process" });
+        return;
+      }
+
+      // Delete existing allotments
+      await prisma.standaloneAllotment.deleteMany({ where: { subjectId } });
+      await prisma.bucketAllotment.deleteMany({ where: { subjectId } });
+      console.log("Existing allotments deleted");
 
       if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
         const standaloneAllotments = [];
-        for (const preference of subject.standaloneSubjectPreferences) {
-          console.log(
-            `Processing preference for student ID: ${preference.studentId}`,
-          );
 
+        for (const preference of subject.standaloneSubjectPreferences) {
           const course = await prisma.subjectCourseWithSeats.findUnique({
             where: {
               courseId_subjectId: {
@@ -572,49 +572,32 @@ const SubjectController = {
             course &&
             (course.availableSeats === null || course.availableSeats > 0)
           ) {
-            console.log(
-              `Allocating course ID: ${preference.firstPreferenceCourseId} to student ID: ${preference.studentId}`,
-            );
             standaloneAllotments.push({
               subjectId: subject.id,
               studentId: preference.studentId,
               courseId: preference.firstPreferenceCourseId!,
-              semesterId: subject.semesterId || "",
+              semesterId,
               allotmentStatus: AllotmentStatus.Pending,
             });
-            await prisma.subjectCourseWithSeats.update({
-              where: { id: course.id },
-              data: {
-                availableSeats:
-                  course.availableSeats !== null
-                    ? course.availableSeats - 1
-                    : null,
-              },
-            });
-          } else {
-            console.log(
-              `No available seats for course ID: ${preference.firstPreferenceCourseId}`,
-            );
+
+            if (course.availableSeats !== null) {
+              await prisma.subjectCourseWithSeats.update({
+                where: { id: course.id },
+                data: { availableSeats: course.availableSeats - 1 },
+              });
+            }
           }
         }
 
         if (standaloneAllotments.length > 0) {
-          console.log(
-            `Creating ${standaloneAllotments.length} standalone allotments`,
-          );
           await prisma.standaloneAllotment.createMany({
             data: standaloneAllotments,
           });
-        } else {
-          console.log("No standalone allotments to create");
         }
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
         const bucketAllotments = [];
-        for (const preference of subject.bucketSubjectPreferences) {
-          console.log(
-            `Processing bucket preference for student ID: ${preference.studentId}`,
-          );
 
+        for (const preference of subject.bucketSubjectPreferences) {
           const courseBucketWithSeats =
             await prisma.subjectCourseBucketWithSeats.findUnique({
               where: {
@@ -626,7 +609,15 @@ const SubjectController = {
               include: {
                 courseBucket: {
                   include: {
-                    courses: true,
+                    courses: {
+                      include: {
+                        course: true,
+                      },
+                      orderBy: {
+                        orderIndex: "asc",
+                      },
+                      take: 1,
+                    },
                   },
                 },
               },
@@ -635,51 +626,35 @@ const SubjectController = {
           if (
             courseBucketWithSeats &&
             (courseBucketWithSeats.availableSeats === null ||
-              courseBucketWithSeats.availableSeats > 0)
+              courseBucketWithSeats.availableSeats > 0) &&
+            courseBucketWithSeats.courseBucket.courses.length > 0
           ) {
-            const course = courseBucketWithSeats.courseBucket.courses
-              ? courseBucketWithSeats.courseBucket.courses[0]
-              : null;
-            if (course) {
-              console.log(
-                `Allocating course bucket ID: ${preference.firstPreferenceCourseBucketId} to student ID: ${preference.studentId}`,
-              );
-              bucketAllotments.push({
-                subjectId: subject.id,
-                studentId: preference.studentId,
-                courseBucketId: preference.firstPreferenceCourseBucketId!,
-                courseId: course.id,
-                semesterId: subject.semesterId || "",
-                allotmentStatus: AllotmentStatus.Pending,
-              });
+            const firstCourse = courseBucketWithSeats.courseBucket.courses[0];
+
+            bucketAllotments.push({
+              subjectId: subject.id,
+              studentId: preference.studentId,
+              courseBucketId: preference.firstPreferenceCourseBucketId!,
+              courseId: firstCourse.course.id,
+              semesterId,
+              allotmentStatus: AllotmentStatus.Pending,
+            });
+
+            if (courseBucketWithSeats.availableSeats !== null) {
               await prisma.subjectCourseBucketWithSeats.update({
                 where: { id: courseBucketWithSeats.id },
                 data: {
-                  availableSeats:
-                    courseBucketWithSeats.availableSeats !== null
-                      ? courseBucketWithSeats.availableSeats - 1
-                      : null,
+                  availableSeats: courseBucketWithSeats.availableSeats - 1,
                 },
               });
-            } else {
-              console.log(
-                `No courses found in course bucket ID: ${preference.firstPreferenceCourseBucketId}`,
-              );
             }
-          } else {
-            console.log(
-              `No available seats for course bucket ID: ${preference.firstPreferenceCourseBucketId}`,
-            );
           }
         }
 
         if (bucketAllotments.length > 0) {
-          console.log(`Creating ${bucketAllotments.length} bucket allotments`);
           await prisma.bucketAllotment.createMany({
             data: bucketAllotments,
           });
-        } else {
-          console.log("No bucket allotments to create");
         }
       }
 
@@ -692,6 +667,7 @@ const SubjectController = {
 
   getSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
+    const { search, page = 1, pageSize = 10 } = req.query;
 
     try {
       const allotmentsInfo = await prisma.subject.findUnique({
@@ -706,9 +682,36 @@ const SubjectController = {
           },
           batch: true,
           standaloneAllotments: {
+            where: search
+              ? {
+                  student: {
+                    OR: [
+                      {
+                        firstName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        registrationNumber: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                }
+              : undefined,
             select: {
               student: {
                 select: {
+                  registrationNumber: true,
                   firstName: true,
                   lastName: true,
                 },
@@ -719,11 +722,40 @@ const SubjectController = {
                 },
               },
             },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
           },
           bucketAllotments: {
+            where: search
+              ? {
+                  student: {
+                    OR: [
+                      {
+                        firstName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        registrationNumber: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                }
+              : undefined,
             select: {
               student: {
                 select: {
+                  registrationNumber: true,
                   firstName: true,
                   lastName: true,
                 },
@@ -734,6 +766,8 @@ const SubjectController = {
                 },
               },
             },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
           },
         },
       });
@@ -743,7 +777,68 @@ const SubjectController = {
         return;
       }
 
-      res.status(200).json(allotmentsInfo);
+      const [totalStandaloneAllotments, totalBucketAllotments] =
+        await Promise.all([
+          prisma.standaloneAllotment.count({
+            where: {
+              subjectId,
+              ...(search
+                ? {
+                    student: {
+                      OR: [
+                        {
+                          firstName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                        {
+                          lastName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+            },
+          }),
+          prisma.bucketAllotment.count({
+            where: {
+              subjectId,
+              ...(search
+                ? {
+                    student: {
+                      OR: [
+                        {
+                          firstName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                        {
+                          lastName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+            },
+          }),
+        ]);
+
+      const totalAllotments = totalStandaloneAllotments + totalBucketAllotments;
+      const totalPages = Math.ceil(totalAllotments / Number(pageSize));
+
+      res.status(200).json({
+        ...allotmentsInfo,
+        totalPages,
+        currentPage: Number(page),
+      });
     } catch (error) {
       console.error("Error fetching allotments:", error);
       res.status(500).json({ error: "Internal server error" });

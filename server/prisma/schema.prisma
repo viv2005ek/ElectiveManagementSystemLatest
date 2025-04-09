@@ -284,6 +284,8 @@ model StandaloneAllotment {
   semesterId      String
   semester        Semester        @relation(fields: [semesterId], references: [id])
   allotmentStatus AllotmentStatus
+
+  @@unique([studentId, subjectId])
 }
 
 model BucketAllotment {
@@ -299,6 +301,8 @@ model BucketAllotment {
   semesterId      String
   semester        Semester        @relation(fields: [semesterId], references: [id])
   allotmentStatus AllotmentStatus
+
+  @@unique([subjectId, studentId, courseId])
 }
 
 model Batch {
