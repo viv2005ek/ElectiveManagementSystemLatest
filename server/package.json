@@ -10,7 +10,7 @@
     "dev": "nodemon --files src/index.ts",
     "typecheck": "tsc --noEmit",
     "debug": "set DEBUG=express:* && nodemon src/index.ts",
-    "test": "npm run typecheck && npx prettier --write ."
+    "test": "npm run typecheck"
   },
   "author": "",
   "license": "ISC",

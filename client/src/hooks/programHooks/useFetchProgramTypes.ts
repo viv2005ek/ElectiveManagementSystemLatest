@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../axiosInstance.ts";
+import { ProgramType } from "./useFetchPrograms.ts";
 
 const useFetchProgramTypes = () => {
-  const [programTypes, setProgramTypes] = useState<string[]>([]);
+  const [programTypes, setProgramTypes] = useState<ProgramType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

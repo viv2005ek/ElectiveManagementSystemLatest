@@ -21,6 +21,7 @@ interface SingleSelectMenuProps<T extends Identifiable> {
   setSelected: Dispatch<SetStateAction<T | null>>;
   onChange?: (item: T) => void;
   prefix?: string;
+  disabled?: boolean;
 }
 
 export default function SingleSelectMenu<T extends Identifiable>({
@@ -32,6 +33,7 @@ export default function SingleSelectMenu<T extends Identifiable>({
   number,
   name,
   prefix,
+  disabled,
 }: SingleSelectMenuProps<T>) {
   const [open, setOpen] = useState(false);
 
@@ -49,7 +51,7 @@ export default function SingleSelectMenu<T extends Identifiable>({
   };
 
   return (
-    <Listbox value={selected} onChange={handleChange}>
+    <Listbox value={selected} onChange={handleChange} disabled={disabled}>
       <div className="flex flex-col items-between w-full justify-start">
         {label && (
           <Label className="block text-sm/6 font-medium text-gray-900">

@@ -211,6 +211,14 @@ export default function Router() {
           }
         />
         <Route
+          path="/subjects/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <SubjectViewPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
           path="/subjects/:id/preferences"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
@@ -226,6 +234,7 @@ export default function Router() {
             </RoleWrapper>
           }
         />
+
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
       </Routes>
     </BrowserRouter>

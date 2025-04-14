@@ -24,15 +24,10 @@ export interface Course {
   subjectTypes: SubjectType[];
 }
 
-interface ApiResponse {
-  courses: Course[];
-  count: number;
-}
-
 const useFetchCourses = (options?: {
   category?: SubjectType | null;
   categories?: SubjectType[] | null;
-  department?: Department | null;
+  departmentId?: string | null;
   credits?: number;
   search?: string;
   page?: number;
@@ -57,8 +52,8 @@ const useFetchCourses = (options?: {
 
         categoryIds.forEach((id) => queryParams.append("categoryIds", id));
 
-        if (options?.department)
-          queryParams.append("departmentId", options.department.id);
+        if (options?.departmentId)
+          queryParams.append("departmentId", options.departmentId);
         if (options?.credits)
           queryParams.append("credits", options.credits.toString());
         if (options?.search) queryParams.append("search", options.search);
@@ -83,7 +78,7 @@ const useFetchCourses = (options?: {
     options?.categories,
     options?.category,
     options?.credits,
-    options?.department,
+    options?.departmentId,
     options?.limit,
     options?.page,
     options?.search,

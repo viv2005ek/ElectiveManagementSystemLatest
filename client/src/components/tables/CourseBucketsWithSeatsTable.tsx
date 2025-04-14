@@ -1,29 +1,19 @@
-import React, { Dispatch, MouseEvent, SetStateAction, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronDownIcon, EyeIcon } from "@heroicons/react/24/outline";
-import PaginationFooter from "../PaginationFooter.tsx";
+import React, { MouseEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { CourseBucket } from "../../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
+import { CourseBucketWithSeats } from "../../hooks/subjectHooks/useFetchSubjectInfo.ts";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
-export default function CourseBucketsTable({
-  buckets,
-  totalPages,
-  currentPage,
-  setCurrentPage,
+export default function CourseBucketsWithSeatsTable({
+  courseBucketsWithSeats,
   isLoading,
-  selectedBuckets,
-  setSelectedBuckets,
+  label,
 }: {
-  buckets: CourseBucket[] | null;
-  totalPages: number;
-  currentPage: number;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
+  courseBucketsWithSeats: CourseBucketWithSeats[] | null;
   isLoading: boolean;
-  setSelectedBuckets?: Dispatch<CourseBucket[]>;
-  selectedBuckets?: CourseBucket[];
+  label?: string;
 }) {
-  const navigate = useNavigate();
   const [expandedBuckets, setExpandedBuckets] = useState<string[]>([]);
 
   const toggleAccordion = (e: MouseEvent, bucketId: string) => {
@@ -35,19 +25,20 @@ export default function CourseBucketsTable({
     );
   };
 
-  const handleSelection = (
-    e: MouseEvent<HTMLButtonElement>,
-    bucket: CourseBucket,
-  ) => {
-    e.stopPropagation();
-    if (selectedBuckets && setSelectedBuckets) {
-      setSelectedBuckets([...selectedBuckets, bucket]);
-    }
-  };
+  // const handleSelection = (
+  //   e: MouseEvent<HTMLButtonElement>,
+  //   bucket: CourseBucket,
+  // ) => {
+  //   e.stopPropagation();
+  //   if (selectedBuckets && setSelectedBuckets) {
+  //     setSelectedBuckets([...selectedBuckets, bucket]);
+  //   }
+  // };
 
   return (
     <div className="mt-6">
-      <div className="mt-6 flow-root">
+      {label && <div className={"font-semibold text-sm"}>{label}</div>}
+      <div className="mt-4 flow-root">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
             <table className="min-w-full divide-y divide-gray-300">
@@ -59,18 +50,15 @@ export default function CourseBucketsTable({
                   <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
                     Total Credits
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
-                    Number of Courses
-                  </th>
+
                   <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
                     Department
                   </th>
                   <th className="py-3 px-4 text-left text-sm font-semibold text-gray-900">
-                    Subject Types
+                    Seats
                   </th>
-                  <th className="py-3 px-4 text-right text-sm font-semibold text-gray-900">
-                    Actions
-                  </th>
+
+                  <th className="py-3 px-4 text-right text-sm font-semibold text-gray-900"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -87,54 +75,58 @@ export default function CourseBucketsTable({
                         ))}
                       </tr>
                     ))
-                  : buckets?.map((bucket) => (
-                      <React.Fragment key={bucket.id}>
+                  : courseBucketsWithSeats?.map((courseBucketWithSeats) => (
+                      <React.Fragment
+                        key={courseBucketWithSeats.courseBucket.id}
+                      >
                         <tr
-                          onClick={(e) => toggleAccordion(e, bucket.id)}
-                          key={bucket.id}
+                          onClick={(e) =>
+                            toggleAccordion(
+                              e,
+                              courseBucketWithSeats.courseBucket.id,
+                            )
+                          }
+                          key={courseBucketWithSeats.courseBucket.id}
                           className="hover:bg-gray-100 hover:cursor-pointer transition-all"
                         >
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900 font-semibold">
-                            {bucket.name || "N/A"}
+                            {courseBucketWithSeats.courseBucket.name || "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.totalCredits ?? "N/A"}
+                            {courseBucketWithSeats.courseBucket.totalCredits ??
+                              "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.numberOfCourses ?? "N/A"}
+                            {courseBucketWithSeats.courseBucket.department
+                              ?.name || "N/A"}
                           </td>
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                            {bucket.department?.name || "N/A"}
+                            {courseBucketWithSeats.totalSeats || "N/A"}
                           </td>
-                          <td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">
-                            {bucket.subjectTypes?.length > 0 ? (
-                              bucket.subjectTypes.map((type) => (
-                                <div
-                                  key={type.name}
-                                  className="text-xs bg-blue-200 text-blue-700 w-min px-1 rounded-full"
-                                >
-                                  {type.name}
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-xs text-gray-500">
-                                No types added
-                              </span>
-                            )}
-                          </td>
+                          {/*<td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">*/}
+                          {/*  {courseBucketWithSeats.subjectTypes?.length > 0 ? (*/}
+                          {/*    courseBucketWithSeats.subjectTypes.map((type) => (*/}
+                          {/*      <div*/}
+                          {/*        key={type.name}*/}
+                          {/*        className="text-xs bg-blue-200 text-blue-700 w-min px-1 rounded-full"*/}
+                          {/*      >*/}
+                          {/*        {type.name}*/}
+                          {/*      </div>*/}
+                          {/*    ))*/}
+                          {/*  ) : (*/}
+                          {/*    <span className="text-xs text-gray-500">*/}
+                          {/*      No types added*/}
+                          {/*    </span>*/}
+                          {/*  )}*/}
+                          {/*</td>*/}
                           <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
                             <div className="flex flex-row justify-end gap-4">
-                              <button
-                                onClick={() =>
-                                  navigate(`/course-buckets/${bucket.id}`)
-                                }
-                              >
-                                <EyeIcon className="h-6 w-6 stroke-gray-500" />
-                              </button>
                               <button className="transition-transform duration-300">
                                 <div
                                   className={`transform transition-transform duration-300 ${
-                                    expandedBuckets.includes(bucket.id)
+                                    expandedBuckets.includes(
+                                      courseBucketWithSeats.courseBucket.id,
+                                    )
                                       ? "rotate-180"
                                       : ""
                                   }`}
@@ -144,25 +136,10 @@ export default function CourseBucketsTable({
                               </button>
                             </div>
                           </td>
-                          {selectedBuckets &&
-                            setSelectedBuckets &&
-                            !selectedBuckets.some(
-                              (selectedBucket) =>
-                                selectedBucket.id === bucket.id,
-                            ) && (
-                              <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                                <button
-                                  className="bg-blue-500 py-1 px-3 text-white rounded-lg"
-                                  onClick={(e: MouseEvent<HTMLButtonElement>) =>
-                                    handleSelection(e, bucket)
-                                  }
-                                >
-                                  Add
-                                </button>
-                              </td>
-                            )}
                         </tr>
-                        {expandedBuckets.includes(bucket.id) && (
+                        {expandedBuckets.includes(
+                          courseBucketWithSeats.courseBucket.id,
+                        ) && (
                           <tr>
                             <td colSpan={6} className="px-4 py-3 bg-gray-50">
                               <div className="overflow-hidden transition-all duration-500 ease-in-out max-h-[500px] opacity-100">
@@ -170,9 +147,10 @@ export default function CourseBucketsTable({
                                   <h3 className="text-sm font-semibold text-gray-800 mb-3">
                                     Courses in this Bucket
                                   </h3>
-                                  {bucket.courses?.length > 0 ? (
+                                  {courseBucketWithSeats.courseBucket.courses
+                                    ?.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-4">
-                                      {bucket.courses.map(
+                                      {courseBucketWithSeats.courseBucket.courses.map(
                                         ({ course, orderIndex }) => (
                                           <Link
                                             to={`/courses/${course.id}`}
@@ -206,13 +184,6 @@ export default function CourseBucketsTable({
                     ))}
               </tbody>
             </table>
-            <div className="w-full">
-              <PaginationFooter
-                currentPage={currentPage}
-                totalPages={totalPages}
-                setPage={setCurrentPage}
-              />
-            </div>
           </div>
         </div>
       </div>

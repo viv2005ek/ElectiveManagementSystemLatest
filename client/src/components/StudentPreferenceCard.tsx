@@ -2,6 +2,10 @@ import { Student } from "../hooks/subjectPreferenceHooks/useSubjectPreferences.t
 import { useState } from "react";
 import { AllotmentType } from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import { ChevronDown } from "react-feather";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 export default function StudentPreferenceCard({
   student,
@@ -21,7 +25,7 @@ export default function StudentPreferenceCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+    <div className="bg-white rounded-lg p-4 border-2 shadow-sm border-gray-200">
       <div className="flex items-center space-x-4">
         <div
           className={`h-8 w-8 rounded-full flex items-center justify-center font-medium shadow-sm
@@ -42,6 +46,11 @@ export default function StudentPreferenceCard({
             <span>{student.registrationNumber}</span>
           </div>
         </div>
+        {student.preferences?.createdAt && (
+          <div className={"text-xs font-semibold text-gray-400"}>
+            created {dayjs(student.preferences?.createdAt).fromNow(true)} ago
+          </div>
+        )}
         {student.preferences && (
           <button
             onClick={toggleExpand}

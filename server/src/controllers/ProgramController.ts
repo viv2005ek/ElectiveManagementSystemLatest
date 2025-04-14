@@ -5,43 +5,58 @@ import { prisma } from "../prismaClient";
 const ProgramController = {
   getPrograms: async (req: Request, res: Response): Promise<any> => {
     try {
-      const { departmentId, schoolId, facultyId, programType, search } =
-        req.query;
+      const {
+        departmentId,
+        schoolId,
+        facultyId,
+        programType,
+        search,
+        page = 1,
+        limit = 10,
+      } = req.query;
 
       const where: Prisma.ProgramWhereInput = {
-        departmentId: departmentId ? String(departmentId) : undefined,
-        department: {
-          schoolId: schoolId ? String(schoolId) : undefined,
-          school: facultyId ? { facultyId: String(facultyId) } : undefined,
-        },
-        programType: programType ? (programType as ProgramType) : undefined,
-        name: search
-          ? { contains: String(search), mode: "insensitive" }
-          : undefined,
+        ...(departmentId &&
+          departmentId !== "undefined" && {
+            departmentId: String(departmentId),
+          }),
+        ...(schoolId &&
+          schoolId !== "undefined" && {
+            department: {
+              schoolId: String(schoolId),
+              ...(facultyId &&
+                facultyId !== "undefined" && {
+                  school: { facultyId: String(facultyId) },
+                }),
+            },
+          }),
+        ...(programType &&
+          programType !== "undefined" && {
+            programType: programType as ProgramType,
+          }),
+        ...(search &&
+          search !== "undefined" && {
+            name: { contains: String(search), mode: "insensitive" },
+          }),
       };
 
+      const totalPrograms = await prisma.program.count({ where });
+      const totalPages = Math.ceil(totalPrograms / Number(limit));
       const programs = await prisma.program.findMany({
         where,
         include: {
-          department: {
-            include: {
-              school: {
-                include: {
-                  faculty: true,
-                },
-              },
-            },
-          },
+          department: true,
         },
+        skip: (Number(page) - 1) * Number(limit),
+        take: Number(limit),
       });
 
-      res.status(200).json(programs);
+      res.status(200).json({ programs, totalPages, currentPage: Number(page) });
     } catch (error) {
       console.error("Error fetching programs:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-
   getProgramById: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;

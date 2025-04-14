@@ -123,10 +123,15 @@ export default function SubjectsTable({
                 <tr
                   onClick={() => handleModal(subject)}
                   key={subject.id}
-                  className="even:bg-gray-50 hover:bg-gray-200 hover:cursor-pointer"
+                  className="even:bg-gray-50 hover:bg-gray-200"
                 >
                   <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
-                    {subject.name}
+                    <Link
+                      to={`/subjects/${subject.id}`}
+                      className={"text-blue-800 underline font-semibold"}
+                    >
+                      {subject.name}
+                    </Link>
                   </td>
                   <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
                     {subject.batch.year}

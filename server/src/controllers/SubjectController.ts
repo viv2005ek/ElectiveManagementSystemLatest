@@ -183,19 +183,51 @@ const SubjectController = {
           name: true,
           semester: true,
           batch: true,
+          department: true,
+          faculty: true,
+          school: true,
+          isPreferenceWindowOpen: true,
+          isAllotmentFinalized: true,
           dueDate: true,
           subjectType: true,
+          numberOfCoursesInBucket: true,
           semesters: true,
-          programs: true,
+          programs: {
+            include: {
+              department: true,
+            },
+          },
           coursesWithSeats: {
             select: {
-              course: true,
+              course: {
+                select: {
+                  code: true,
+                  name: true,
+                  department: true,
+                },
+              },
               totalSeats: true,
             },
           },
           courseBucketsWithSeats: {
             select: {
-              courseBucket: true,
+              courseBucket: {
+                include: {
+                  department: true,
+                  courses: {
+                    select: {
+                      course: {
+                        select: {
+                          id: true,
+                          code: true,
+                          name: true,
+                        },
+                      },
+                      orderIndex: true,
+                    },
+                  },
+                },
+              },
               totalSeats: true,
             },
           },
@@ -673,14 +705,6 @@ const SubjectController = {
       const allotmentsInfo = await prisma.subject.findUnique({
         where: { id: subjectId },
         select: {
-          name: true,
-          subjectType: {
-            select: {
-              name: true,
-              allotmentType: true,
-            },
-          },
-          batch: true,
           standaloneAllotments: {
             where: search
               ? {
@@ -841,6 +865,104 @@ const SubjectController = {
       });
     } catch (error) {
       console.error("Error fetching allotments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  getAllotmentStats: async (req: Request, res: Response): Promise<void> => {
+    const { subjectId } = req.params;
+
+    try {
+      // Fetch all courses associated with the subject
+      const allCourses = await prisma.subjectCourseWithSeats.findMany({
+        where: { subjectId },
+        select: {
+          course: {
+            select: { id: true, name: true, code: true },
+          },
+        },
+      });
+
+      // Fetch all course buckets associated with the subject
+      const allCourseBuckets =
+        await prisma.subjectCourseBucketWithSeats.findMany({
+          where: { subjectId },
+          select: {
+            courseBucket: {
+              select: { id: true, name: true },
+            },
+          },
+        });
+
+      // Count students allotted to each course
+      const courseStats = await prisma.standaloneAllotment.groupBy({
+        by: ["courseId"],
+        where: { subjectId },
+        _count: { courseId: true },
+      });
+
+      // Count students allotted to each course bucket
+      const courseBucketStats = await prisma.bucketAllotment.groupBy({
+        by: ["courseBucketId"],
+        where: { subjectId },
+        _count: { courseBucketId: true },
+      });
+
+      // Map allotment counts to courses
+      const courses = allCourses.map(({ course }) => {
+        const stat = courseStats.find((s) => s.courseId === course.id);
+        return {
+          id: course.id,
+          name: course.name,
+          code: course.code,
+          studentCount: stat ? stat._count.courseId : 0,
+        };
+      });
+
+      // Map allotment counts to course buckets
+      const courseBuckets = allCourseBuckets.map(({ courseBucket }) => {
+        const stat = courseBucketStats.find(
+          (s) => s.courseBucketId === courseBucket.id,
+        );
+        return {
+          id: courseBucket.id,
+          name: courseBucket.name,
+          studentCount: stat ? stat._count.courseBucketId : 0,
+        };
+      });
+
+      // Calculate total students in the subject's programs
+      const totalStudents = await prisma.student.count({
+        where: {
+          program: {
+            subjects: {
+              some: { id: subjectId },
+            },
+          },
+        },
+      });
+
+      // Calculate total allotted students
+      const totalAllottedStudents =
+        courseStats.reduce((acc, stat) => acc + stat._count.courseId, 0) +
+        courseBucketStats.reduce(
+          (acc, stat) => acc + stat._count.courseBucketId,
+          0,
+        );
+
+      // Calculate unallotted students
+      const unallottedStudents = totalStudents - totalAllottedStudents;
+
+      // Combine results
+      const result = {
+        courses: [...courses],
+        courseBuckets: [...courseBuckets],
+        unallottedStudents,
+      };
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching allotment stats:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

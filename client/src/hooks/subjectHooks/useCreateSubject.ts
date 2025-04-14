@@ -12,7 +12,6 @@ interface SubjectData {
   facultyId?: string | null;
   schoolId?: string | null;
   programIds: string[];
-  subjectScope: string;
   semesterId: string | null;
   semesterIds: string[];
   coursesWithSeats?: { courseId: string; seats: number }[];

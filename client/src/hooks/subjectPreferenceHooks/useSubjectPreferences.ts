@@ -18,6 +18,7 @@ export type Student = {
     firstPreferenceCourseBucket?: Course | null;
     secondPreferenceCourseBucket?: Course | null;
     thirdPreferenceCourseBucket?: Course | null;
+    createdAt: string | null;
   } | null;
 };
 

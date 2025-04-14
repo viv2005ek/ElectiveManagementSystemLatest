@@ -16,7 +16,7 @@
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "vitest": "vitest run",
     "vitest:watch": "vitest",
-    "test": "npm run typecheck && npx prettier --write ."
+    "test": "npm run typecheck"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -31,10 +31,12 @@
     "@types/axios": "^0.14.4",
     "@types/string": "^0.0.34",
     "axios": "^1.7.7",
+    "chart.js": "^4.4.8",
     "dayjs": "^1.11.13",
     "lucide-react": "^0.474.0",
     "prettier": "^3.3.3",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
     "react-feather": "^2.0.10",
     "react-icons": "^5.3.0",

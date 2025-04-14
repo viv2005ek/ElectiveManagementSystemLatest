@@ -97,12 +97,12 @@ export default function SubjectManageModal({
     <Dialog
       open={open}
       onClose={() => setOpen(false)}
-      className="relative z-50"
+      className="relative z-50 transition-all"
     >
       <DialogBackdrop className="fixed inset-0 bg-gray-500/75" />
-      <div className="fixed inset-0 z-10 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-          <DialogPanel className="relative transform overflow-hidden rounded-lg bg-white px-6 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+      <div className="fixed inset-0 z-10 overflow-y-auto transition-all">
+        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0 transition-all">
+          <DialogPanel className="relative transform  overflow-hidden rounded-lg bg-white px-6 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
             <DialogTitle
               as="h3"
               className="text-lg text-center font-semibold leading-6 text-gray-900"

@@ -23,6 +23,7 @@ interface MultiSelectMenuProps<T extends Identifiable> {
   setSelected: Dispatch<SetStateAction<T[]>>;
   onChange?: (items: T[]) => void;
   prefix?: string;
+  disabled?: boolean;
 }
 
 export default function MultiSelectMenu<T extends Identifiable>({
@@ -32,6 +33,7 @@ export default function MultiSelectMenu<T extends Identifiable>({
   setSelected,
   onChange,
   prefix,
+  disabled,
 }: MultiSelectMenuProps<T>) {
   const handleChange = (newSelected: T[]) => {
     setSelected(newSelected);
@@ -41,7 +43,12 @@ export default function MultiSelectMenu<T extends Identifiable>({
   };
 
   return (
-    <Listbox value={selected} onChange={handleChange} multiple>
+    <Listbox
+      value={selected}
+      disabled={disabled}
+      onChange={handleChange}
+      multiple
+    >
       <div className={"flex flex-col items-between w-full justify-start"}>
         {label && (
           <Label className="block text-sm/6 font-medium text-gray-900">

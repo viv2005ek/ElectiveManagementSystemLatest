@@ -40,9 +40,9 @@ interface Offerings {
 }
 
 const useFetchSubjectOfferings = (
-  subjectId: string,
-  currentPage: number,
-  search: string,
+  subjectId: string | undefined,
+  currentPage?: number,
+  search?: string,
 ) => {
   const [offerings, setOfferings] = useState<Offerings | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -54,7 +54,7 @@ const useFetchSubjectOfferings = (
         const response = await axiosInstance.get(
           `/subjects/${subjectId}/offerings`,
           {
-            params: { page: currentPage, search: search },
+            params: { page: currentPage ?? null, search: search ?? null },
           },
         );
         setOfferings(response.data);

@@ -1,10 +1,6 @@
-import { Request, Response } from "express";
-import { prisma } from "../prismaClient";
-import {
-  AllotmentType,
-  SubjectCourseBucketWithSeats,
-  SubjectCourseWithSeats,
-} from "@prisma/client";
+import {Request, Response} from "express";
+import {prisma} from "../prismaClient";
+import {AllotmentType, SubjectCourseBucketWithSeats, SubjectCourseWithSeats,} from "@prisma/client";
 
 const SubjectPreferenceController = {
   fillPreferences: async (req: Request, res: Response): Promise<void> => {
@@ -226,6 +222,7 @@ const SubjectPreferenceController = {
               firstPreferenceCourse: { select: { id: true, name: true } },
               secondPreferenceCourse: { select: { id: true, name: true } },
               thirdPreferenceCourse: { select: { id: true, name: true } },
+              createdAt: true
             },
           },
           bucketSubjectPreferences: {
@@ -236,6 +233,7 @@ const SubjectPreferenceController = {
                 select: { id: true, name: true },
               },
               thirdPreferenceCourseBucket: { select: { id: true, name: true } },
+              createdAt: true
             },
           },
         },

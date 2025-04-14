@@ -7,7 +7,7 @@ import {
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
 import { CheckIcon } from "@heroicons/react/20/solid";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 type Identifiable = { id: string; [key: string]: any };
 
@@ -18,6 +18,7 @@ interface MultiSelectMenuProps<T extends Identifiable> {
   setSelected: Dispatch<SetStateAction<T[]>>;
   onChange?: (items: T[]) => void;
   maxSelections?: number;
+  disabled?: boolean;
 }
 
 export default function MultiSelectMenuWithSearch<T extends Identifiable>({
@@ -27,17 +28,24 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
   setSelected,
   onChange,
   maxSelections,
+  disabled,
 }: MultiSelectMenuProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [internalSelected, setInternalSelected] = useState<T[]>(selected);
+
+  useEffect(() => {
+    setInternalSelected(selected);
+  }, [selected]);
 
   const handleChange = (item: T) => {
     let newSelected;
-    if (selected.some((i) => i.id === item.id)) {
-      newSelected = selected.filter((i) => i.id !== item.id);
+    if (internalSelected.some((i) => i.id === item.id)) {
+      newSelected = internalSelected.filter((i) => i.id !== item.id);
     } else {
-      if (maxSelections && selected.length >= maxSelections) return;
-      newSelected = [...selected, item];
+      if (maxSelections && internalSelected.length >= maxSelections) return;
+      newSelected = [...internalSelected, item];
     }
+    setInternalSelected(newSelected);
     setSelected(newSelected);
     if (onChange) {
       onChange(newSelected);
@@ -51,7 +59,7 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
     : [];
 
   return (
-    <Listbox value={selected} multiple>
+    <Listbox disabled={disabled} value={internalSelected} multiple>
       <div className={"flex flex-col items-between w-full justify-start"}>
         {label && (
           <Label className="block text-sm/6 font-medium text-gray-900">
@@ -61,8 +69,8 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
         <div className="relative mt-1.5">
           <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
             <span className="col-start-1 row-start-1 truncate pr-6">
-              {selected.length > 0
-                ? selected.map((item) => item.name).join(", ")
+              {internalSelected.length > 0
+                ? internalSelected.map((item) => item.name).join(", ")
                 : "Select items"}
             </span>
             <ChevronUpDownIcon
@@ -94,8 +102,8 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
                     onClick={() => handleChange(item)}
                     className={`group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none ${
                       maxSelections !== undefined &&
-                      selected.length >= maxSelections &&
-                      !selected.some((i) => i.id === item.id)
+                      internalSelected.length >= maxSelections &&
+                      !internalSelected.some((i) => i.id === item.id)
                         ? "opacity-50 cursor-not-allowed"
                         : ""
                     }`}
@@ -104,7 +112,7 @@ export default function MultiSelectMenuWithSearch<T extends Identifiable>({
                       {item.name}
                     </span>
 
-                    {selected.some((i) => i.id === item.id) && (
+                    {internalSelected.some((i) => i.id === item.id) && (
                       <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white">
                         <CheckIcon aria-hidden="true" className="size-5" />
                       </span>

@@ -204,6 +204,7 @@ Table Subject {
   bucketAllotments BucketAllotment [not null]
   coursesWithSeats SubjectCourseWithSeats [not null]
   courseBucketsWithSeats SubjectCourseBucketWithSeats [not null]
+  numberOfCoursesInBucket Int
 }
 
 Table SubjectCourseWithSeats {
@@ -467,7 +468,7 @@ Ref: BucketSubjectPreference.secondPreferenceCourseBucketId > CourseBucket.id [d
 
 Ref: BucketSubjectPreference.thirdPreferenceCourseBucketId > CourseBucket.id [delete: Cascade]
 
-Ref: StandaloneAllotment.subjectId > Subject.id
+Ref: StandaloneAllotment.subjectId > Subject.id [delete: Cascade]
 
 Ref: StandaloneAllotment.studentId > Student.id
 
@@ -477,7 +478,7 @@ Ref: StandaloneAllotment.semesterId > Semester.id
 
 Ref: BucketAllotment.studentId > Student.id
 
-Ref: BucketAllotment.subjectId > Subject.id
+Ref: BucketAllotment.subjectId > Subject.id [delete: Cascade]
 
 Ref: BucketAllotment.courseBucketId > CourseBucket.id
 

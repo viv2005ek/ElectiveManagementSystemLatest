@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import PaginationFooter from "../PaginationFooter.tsx";
-import { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, MouseEvent, SetStateAction } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Course } from "../../hooks/courseHooks/useFetchCourses.ts";
@@ -12,14 +12,30 @@ export default function CoursesTable({
   currentPage,
   setCurrentPage,
   isLoading,
+  selectedCourses,
+  setSelectedCourses,
+  showActionButtons = true,
 }: {
   courses: Course[] | null;
   totalPages: number;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
   isLoading: boolean;
+  selectedCourses?: Course[];
+  setSelectedCourses?: Dispatch<Course[]>;
+  showActionButtons?: boolean;
 }) {
   const navigate = useNavigate();
+
+  const handleSelection = (
+    e: MouseEvent<HTMLButtonElement>,
+    course: Course,
+  ) => {
+    e.stopPropagation();
+    if (selectedCourses && setSelectedCourses) {
+      setSelectedCourses([...selectedCourses, course]);
+    }
+  };
 
   return (
     <div className="mt-6">
@@ -59,12 +75,18 @@ export default function CoursesTable({
                   >
                     Categories
                   </th>
+                  {showActionButtons && (
+                    <th
+                      scope="col"
+                      className="py-3 px-4 text-right text-sm font-semibold text-gray-900"
+                    >
+                      Actions
+                    </th>
+                  )}
                   <th
                     scope="col"
                     className="py-3 px-4 text-right text-sm font-semibold text-gray-900"
-                  >
-                    Actions
-                  </th>
+                  ></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -103,7 +125,7 @@ export default function CoursesTable({
                         <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
                           {course.code}
                         </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                        <td className="whitespace-nowrap font-semibold py-4 px-4 text-sm text-gray-900">
                           {course.name}
                         </td>
                         <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
@@ -129,12 +151,30 @@ export default function CoursesTable({
                           )}
                         </td>
 
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          <div className="flex flex-row justify-end gap-4">
-                            <EyeIcon className="h-6 w-6 stroke-gray-500" />
-                            <PencilIcon className="h-6 w-6 stroke-gray-500" />
-                          </div>
-                        </td>
+                        {showActionButtons && (
+                          <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                            <div className="flex flex-row justify-end gap-4">
+                              <EyeIcon className="h-6 w-6 stroke-gray-500" />
+                              <PencilIcon className="h-6 w-6 stroke-gray-500" />
+                            </div>
+                          </td>
+                        )}
+                        {selectedCourses &&
+                          setSelectedCourses &&
+                          !selectedCourses.some(
+                            (selectedCourse) => selectedCourse.id === course.id,
+                          ) && (
+                            <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
+                              <button
+                                className="bg-blue-500 py-1 px-3 text-white rounded-lg"
+                                onClick={(e: MouseEvent<HTMLButtonElement>) =>
+                                  handleSelection(e, course)
+                                }
+                              >
+                                Add
+                              </button>
+                            </td>
+                          )}
                       </tr>
                     ))}
               </tbody>

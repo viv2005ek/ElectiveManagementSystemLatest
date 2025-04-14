@@ -1,7 +1,7 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Clock, RefreshCw } from "lucide-react";
 import useRunAllotment from "../../hooks/subjectHooks/useRunAllotment.ts";
 import dayjs from "dayjs";
@@ -27,7 +27,6 @@ export default function SubjectPreferencesPage() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [showAllDetails, setShowAllDetails] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs[0].name);
 
   const { data, loading, error, fetchPreferences } = useSubjectPreferences(
@@ -41,6 +40,10 @@ export default function SubjectPreferencesPage() {
     loading: infoLoading,
     fetchSubjectInfo,
   } = useFetchSubjectInfo(id);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const { runAllotment, loading: allotmentLoading } = useRunAllotment({
     onSuccess: () => {
@@ -209,11 +212,11 @@ export default function SubjectPreferencesPage() {
             </button>
           </div>
         ) : data ? (
-          <div className="space-y-4">
+          <div className="space-y-4 mb-4">
             {data.students.map((student, index) => (
               <StudentPreferenceCard
                 student={student}
-                index={index + 1}
+                index={index}
                 allotmentType={subjectInfo?.subjectType.allotmentType}
               />
             ))}

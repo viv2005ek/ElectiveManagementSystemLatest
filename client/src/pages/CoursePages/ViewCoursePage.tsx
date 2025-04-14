@@ -112,25 +112,27 @@ export default function ViewCoursePage() {
                   <label className="block font-semibold mb-2 text-sm">
                     Course name
                   </label>
-                  <p className="p-2 border rounded">{courseName}</p>
+                  <p className="p-2 border rounded text-sm">{courseName}</p>
                 </div>
                 <div>
                   <label className="block font-semibold mb-2 text-sm">
                     Course code
                   </label>
-                  <p className="p-2 border rounded">{courseCode}</p>
+                  <p className="p-2 border rounded text-sm">{courseCode}</p>
                 </div>
                 <div>
                   <label className="block font-semibold mb-2 text-sm">
                     Credits
                   </label>
-                  <p className="p-2 border rounded">{credits}</p>
+                  <p className="p-2 border rounded text-sm">{credits}</p>
                 </div>
                 <div>
                   <label className="block font-semibold mb-2 text-sm">
                     Department
                   </label>
-                  <p className="p-2 border rounded">{department?.name}</p>
+                  <p className="p-2 border rounded text-sm">
+                    {department?.name}
+                  </p>
                 </div>
                 <div>
                   <label className="block font-semibold mb-2 text-sm">
@@ -141,7 +143,7 @@ export default function ViewCoursePage() {
                       No subject types added
                     </p>
                   ) : (
-                    <p className="p-2 border rounded">
+                    <p className="p-2 border text-sm rounded">
                       {selectedSubjectTypes.map((st) => st.name).join(", ")}
                     </p>
                   )}

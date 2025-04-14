@@ -36,7 +36,10 @@ export default function CreateCourseBucketPage() {
   const { subjectTypes } = useFetchSubjectTypes({
     allotmentType: AllotmentType.BUCKET,
   });
-  const { courses, loading } = useFetchCourses({ department, search });
+  const { courses, loading } = useFetchCourses({
+    departmentId: department?.id,
+    search,
+  });
 
   const { addCourseBucket } = useCreateCourseBucket();
 

@@ -2,22 +2,20 @@ import { AllotmentType } from "../subjectTypeHooks/useFetchSubjectTypes.ts";
 import { useCallback, useEffect, useState } from "react";
 import axiosInstance from "../../axiosInstance.ts";
 
-type AllotmentStudent = {
+export type AllotmentStudent = {
   registrationNumber: number;
   firstName: string;
   lastName: string;
 };
 
-type CourseAllotment = {
-  name: string;
-};
-
-type StandaloneAllotment = {
+export type StandaloneAllotment = {
   student: AllotmentStudent;
-  course: CourseAllotment;
+  course: {
+    name: string;
+  };
 };
 
-type BucketAllotment = {
+export type BucketAllotment = {
   student: AllotmentStudent;
   courseBucket: {
     name: string;

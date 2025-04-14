@@ -437,4 +437,10 @@ router.get(
   SubjectController.getSubjectAllotments,
 );
 
+router.get(
+  "/:subjectId/allotments/stats",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.getAllotmentStats,
+);
+
 export default router;

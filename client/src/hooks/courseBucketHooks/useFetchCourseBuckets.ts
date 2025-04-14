@@ -30,7 +30,7 @@ interface UseCourseBucketsProps {
   subjectTypeId?: string;
   subjectId?: string;
   totalCredits?: number;
-  numberOfCourses?: number;
+  numberOfCourses?: number | null;
   name?: string;
   page?: number;
 }

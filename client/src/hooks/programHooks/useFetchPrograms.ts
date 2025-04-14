@@ -8,12 +8,17 @@ export interface Program {
   department: {
     id: string;
     name: string;
-    school: {
-      id: string;
-      name: string;
-      faculty?: { id: string; name: string };
-    };
   };
+}
+
+interface FetchProgramsOptions {
+  departmentId?: string;
+  schoolId?: string;
+  facultyId?: string;
+  programType?: ProgramType;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export enum ProgramType {
@@ -22,16 +27,10 @@ export enum ProgramType {
   PHD = "PhD",
 }
 
-interface FetchProgramsOptions {
-  departmentId?: string;
-  schoolId?: string;
-  facultyId?: string;
-  programType?: string;
-  search?: string;
-}
-
 export function useFetchPrograms(options?: FetchProgramsOptions) {
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(options?.page || 1);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,20 +40,17 @@ export function useFetchPrograms(options?: FetchProgramsOptions) {
       setError(null);
 
       try {
-        const params = new URLSearchParams(
-          Object.entries(options || {}).reduce(
-            (acc, [key, value]) => {
-              if (value) acc[key] = value;
-              return acc;
-            },
-            {} as Record<string, string>,
-          ),
-        );
+        const params = new URLSearchParams({
+          ...options,
+          page: String(currentPage),
+          limit: String(options?.limit || 10),
+        });
 
         const response = await axiosInstance.get(
           `/programs?${params.toString()}`,
         );
-        setPrograms(response.data);
+        setPrograms(response.data.programs);
+        setTotalPages(response.data.totalPages);
       } catch (err) {
         setError("Failed to fetch programs");
       } finally {
@@ -63,7 +59,7 @@ export function useFetchPrograms(options?: FetchProgramsOptions) {
     };
 
     fetchPrograms();
-  }, [JSON.stringify(options)]);
+  }, [JSON.stringify(options), currentPage]);
 
-  return { programs, loading, error };
+  return { programs, totalPages, currentPage, setCurrentPage, loading, error };
 }

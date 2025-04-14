@@ -211,6 +211,7 @@ model Subject {
   bucketAllotments             BucketAllotment[]
   coursesWithSeats             SubjectCourseWithSeats[]       @relation("subjectCoursesWithSeats")
   courseBucketsWithSeats       SubjectCourseBucketWithSeats[] @relation("subjectCourseBucketsWithSeats")
+  numberOfCoursesInBucket      Int?
 }
 
 model SubjectCourseWithSeats {
@@ -276,7 +277,7 @@ model BucketSubjectPreference {
 model StandaloneAllotment {
   id              String          @id @default(uuid())
   subjectId       String
-  subject         Subject         @relation(fields: [subjectId], references: [id])
+  subject         Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   studentId       String
   student         Student         @relation(fields: [studentId], references: [id])
   courseId        String
@@ -293,7 +294,7 @@ model BucketAllotment {
   studentId       String
   student         Student         @relation(fields: [studentId], references: [id])
   subjectId       String
-  subject         Subject         @relation(fields: [subjectId], references: [id])
+  subject         Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   courseBucketId  String
   courseBucket    CourseBucket    @relation(fields: [courseBucketId], references: [id])
   courseId        String

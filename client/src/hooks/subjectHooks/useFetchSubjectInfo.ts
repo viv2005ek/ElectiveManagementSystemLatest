@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../axiosInstance";
-import { AllotmentType } from "../subjectTypeHooks/useFetchSubjectTypes.ts";
+import {
+  AllotmentType,
+  SubjectScope,
+} from "../subjectTypeHooks/useFetchSubjectTypes.ts";
+import { Department } from "../departmentHooks/useFetchDepartments.ts";
+import { School } from "../schoolHooks/useFetchSchools.ts";
+import { Faculty } from "../facultyHooks/useFetchFaculties.ts";
+import { Program } from "../programHooks/useFetchPrograms.ts";
+import { Course } from "../courseBucketHooks/useFetchCourseBuckets.ts";
 
 type SubjectInfoResponse = {
   name: string;
@@ -8,6 +16,8 @@ type SubjectInfoResponse = {
     id: string;
     number: number;
   } | null;
+  isPreferenceWindowOpen: boolean;
+  isAllotmentFinalized: boolean;
   batch: {
     id: string;
     year: number;
@@ -17,31 +27,53 @@ type SubjectInfoResponse = {
     id: string;
     name: string;
     allotmentType: AllotmentType;
+    scope: SubjectScope;
   };
+  numberOfCoursesInBucket: number | null;
+  department: Department | null;
+  school: School | null;
+  faculty: Faculty | null;
   semesters: {
     id: string;
     number: number;
   }[];
-  programs: {
+  programs: Program[];
+  coursesWithSeats: CourseWithSeats[];
+  courseBucketsWithSeats: CourseBucketWithSeats[];
+};
+
+export interface CourseWithSeats {
+  course: {
     id: string;
     name: string;
-  }[];
-  coursesWithSeats: {
-    course: {
+    code: string;
+    credits: number;
+    department: {
       id: string;
       name: string;
-      code: string;
+      schoolId: string;
     };
-    totalSeats: number | null;
-  }[];
-  courseBucketsWithSeats: {
-    courseBucket: {
+  };
+  totalSeats: number | null;
+}
+
+export interface CourseBucketWithSeats {
+  courseBucket: {
+    id: string;
+    name: string;
+    totalCredits: number;
+    department: {
       id: string;
       name: string;
+      schoolId: string;
     };
-    totalSeats: number | null;
-  }[];
-};
+    courses: {
+      course: Course;
+      orderIndex: number;
+    }[];
+  };
+  totalSeats: number | null;
+}
 
 export default function useFetchSubjectInfo(id?: string) {
   const [data, setData] = useState<SubjectInfoResponse | null>(null);

@@ -17,9 +17,9 @@ import useFetchBatches, {
 import useFetchDepartments, {
   Department,
 } from "../../hooks/departmentHooks/useFetchDepartments.ts";
-import SingleSelectMenuWithSearch from "../../components/FormComponents/SingleSelectMenuWithSearch.tsx";
 import {
   Program,
+  ProgramType,
   useFetchPrograms,
 } from "../../hooks/programHooks/useFetchPrograms.ts";
 import useFetchFaculties, {
@@ -28,7 +28,6 @@ import useFetchFaculties, {
 import useFetchSchools, {
   School,
 } from "../../hooks/schoolHooks/useFetchSchools.ts";
-import MultiSelectMenuWithSearch from "../../components/FormComponents/MultiSelectMenuWithSearch.tsx";
 import useFetchCourses, {
   Course,
 } from "../../hooks/courseHooks/useFetchCourses.ts";
@@ -38,10 +37,12 @@ import useFetchCourseBuckets, {
 import NumberInputField from "../../components/FormComponents/NumberInputField.tsx";
 import SingleSelectMenuAlternate from "../../components/FormComponents/SingleSelectMenuAlternate.tsx";
 import useFetchProgramTypes from "../../hooks/programHooks/useFetchProgramTypes.ts";
-import SingleSelectEnumSelector from "../../components/FormComponents/SingleSelectEnumSelector.tsx";
 import { useNotification } from "../../contexts/NotificationContext.tsx";
 import useCreateSubject from "../../hooks/subjectHooks/useCreateSubject.ts";
-import useFetchSubjectScopes from "../../hooks/enumHooks/useFetchSubjectScopes.ts";
+import ProgramsTable from "../../components/tables/ProgramsTable.tsx";
+import CourseBucketsTable from "../../components/tables/CourseBucketsTable.tsx";
+import CoursesTable from "../../components/tables/CoursesTable.tsx";
+import SingleSelectEnumSelector from "../../components/FormComponents/SingleSelectEnumSelector.tsx";
 
 interface CourseWithSeat {
   selectedCourse: Course;
@@ -71,14 +72,13 @@ export default function CreateSubjectPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
   const [faculty, setFaculty] = useState<Faculty | null>(null);
+  const [coursesCurrentPage, setCoursesCurrentPage] = useState(1);
   const [selectedPrograms, setSelectedPrograms] = useState<Program[]>([]);
-  const [selectedProgramType, setSelectedProgramType] = useState<string | null>(
-    null,
-  );
+  const [selectedProgramType, setSelectedProgramType] =
+    useState<ProgramType | null>(null);
   const [selectedCourseBuckets, setSelectedCourseBuckets] = useState<
     CourseBucket[]
   >([]);
-  const [selectedScope, setSelectedScope] = useState<string | null>(null);
   const [numberOfCoursesInABucket, setNumberOfCoursesInABucket] = useState<
     number | undefined
   >();
@@ -90,21 +90,39 @@ export default function CreateSubjectPage() {
   const { batches } = useFetchBatches();
   const { semesters } = useFetchSemesters();
   const { departments } = useFetchDepartments();
-  const { scopes } = useFetchSubjectScopes();
   const { faculties } = useFetchFaculties();
   const { schools } = useFetchSchools();
-  const { courses } = useFetchCourses();
-  const { programTypes } = useFetchProgramTypes();
+  const {
+    courses,
+    totalPages: coursesTotalPages,
+    loading: coursesLoading,
+  } = useFetchCourses({
+    page: coursesCurrentPage,
+    departmentId: department?.id,
+  });
+  const { programTypes, loading: programsLoading } = useFetchProgramTypes();
 
   const { createSubject, loading } = useCreateSubject();
 
-  const { data } = useFetchCourseBuckets({
+  const {
+    data: courseBuckets,
+    totalPages: courseBucketsTotalPages,
+    currentPage: courseBucketsPage,
+    setCurrentPage: setCourseBucketsPage,
+    loading: courseBucketsLoading,
+  } = useFetchCourseBuckets({
     departmentId: department?.id,
     schoolId: school?.id,
     facultyId: faculty?.id,
     subjectTypeId: subjectType?.id,
+    numberOfCourses: numberOfCoursesInABucket,
   });
-  const { programs } = useFetchPrograms({
+  const {
+    programs,
+    totalPages: programsTotalPages,
+    currentPage: programsCurrentPage,
+    setCurrentPage: setProgramsCurrentPage,
+  } = useFetchPrograms({
     departmentId: department?.id,
     facultyId: faculty?.id,
     schoolId: school?.id,
@@ -173,10 +191,7 @@ export default function CreateSubjectPage() {
         setError("Subject type is required.");
         return;
       }
-      if (!selectedScope) {
-        setError("Subject scope is required.");
-        return;
-      }
+
       if (!subjectType.allotmentType) {
         setError("Allotment type is required.");
         return;
@@ -226,7 +241,6 @@ export default function CreateSubjectPage() {
         semesterIds: selectedSemesters.map((semester) => semester.id),
         semesterId: selectedSemester?.id || null,
         schoolId: school?.id || null,
-        subjectScope: selectedScope,
         programType: selectedProgramType,
         departmentId: department?.id || null,
         facultyId: faculty?.id || null,
@@ -252,7 +266,6 @@ export default function CreateSubjectPage() {
       setSelectedBatch(null);
       setSubjectType(null);
       setSelectedProgramType(null);
-      setSelectedScope(null);
       setNumberOfCoursesInABucket(undefined);
       setSchool(null);
       setSelectedPrograms([]);
@@ -262,6 +275,40 @@ export default function CreateSubjectPage() {
       setError(
         error instanceof Error ? error.message : "Failed to create subject",
       );
+    }
+  };
+
+  const renderScopeSetter = () => {
+    switch (subjectType?.scope) {
+      case SubjectScope.SAME_DEPARTMENT:
+        return (
+          <SingleSelectMenu
+            items={departments}
+            label={"Department"}
+            selected={department}
+            setSelected={setDepartment}
+          />
+        );
+      case SubjectScope.SAME_SCHOOL:
+        return (
+          <SingleSelectMenu
+            label={"School"}
+            items={schools}
+            selected={school}
+            setSelected={setSchool}
+          />
+        );
+      case SubjectScope.SAME_FACULTY:
+        return (
+          <SingleSelectMenu
+            label={"Faculty"}
+            items={faculties}
+            selected={faculty}
+            setSelected={setFaculty}
+          />
+        );
+      default:
+        return null;
     }
   };
 
@@ -279,29 +326,24 @@ export default function CreateSubjectPage() {
             label={"Name"}
           />
           <SingleSelectMenu
+            items={subjectTypes}
+            selected={subjectType}
+            setSelected={setSubjectType}
+            label={"Subject type"}
+          />
+          <SingleSelectMenu
             label={"Batch"}
             items={batches}
             prefix={"Batch"}
             selected={selectedBatch}
             setSelected={setSelectedBatch}
           />
-          <SingleSelectMenu
-            items={subjectTypes}
-            selected={subjectType}
-            setSelected={setSubjectType}
-            label={"Subject type"}
-          />
+
           <SingleSelectEnumSelector
             label={"Program Type"}
             items={programTypes}
             selected={selectedProgramType}
             setSelected={setSelectedProgramType}
-          />
-          <SingleSelectEnumSelector
-            label={"Subject Scope"}
-            items={scopes}
-            selected={selectedScope}
-            setSelected={setSelectedScope}
           />
 
           {subjectType?.allotmentType === AllotmentType.BUCKET && (
@@ -313,62 +355,56 @@ export default function CreateSubjectPage() {
               label={"Number of Courses in a Bucket"}
             />
           )}
-          {subjectType?.scope === SubjectScope.SAME_DEPARTMENT && (
-            <SingleSelectMenuWithSearch
-              items={departments}
-              selected={department}
-              setSelected={setDepartment}
-              label={"Department"}
+          {renderScopeSetter()}
+          {subjectType?.allotmentType === AllotmentType.STANDALONE && (
+            <SingleSelectMenu
+              prefix={"Semester"}
+              items={semesters}
+              selected={selectedSemester}
+              setSelected={setSelectedSemester}
+              label={"Semester"}
             />
           )}
-          {subjectType?.scope === SubjectScope.SAME_FACULTY && (
-            <SingleSelectMenuWithSearch
-              items={faculties}
-              selected={faculty}
-              setSelected={setFaculty}
-              label={"Faculty"}
+          <div className={"col-span-2 mb-4 flex flex-col gap-2"}>
+            <ProgramsTable
+              label={"Choose programs"}
+              programs={programs}
+              loading={programsLoading}
+              showActionButtons={false}
+              selectedPrograms={selectedPrograms}
+              setSelectedPrograms={setSelectedPrograms}
+              setCurrentPage={setProgramsCurrentPage}
+              currentPage={programsCurrentPage}
+              totalPages={programsTotalPages}
             />
-          )}
-          {subjectType?.scope === SubjectScope.SAME_SCHOOL && (
-            <SingleSelectMenuWithSearch
-              items={schools}
-              selected={school}
-              setSelected={setSchool}
-              label={"School"}
-            />
-          )}
-          <MultiSelectMenuWithSearch
-            items={programs}
-            selected={selectedPrograms}
-            setSelected={setSelectedPrograms}
-            label={"Programs"}
-          />
-          {subjectType?.allotmentType === "Standalone" && (
-            <>
-              <SingleSelectMenu
-                prefix={"Semester"}
-                items={semesters}
-                selected={selectedSemester}
-                setSelected={setSelectedSemester}
-                label={"Semester"}
-              />
-              <MultiSelectMenuWithSearch
-                items={courses}
-                selected={selectedCourses}
-                setSelected={setSelectedCourses}
-                label={"Options for Courses"}
-              />
-            </>
-          )}
+            {subjectType?.allotmentType === "Standalone" && (
+              <>
+                <CoursesTable
+                  courses={courses}
+                  totalPages={coursesTotalPages}
+                  currentPage={coursesCurrentPage}
+                  setCurrentPage={setCoursesCurrentPage}
+                  isLoading={coursesLoading}
+                  selectedCourses={selectedCourses}
+                  setSelectedCourses={setSelectedCourses}
+                  showActionButtons={false}
+                />
+              </>
+            )}
+          </div>
+
           {subjectType?.allotmentType === "Bucket" && (
             <>
-              <MultiSelectMenuWithSearch
-                items={data}
-                selected={selectedCourseBuckets}
-                setSelected={setSelectedCourseBuckets}
-                label={"Options for Course Buckets"}
-              />
               <div className={"col-span-2"}>
+                <CourseBucketsTable
+                  buckets={courseBuckets}
+                  totalPages={courseBucketsTotalPages}
+                  currentPage={courseBucketsPage}
+                  setCurrentPage={setCourseBucketsPage}
+                  isLoading={courseBucketsLoading}
+                  selectedBuckets={selectedCourseBuckets}
+                  setSelectedBuckets={setSelectedCourseBuckets}
+                />
                 <div className={"mt-8 mb-2 font-semibold text-sm"}>
                   Course-Semester Mapping
                 </div>
