@@ -5,23 +5,28 @@ import bcrypt, { hash } from "bcrypt";
 import { UserRole } from "@prisma/client";
 
 const AuthController = {
-  loginController: async (req: Request, res: Response): Promise<any> => {
+  loginController: async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      res.status(400).json({ message: "Email and password are required" });
+      return;
     }
 
     try {
-      // Find the credential
+      // Fetch credential and related user details in a single query
       const credential = await prisma.credential.findUnique({
         where: { email },
+        include: {
+          admin: true,
+          professor: true,
+          student: true,
+        },
       });
 
       if (!credential) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        res.status(401).json({ message: "Invalid email or password" });
+        return;
       }
 
       // Verify password
@@ -30,29 +35,22 @@ const AuthController = {
         credential.passwordHash,
       );
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        res.status(401).json({ message: "Invalid email or password" });
+        return;
       }
 
-      // Determine the role by checking linked tables
-      let role: UserRole | null = null;
-
-      const admin = await prisma.admin.findUnique({
-        where: { credentialId: credential.id },
-      });
-      if (admin) role = UserRole.Admin;
-
-      const faculty = await prisma.professor.findUnique({
-        where: { credentialId: credential.id },
-      });
-      if (faculty) role = UserRole.Professor;
-
-      const student = await prisma.student.findUnique({
-        where: { credentialId: credential.id },
-      });
-      if (student) role = UserRole.Student;
+      // Determine role
+      const role = credential.admin
+        ? "Admin"
+        : credential.professor
+          ? "Professor"
+          : credential.student
+            ? "Student"
+            : null;
 
       if (!role) {
-        return res.status(401).json({ message: "Invalid user role" });
+        res.status(401).json({ message: "Invalid user role" });
+        return;
       }
 
       // Generate JWT
@@ -62,22 +60,21 @@ const AuthController = {
         { expiresIn: "1d" },
       );
 
+      // Set cookie
       res.cookie("jwt", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // true on production
+        secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 60 * 60 * 1000 * 24,
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
-      return res.status(200).json({
+      res.status(200).json({
         message: "Login successful",
         role,
       });
     } catch (error) {
       console.error("Error during login:", error);
-      return res
-        .status(500)
-        .json({ message: "An error occurred during login" });
+      res.status(500).json({ message: "An error occurred during login" });
     }
   },
 
@@ -165,7 +162,6 @@ const AuthController = {
       if (!decoded.id) {
         return res.status(401).json({ message: "Invalid token" });
       }
-      console.log(decoded.id);
 
       const user = await prisma.credential.findUnique({
         where: { id: decoded.id },
