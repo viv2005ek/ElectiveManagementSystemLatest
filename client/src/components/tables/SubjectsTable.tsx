@@ -5,7 +5,7 @@ import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
 import { Dispatch, SetStateAction, useState } from "react";
 import PaginationFooter from "../PaginationFooter.tsx";
 import SubjectManageModal from "../modals/SubjectManageModal.tsx";
-import { Cog6ToothIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { Cog6ToothIcon, PencilIcon, ClipboardDocumentListIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
 
 export default function SubjectsTable({
   subjects,
@@ -128,26 +128,50 @@ export default function SubjectsTable({
                             : 'Closed'}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-right text-sm space-x-4">
-                      <button
-                        onClick={(e) => openManageModal(subject, e)}
-                        className="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 inline-flex items-center gap-1"
-                      >
-                        <Cog6ToothIcon className="h-4 w-4" />
-                        Manage
-                        <span className="sr-only">, {subject.name}</span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/subjects/${subject.id}/edit`);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 transition-colors duration-150 inline-flex items-center gap-1"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                        Edit
-                        <span className="sr-only">, {subject.name}</span>
-                      </button>
+                    <td className="py-4 px-4 text-right text-sm">
+                      <div className="flex flex-row justify-end gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/subjects/${subject.id}/preferences`);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 inline-flex items-center gap-1"
+                        >
+                          <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                          Preferences
+                          <span className="sr-only">, {subject.name}</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/subjects/${subject.id}/allotments`);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 inline-flex items-center gap-1"
+                        >
+                          <ClipboardDocumentListIcon className="h-4 w-4" />
+                          Allotments
+                          <span className="sr-only">, {subject.name}</span>
+                        </button>
+                        <button
+                          onClick={(e) => openManageModal(subject, e)}
+                          className="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 inline-flex items-center gap-1"
+                        >
+                          <Cog6ToothIcon className="h-4 w-4" />
+                          Manage
+                          <span className="sr-only">, {subject.name}</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/subjects/${subject.id}/edit`);
+                          }}
+                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150 inline-flex items-center gap-1"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                          Edit
+                          <span className="sr-only">, {subject.name}</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

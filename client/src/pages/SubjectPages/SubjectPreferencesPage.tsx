@@ -1,8 +1,8 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { AlertCircle, Clock, RefreshCw } from "lucide-react";
+import { AlertCircle, Clock, RefreshCw, ArrowLeft, Users, Calendar, BookOpen, Filter, Download, Info, ClipboardCheck } from "lucide-react";
 import useRunAllotment from "../../hooks/subjectHooks/useRunAllotment.ts";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -22,12 +22,21 @@ const tabs: Tab[] = [
   { name: "Pending", current: false, value: "not-filled" },
 ];
 
+interface Student {
+  id: string;
+  name: string;
+  registrationNumber: string;
+  isPreferenceFilled: boolean;
+  // ... other properties
+}
+
 export default function SubjectPreferencesPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [activeTab, setActiveTab] = useState(tabs[0].name);
+  const [showStats, setShowStats] = useState(true);
 
   const { data, loading, error, fetchPreferences } = useSubjectPreferences(
     id,
@@ -43,7 +52,7 @@ export default function SubjectPreferencesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, activeTab]);
 
   const { runAllotment, loading: allotmentLoading } = useRunAllotment({
     onSuccess: () => {
@@ -66,9 +75,14 @@ export default function SubjectPreferencesPage() {
     }
   };
 
+  const handleExportData = () => {
+    // This would be implemented with actual export functionality
+    alert("Export functionality would be implemented here");
+  };
+
   const renderSubjectHeader = () =>
     infoLoading ? (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500 mt-6">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
         <Skeleton height={28} width={240} />
         <div className="mt-3 flex gap-3">
           <Skeleton height={24} width={100} />
@@ -77,40 +91,39 @@ export default function SubjectPreferencesPage() {
         </div>
       </div>
     ) : (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500 mt-6">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {subjectInfo?.name}
-            </h2>
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                onClick={() => navigate("/subjects")}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Go back to subjects"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {subjectInfo?.name}
+              </h2>
+            </div>
             <div className="flex flex-wrap mt-3 gap-3">
-              <div className="flex items-center">
-                <span className="font-semibold mr-2 text-gray-600">
-                  Batch Year:
-                </span>
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md font-medium">
+              <div className="flex items-center bg-blue-50 px-3 py-1.5 rounded-md">
+                <Users className="h-4 w-4 text-blue-600 mr-2" />
+                <span className="font-medium text-blue-700">
                   {subjectInfo?.batch.year}
                 </span>
               </div>
               {subjectInfo?.dueDate && (
-                <div className="flex items-center">
-                  <span className="font-semibold mr-2 text-gray-600">
-                    Due Date:
-                  </span>
-                  <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md font-medium">
+                <div className="flex items-center bg-yellow-50 px-3 py-1.5 rounded-md">
+                  <Calendar className="h-4 w-4 text-yellow-600 mr-2" />
+                  <span className="font-medium text-yellow-700">
                     {dayjs(subjectInfo.dueDate).format("D MMMM YYYY")}
                   </span>
                 </div>
               )}
-              <div className="flex items-center">
-                <span className="font-semibold mr-2 text-gray-600">Type:</span>
-                <span
-                  className={`px-3 py-1 rounded-md font-medium ${
-                    subjectInfo?.subjectType.allotmentType === "Standalone"
-                      ? "bg-purple-100 text-purple-800"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}
-                >
+              <div className="flex items-center bg-purple-50 px-3 py-1.5 rounded-md">
+                <BookOpen className="h-4 w-4 text-purple-600 mr-2" />
+                <span className="font-medium text-purple-700">
                   {subjectInfo?.subjectType.name}
                 </span>
               </div>
@@ -119,13 +132,10 @@ export default function SubjectPreferencesPage() {
           <div className="flex flex-col gap-4">
             {subjectInfo?.dueDate &&
               dayjs(subjectInfo?.dueDate).isAfter(dayjs()) && (
-                <div className="text-sm flex items-center justify-end">
-                  <Clock className="w-4 h-4 mr-1 text-gray-500" />
-                  <span className="text-gray-600 font-medium mr-2">
-                    Time Remaining:
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-md font-medium">
-                    {dayjs(subjectInfo.dueDate).fromNow(true)}
+                <div className="text-sm flex items-center justify-end bg-green-50 px-3 py-1.5 rounded-md">
+                  <Clock className="w-4 h-4 mr-2 text-green-600" />
+                  <span className="text-green-700 font-medium">
+                    {dayjs(subjectInfo.dueDate).fromNow(true)} remaining
                   </span>
                 </div>
               )}
@@ -134,20 +144,106 @@ export default function SubjectPreferencesPage() {
       </div>
     );
 
+  const renderStats = () => {
+    if (!data) return null;
+    
+    const totalStudents = data.totalStudents || 0;
+    const completedCount = data.students.filter(s => s.isPreferenceFilled).length;
+    const pendingCount = totalStudents - completedCount;
+    const completionPercentage = totalStudents > 0 ? Math.round((completedCount / totalStudents) * 100) : 0;
+    
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-medium text-gray-900">Preference Statistics</h3>
+          <button 
+            onClick={() => setShowStats(!showStats)}
+            className="text-indigo-600 hover:text-indigo-900 transition-colors"
+          >
+            <Filter className="h-5 w-5" />
+          </button>
+        </div>
+        
+        {showStats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-700">Total Students</span>
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-800 mt-1">{totalStudents}</p>
+            </div>
+            
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-green-700">Completed</span>
+                <ClipboardCheck className="h-5 w-5 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-green-800 mt-1">{completedCount}</p>
+              <div className="w-full bg-green-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full" 
+                  style={{ width: `${completionPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-yellow-700">Pending</span>
+                <Clock className="h-5 w-5 text-yellow-600" />
+              </div>
+              <p className="text-2xl font-bold text-yellow-800 mt-1">{pendingCount}</p>
+              <div className="w-full bg-yellow-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-yellow-600 h-2 rounded-full" 
+                  style={{ width: `${100 - completionPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <PageHeader title="Subject Preferences" />
 
         {renderSubjectHeader()}
+        
+        {renderStats()}
 
         {/* Search and Buttons */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <SearchBarWithDebounce value={search} setValue={setSearch} />
+          <div className="w-full sm:w-96">
+            <SearchBarWithDebounce 
+              value={search} 
+              setValue={setSearch}
+              placeholder="Search by student name or registration number..."
+            />
+          </div>
           <div className="flex gap-3 w-full sm:w-auto">
             <button
+              onClick={handleExportData}
+              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              <span>Export</span>
+            </button>
+            
+            <button
+              onClick={() => navigate(`/subjects/${id}/allotments`)}
+              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <span>View Allotments</span>
+            </button>
+
+            <button
               onClick={fetchPreferences}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
               disabled={loading}
             >
               <RefreshCw
@@ -161,7 +257,7 @@ export default function SubjectPreferencesPage() {
                 allotmentLoading
                   ? "bg-orange-400 cursor-not-allowed"
                   : "bg-orange-600 hover:bg-orange-700"
-              } text-white flex items-center gap-2`}
+              } text-white flex items-center gap-2 transition-colors`}
               onClick={handleRunAllotment}
               disabled={loading || allotmentLoading}
             >
@@ -180,9 +276,9 @@ export default function SubjectPreferencesPage() {
           </div>
         </div>
 
-        <Tabs tabs={tabs} setActiveTab={setActiveTab} activeTab={activeTab} />
-
-        <div className={"w-full border-1 mb-12"} />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <Tabs tabs={tabs} setActiveTab={setActiveTab} activeTab={activeTab} />
+        </div>
 
         {/* Loading fallback with skeletons */}
         {loading ? (
@@ -206,27 +302,56 @@ export default function SubjectPreferencesPage() {
             </p>
             <button
               onClick={fetchPreferences}
-              className="px-4 py-2 bg-white border border-red-300 rounded-md text-red-600 hover:bg-red-50 text-sm font-medium"
+              className="px-4 py-2 bg-white border border-red-300 rounded-md text-red-600 hover:bg-red-50 text-sm font-medium transition-colors"
             >
               Try Again
             </button>
           </div>
         ) : data ? (
           <div className="space-y-4 mb-4">
-            {data.students.map((student, index) => (
-              <StudentPreferenceCard
-                student={student}
-                index={index}
-                allotmentType={subjectInfo?.subjectType.allotmentType}
-              />
-            ))}
+            {data.students.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+                <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900 mb-1">No students found</h3>
+                <p className="text-gray-500">Try adjusting your search or filters</p>
+                <button 
+                  onClick={() => setSearch("")}
+                  className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            ) : (
+              data.students.map((student, index) => (
+                <StudentPreferenceCard
+                  key={student.id}
+                  student={student}
+                  index={index}
+                  allotmentType={subjectInfo?.subjectType.allotmentType}
+                />
+              ))
+            )}
           </div>
         ) : null}
-        <PaginationFooter
-          totalPages={data?.totalPages ?? 1}
-          currentPage={currentPage}
-          setPage={setCurrentPage}
-        />
+
+        {data && data.totalPages > 1 && (
+          <div className="mt-6">
+            <PaginationFooter
+              totalPages={data.totalPages}
+              currentPage={currentPage}
+              setPage={setCurrentPage}
+            />
+          </div>
+        )}
+        
+        {data && data.students.length > 0 && (
+          <div className="mt-8 text-center text-sm text-gray-500">
+            <div className="flex items-center justify-center gap-1">
+              <Info className="h-4 w-4" />
+              <span>Showing {data.students.length} of {data.totalStudents} students</span>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

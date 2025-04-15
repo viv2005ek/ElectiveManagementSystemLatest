@@ -11,6 +11,7 @@ export type Student = {
   firstName: string;
   lastName: string;
   registrationNumber: string;
+  isPreferenceFilled: boolean;
   preferences: {
     firstPreferenceCourse?: Course | null;
     secondPreferenceCourse?: Course | null;
