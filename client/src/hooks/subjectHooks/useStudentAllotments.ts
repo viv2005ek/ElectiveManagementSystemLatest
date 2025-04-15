@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../axiosInstance.ts";
 
 export const useStudentAllotments = () => {
   const [allotments, setAllotments] = useState<{
@@ -15,7 +15,7 @@ export const useStudentAllotments = () => {
       setError(null);
 
       try {
-        const response = await axios.get("/allotments/me");
+        const response = await axiosInstance.get("/subjects/allotments/me");
         setAllotments(response.data);
       } catch (err: any) {
         setError(err.response?.data?.error || "Failed to fetch allotments");

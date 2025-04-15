@@ -1062,6 +1062,18 @@ const SubjectController = {
             select: {
               id: true,
               name: true,
+              semester: {
+                select: {
+                  id: true,
+                  number: true,
+                },
+              },
+              semesters: {
+                select: {
+                  id: true,
+                  number: true,
+                },
+              },
             },
           },
         },
@@ -1099,6 +1111,12 @@ const SubjectController = {
             select: {
               id: true,
               name: true,
+            },
+          },
+          semester: {
+            select: {
+              id: true,
+              number: true,
             },
           },
         },
