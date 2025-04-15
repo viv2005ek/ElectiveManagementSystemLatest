@@ -54,26 +54,30 @@ export default function SingleSelectMenu<T extends Identifiable>({
     <Listbox value={selected} onChange={handleChange} disabled={disabled}>
       <div className="flex flex-col items-between w-full justify-start">
         {label && (
-          <Label className="block text-sm/6 font-medium text-gray-900">
+          <Label className="block text-sm font-medium text-gray-700 mb-1.5">
             {label}
           </Label>
         )}
-        <div className="relative mt-1.5">
+        <div className="relative mt-1">
           <ListboxButton
             ref={refs.setReference}
             onClick={() => setOpen(!open)}
-            className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+            className={`w-full cursor-default rounded-md bg-white py-2.5 px-3.5 text-left text-gray-900 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-150 ${
+              disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "hover:border-gray-400"
+            }`}
           >
-            <span className="col-start-1 row-start-1 truncate pr-6">
+            <span className="block truncate">
               {selected
                 ? `${prefix ?? ""} ` +
                   (selected.number ?? selected.name ?? selected.year)
                 : `Select a ${label ?? name}`}
             </span>
-            <ChevronUpDownIcon
-              aria-hidden="true"
-              className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-            />
+            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <ChevronUpDownIcon
+                aria-hidden="true"
+                className="h-5 w-5 text-gray-400"
+              />
+            </span>
           </ListboxButton>
 
           {open && (
@@ -87,15 +91,32 @@ export default function SingleSelectMenu<T extends Identifiable>({
                   <ListboxOption
                     key={item.id}
                     value={item}
-                    className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-3 pr-9 ${
+                        active ? "bg-blue-50 text-blue-900" : "text-gray-900"
+                      }`
+                    }
                   >
-                    <span className="block truncate font-normal group-data-[selected]:font-semibold">
-                      {prefix ?? ""} {item.name ?? item.number ?? item.year}
-                    </span>
-
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-[&:not([data-selected])]:hidden group-data-[focus]:text-white">
-                      <CheckIcon aria-hidden="true" className="size-5" />
-                    </span>
+                    {({ selected, active }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {prefix ?? ""} {item.name ?? item.number ?? item.year}
+                        </span>
+                        {selected && (
+                          <span
+                            className={`absolute inset-y-0 right-0 flex items-center pr-4 ${
+                              active ? "text-blue-600" : "text-blue-500"
+                            }`}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
                   </ListboxOption>
                 ))
               ) : (

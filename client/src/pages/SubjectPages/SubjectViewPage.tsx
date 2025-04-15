@@ -7,7 +7,7 @@ import useFetchSubjectInfo, {
 } from "../../hooks/subjectHooks/useFetchSubjectInfo.ts";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { PencilIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import SingleSelectMenu from "../../components/FormComponents/SingleSelectMenu.tsx";
 import useFetchSubjectTypes, {
   AllotmentType,
@@ -166,77 +166,102 @@ export default function SubjectViewPage() {
 
   return (
     <MainLayout>
-      <div className={"mt-8"}>
-        <PageHeader title={"Subject Details"} />
-        <div className={"flex flex-row justify-end mt-8"}>
-          <button
-            onClick={() => setViewMode(!viewMode)}
-            className={`flex flex-row text-white ${viewMode ? "bg-blue-500" : "bg-red-500"} py-1 hover:bg-opacity-80 hover:shadow-md transition-all px-4 rounded-lg gap-4 text-lg font-semibold items-center`}
-          >
-            <div>{viewMode ? "Edit" : "Cancel"}</div>
-            {viewMode && <PencilIcon className={"h-5 w-5 stroke-2"} />}
-          </button>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+            <PageHeader title={"Subject Details"} />
+            <button
+              onClick={() => setViewMode(!viewMode)}
+              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm ${
+                viewMode 
+                  ? "bg-blue-600 text-white hover:bg-blue-700" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150`}
+            >
+              {viewMode ? (
+                <>
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Edit
+                </>
+              ) : (
+                <>
+                  <XMarkIcon className="h-4 w-4 mr-2" />
+                  Cancel
+                </>
+              )}
+            </button>
+          </div>
 
-        <div className={" grid grid-cols-2 gap-x-32 gap-y-12"}>
-          <TextInputField
-            label={"Subject name"}
-            disabled={viewMode}
-            value={name}
-            setValue={setName}
-          />
-          <SingleSelectMenu
-            label={"Batch"}
-            prefix={"Batch of"}
-            items={batches}
-            selected={batch}
-            disabled={viewMode}
-            setSelected={setBatch}
-          />
-          <SingleSelectMenu
-            disabled={viewMode}
-            label={"Subject Type"}
-            items={subjectTypes}
-            selected={subjectType}
-            setSelected={setSubjectType}
-          />
-          {subjectType?.allotmentType === AllotmentType.STANDALONE && (
-            <SingleSelectMenu
-              label={"Semester"}
-              prefix={"Semester"}
-              disabled={viewMode}
-              items={semesters}
-              selected={semester}
-              setSelected={setSemester}
-            />
-          )}
-          {subjectType?.allotmentType === AllotmentType.BUCKET && (
-            <MultiSelectMenu
-              label={"Semesters"}
-              prefix={"Semesters"}
-              disabled={viewMode}
-              items={semesters}
-              selected={selectedSemesters}
-              setSelected={setSelectedSemesters}
-            />
-          )}
-          {renderScopeSetter()}
-          <MultiSelectMenuWithSearch
-            label={"Programs"}
-            disabled={viewMode}
-            items={programs}
-            selected={selectedPrograms}
-            setSelected={setSelectedPrograms}
-          />
-          <div className={"col-span-2 my-8"}>
-            <ProgramsTable
-              programs={data?.programs}
-              loading={loading}
-              label={"Programs"}
-              showActionButtons={false}
-            />
-            {data?.subjectType.allotmentType === AllotmentType.STANDALONE && (
-              <>
+          <div className="px-6 py-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-6">
+                <TextInputField
+                  label={"Subject name"}
+                  disabled={viewMode}
+                  value={name}
+                  setValue={setName}
+                />
+                <SingleSelectMenu
+                  label={"Batch"}
+                  prefix={"Batch of"}
+                  items={batches}
+                  selected={batch}
+                  disabled={viewMode}
+                  setSelected={setBatch}
+                />
+                <SingleSelectMenu
+                  disabled={viewMode}
+                  label={"Subject Type"}
+                  items={subjectTypes}
+                  selected={subjectType}
+                  setSelected={setSubjectType}
+                />
+                {subjectType?.allotmentType === AllotmentType.STANDALONE && (
+                  <SingleSelectMenu
+                    label={"Semester"}
+                    prefix={"Semester"}
+                    disabled={viewMode}
+                    items={semesters}
+                    selected={semester}
+                    setSelected={setSemester}
+                  />
+                )}
+                {subjectType?.allotmentType === AllotmentType.BUCKET && (
+                  <MultiSelectMenu
+                    label={"Semesters"}
+                    prefix={"Semesters"}
+                    disabled={viewMode}
+                    items={semesters}
+                    selected={selectedSemesters}
+                    setSelected={setSelectedSemesters}
+                  />
+                )}
+              </div>
+              
+              <div className="space-y-6">
+                {renderScopeSetter()}
+                <MultiSelectMenuWithSearch
+                  label={"Programs"}
+                  disabled={viewMode}
+                  items={programs}
+                  selected={selectedPrograms}
+                  setSelected={setSelectedPrograms}
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-8">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Programs</h3>
+                <ProgramsTable
+                  programs={data?.programs}
+                  loading={loading}
+                  label={""}
+                  showActionButtons={false}
+                />
+              </div>
+              
+              {data?.subjectType.allotmentType === AllotmentType.STANDALONE && (
                 <CoursesWithSeatsTable
                   courses={courses}
                   coursesWithSeats={selectedCoursesWithSeats}
@@ -245,27 +270,29 @@ export default function SubjectViewPage() {
                   viewMode={viewMode}
                   label={"Courses"}
                 />
-              </>
-            )}
-            {data?.subjectType.allotmentType === AllotmentType.BUCKET && (
-              <>
+              )}
+              
+              {data?.subjectType.allotmentType === AllotmentType.BUCKET && (
                 <CourseBucketsWithSeatsTable
                   label={"Course Buckets"}
                   courseBucketsWithSeats={data.courseBucketsWithSeats}
                   isLoading={loading}
                 />
-              </>
+              )}
+            </div>
+            
+            {!viewMode && (
+              <div className="mt-8 flex justify-end">
+                <button
+                  onClick={handleSave}
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                >
+                  Save Changes
+                </button>
+              </div>
             )}
           </div>
         </div>
-        {!viewMode && (
-          <button
-            onClick={handleSave}
-            className={"w-full p-2 bg-blue-400 text-white rounded-lg my-8"}
-          >
-            Save
-          </button>
-        )}
       </div>
     </MainLayout>
   );

@@ -26,7 +26,7 @@ export default function CoursesWithSeatsTable({
       ...(coursesWithSeats || []),
       {
         course: {
-          id: crypto.randomUUID(),
+          id: "",  // Empty ID for new rows
           code: "",
           name: "",
           credits: 0,
@@ -37,195 +37,192 @@ export default function CoursesWithSeatsTable({
     ]);
   };
 
-  const handleCourseChange = (courseId: string, selectedCourse: Course) => {
+  const handleCourseChange = (index: number, selectedCourse: Course) => {
     if (!coursesWithSeats) return;
 
-    const updatedCourses = coursesWithSeats.map((courseWithSeats) =>
-      courseWithSeats.course.id === courseId
-        ? { ...courseWithSeats, course: selectedCourse }
-        : courseWithSeats,
-    );
+    const updatedCourses = [...coursesWithSeats];
+    updatedCourses[index] = {
+      ...updatedCourses[index],
+      course: selectedCourse,
+    };
 
     setCoursesWithSeats(updatedCourses);
   };
 
-  const handleSeatsChange = (courseId: string, newSeats: number) => {
+  const handleSeatsChange = (index: number, newSeats: number) => {
     if (!coursesWithSeats) return;
 
-    const updatedCourses = coursesWithSeats.map((courseWithSeats) =>
-      courseWithSeats.course.id === courseId
-        ? { ...courseWithSeats, totalSeats: newSeats }
-        : courseWithSeats,
-    );
+    // Ensure seats is a non-negative number
+    const validatedSeats = Math.max(0, newSeats);
+
+    const updatedCourses = [...coursesWithSeats];
+    updatedCourses[index] = {
+      ...updatedCourses[index],
+      totalSeats: validatedSeats,
+    };
 
     setCoursesWithSeats(updatedCourses);
   };
 
-  const handleDelete = (courseId: string) => {
+  const handleDelete = (index: number) => {
     if (!coursesWithSeats) return;
 
-    const updatedCourses = coursesWithSeats.filter(
-      (courseWithSeats) => courseWithSeats.course.id !== courseId,
-    );
-
+    const updatedCourses = coursesWithSeats.filter((_, i) => i !== index);
     setCoursesWithSeats(updatedCourses);
   };
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {label && (
-        <div className={"font-semibold text-sm underline"}>{label}</div>
-      )}
-      <div className="mt-2 flow-root">
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Course code
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Credits
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Department
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Seats
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-right text-sm font-semibold text-gray-900"
-                  >
-                    {!viewMode && "Actions"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {isLoading
-                  ? Array.from({ length: 10 }).map((_, index) => (
-                      <tr key={index}>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                      </tr>
-                    ))
-                  : coursesWithSeats?.map((courseWithSeats) => (
-                      <tr
-                        key={courseWithSeats.course.id}
-                        className="hover:bg-gray-100 hover:cursor-pointer"
-                      >
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {courseWithSeats.course.code}
-                        </td>
-                        <td className="whitespace-nowrap font-semibold py-4 px-4 text-sm text-gray-900">
-                          {!viewMode ? (
-                            <SingleSelectMenuVoid
-                              items={courses}
-                              selected={courseWithSeats.course}
-                              setSelected={(selectedCourse) => {
-                                handleCourseChange(
-                                  courseWithSeats.course.id,
-                                  selectedCourse,
-                                );
-                              }}
-                            />
-                          ) : (
-                            courseWithSeats.course.name
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {courseWithSeats.course.credits}
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {courseWithSeats.course.department.name}
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {!viewMode ? (
-                            <input
-                              type="number"
-                              className={
-                                "ring-1 rounded-lg border-0 outline-0 text-sm"
-                              }
-                              value={courseWithSeats.totalSeats ?? 0}
-                              onChange={(e) =>
-                                handleSeatsChange(
-                                  courseWithSeats.course.id,
-                                  parseInt(e.target.value, 10) || 0,
-                                )
-                              }
-                            />
-                          ) : (
-                            (courseWithSeats.totalSeats ?? "No limit")
-                          )}
-                        </td>
-                        {!viewMode && (
-                          <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900 flex justify-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(courseWithSeats.course.id);
-                              }}
-                              className={
-                                "p-1 bg-red-500 rounded-md hover:bg-opacity-80"
-                              }
-                            >
-                              <TrashIcon className={"h-5 w-5 stroke-white"} />
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
-            {!viewMode && (
-              <div className="flex justify-center mt-4">
-                <button
-                  onClick={handleAddRow}
-                  className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  Add Row
-                </button>
-              </div>
-            )}
-          </div>
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="text-lg font-medium text-gray-900">{label}</h3>
         </div>
+      )}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Course code
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Name
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Credits
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Department
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Seats
+              </th>
+              {!viewMode && (
+                <th
+                  scope="col"
+                  className="py-3.5 px-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {isLoading
+              ? Array.from({ length: 10 }).map((_, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                  </tr>
+                ))
+              : coursesWithSeats?.map((courseWithSeats, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="py-4 px-4 text-sm font-medium text-gray-900">
+                      {courseWithSeats.course.code}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {!viewMode ? (
+                        <SingleSelectMenuVoid
+                          items={courses}
+                          selected={courseWithSeats.course}
+                          setSelected={(selectedCourse) => {
+                            handleCourseChange(index, selectedCourse);
+                          }}
+                        />
+                      ) : (
+                        <span className="font-medium">{courseWithSeats.course.name}</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {courseWithSeats.course.credits}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {courseWithSeats.course.department.name}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {!viewMode ? (
+                        <input
+                          type="number"
+                          min="0"
+                          className="w-20 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                          value={courseWithSeats.totalSeats ?? 0}
+                          onChange={(e) =>
+                            handleSeatsChange(
+                              index,
+                              parseInt(e.target.value, 10) || 0,
+                            )
+                          }
+                        />
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {courseWithSeats.totalSeats ?? "No limit"}
+                        </span>
+                      )}
+                    </td>
+                    {!viewMode && (
+                      <td className="py-4 px-4 text-sm text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(index);
+                          }}
+                          className="inline-flex items-center p-1.5 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+                          title="Delete course"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+          </tbody>
+        </table>
       </div>
+      {!viewMode && (
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <button
+            onClick={handleAddRow}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Course
+          </button>
+        </div>
+      )}
     </div>
   );
 }

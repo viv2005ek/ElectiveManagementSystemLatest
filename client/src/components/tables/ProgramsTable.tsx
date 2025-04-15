@@ -11,13 +11,13 @@ import PaginationFooter from "../PaginationFooter.tsx";
 const mapProgramTypeTag = (programType: ProgramType): string => {
   switch (programType) {
     case ProgramType.UNDERGRADUATE:
-      return "text-blue-800 bg-blue-200";
+      return "text-blue-800 bg-blue-100";
     case ProgramType.POSTGRADUATE:
-      return "text-green-800  bg-green-200";
+      return "text-green-800 bg-green-100";
     case ProgramType.PHD:
-      return "text-yellow-800 bg-yellow-200";
+      return "text-yellow-800 bg-yellow-100";
     default:
-      return "text-gray-500";
+      return "text-gray-500 bg-gray-100";
   }
 };
 
@@ -53,140 +53,142 @@ export default function ProgramsTable({
   };
 
   return (
-    <div className="">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {label && (
-        <div className={"font-semibold text-sm underline"}>{label}</div>
-      )}
-      <div className="mt-4 flow-root">
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    S.no
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Department
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Program type
-                  </th>
-                  {showActionButtons && (
-                    <th
-                      scope="col"
-                      className="py-3 px-4 text-right text-sm font-semibold text-gray-900"
-                    >
-                      Actions
-                    </th>
-                  )}
-                  {selectedPrograms && setSelectedPrograms && (
-                    <th
-                      scope="col"
-                      className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
-                    ></th>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {loading
-                  ? Array.from({ length: 5 }).map((_, index) => (
-                      <tr key={index}>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
-                          <Skeleton />
-                        </td>
-                        <td className="whitespace-nowrap py-4 px-4 text-right text-sm">
-                          <Skeleton />
-                        </td>
-                      </tr>
-                    ))
-                  : programs?.map((program, index) => (
-                      <tr
-                        key={program.id}
-                        className={"hover:bg-gray-100 cursor-auto"}
-                      >
-                        <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="whitespace-nowrap py-4 font-semibold font px-4 text-sm text-gray-900">
-                          {program.name}
-                        </td>
-                        <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
-                          {program.department.name}
-                        </td>
-                        <td className="whitespace-nowrap py-4 font px-4 text-sm text-gray-900">
-                          <div
-                            className={`${mapProgramTypeTag(program.programType)} w-min px-2 rounded-full py-0.5 text-xs`}
-                          >
-                            {program.programType}
-                          </div>
-                        </td>
-                        {showActionButtons && (
-                          <td className="whitespace-nowrap py-4 px-4 text-right text-sm font-medium">
-                            <Link
-                              to={"#"}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                              <span className="sr-only">, {program.name}</span>
-                            </Link>
-                          </td>
-                        )}
-                        {selectedPrograms &&
-                          setSelectedPrograms &&
-                          !selectedPrograms.some(
-                            (selectedProgram) =>
-                              selectedProgram.id === program.id,
-                          ) && (
-                            <td className="whitespace-nowrap py-4 px-4 text-sm text-gray-900">
-                              <button
-                                className="bg-blue-500 py-1 px-3 text-white rounded-lg"
-                                onClick={(e: MouseEvent<HTMLButtonElement>) =>
-                                  handleSelection(e, program)
-                                }
-                              >
-                                Add
-                              </button>
-                            </td>
-                          )}
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
-            {totalPages && currentPage && setCurrentPage && (
-              <PaginationFooter
-                totalPages={totalPages}
-                currentPage={currentPage}
-                setPage={setCurrentPage}
-              />
-            )}
-          </div>
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="text-lg font-medium text-gray-900">{label}</h3>
         </div>
+      )}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                S.no
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Name
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Department
+              </th>
+              <th
+                scope="col"
+                className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              >
+                Program type
+              </th>
+              {showActionButtons && (
+                <th
+                  scope="col"
+                  className="py-3.5 px-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              )}
+              {selectedPrograms && setSelectedPrograms && (
+                <th
+                  scope="col"
+                  className="py-3.5 px-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                >
+                  Select
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="whitespace-nowrap py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="whitespace-nowrap py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="whitespace-nowrap py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="whitespace-nowrap py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                    <td className="whitespace-nowrap py-4 px-4 text-sm">
+                      <Skeleton />
+                    </td>
+                  </tr>
+                ))
+              : programs?.map((program, index) => (
+                  <tr
+                    key={program.id}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {index + 1}
+                    </td>
+                    <td className="py-4 px-4 text-sm font-medium text-gray-900">
+                      {program.name}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      {program.department.name}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-gray-900">
+                      <div
+                        className={`${mapProgramTypeTag(program.programType)} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                      >
+                        {program.programType}
+                      </div>
+                    </td>
+                    {showActionButtons && (
+                      <td className="py-4 px-4 text-right text-sm font-medium">
+                        <Link
+                          to={`/programs/${program.id}`}
+                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                        >
+                          Edit
+                          <span className="sr-only">, {program.name}</span>
+                        </Link>
+                      </td>
+                    )}
+                    {selectedPrograms &&
+                      setSelectedPrograms &&
+                      !selectedPrograms.some(
+                        (selectedProgram) =>
+                          selectedProgram.id === program.id,
+                      ) && (
+                        <td className="py-4 px-4 text-right text-sm">
+                          <button
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                            onClick={(e: MouseEvent<HTMLButtonElement>) =>
+                              handleSelection(e, program)
+                            }
+                          >
+                            Add
+                          </button>
+                        </td>
+                      )}
+                  </tr>
+                ))}
+          </tbody>
+        </table>
       </div>
+      {totalPages && currentPage && setCurrentPage && (
+        <div className="px-6 py-4 border-t border-gray-200">
+          <PaginationFooter
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setPage={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

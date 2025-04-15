@@ -7,7 +7,8 @@ import {
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
 import { CheckIcon } from "@heroicons/react/20/solid";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
+import { flip, offset, shift, useFloating } from "@floating-ui/react";
 
 type Identifiable = {
   id: string;
@@ -35,8 +36,16 @@ export default function MultiSelectMenu<T extends Identifiable>({
   prefix,
   disabled,
 }: MultiSelectMenuProps<T>) {
+  const [open, setOpen] = useState(false);
+  
+  const { refs, floatingStyles } = useFloating({
+    placement: "bottom-start",
+    middleware: [offset(4), flip(), shift()],
+  });
+
   const handleChange = (newSelected: T[]) => {
     setSelected(newSelected);
+    setOpen(false);
     if (onChange) {
       onChange(newSelected);
     }
@@ -49,15 +58,21 @@ export default function MultiSelectMenu<T extends Identifiable>({
       onChange={handleChange}
       multiple
     >
-      <div className={"flex flex-col items-between w-full justify-start"}>
+      <div className="flex flex-col items-between w-full justify-start">
         {label && (
-          <Label className="block text-sm/6 font-medium text-gray-900">
+          <Label className="block text-sm font-medium text-gray-700 mb-1.5">
             {label}
           </Label>
         )}
-        <div className="relative mt-1.5">
-          <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-2 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
-            <span className="col-start-1 row-start-1 truncate pr-6">
+        <div className="relative mt-1">
+          <ListboxButton
+            ref={refs.setReference}
+            onClick={() => setOpen(!open)}
+            className={`w-full cursor-default rounded-md bg-white py-2.5 px-3.5 text-left text-gray-900 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-150 ${
+              disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "hover:border-gray-400"
+            }`}
+          >
+            <span className="block truncate">
               {selected.length > 0
                 ? selected
                     .map(
@@ -66,38 +81,58 @@ export default function MultiSelectMenu<T extends Identifiable>({
                     .join(", ")
                 : `Select ${label}`}
             </span>
-            <ChevronUpDownIcon
-              aria-hidden="true"
-              className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-            />
+            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <ChevronUpDownIcon
+                aria-hidden="true"
+                className="h-5 w-5 text-gray-400"
+              />
+            </span>
           </ListboxButton>
 
-          <ListboxOptions
-            transition
-            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
-          >
-            {Array.isArray(items) && items.length > 0 ? (
-              items.map((item) => (
-                <ListboxOption
-                  key={item.id}
-                  value={item}
-                  className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
-                >
-                  <span className="block truncate font-normal group-data-[selected]:font-semibold">
-                    {`${prefix ?? ""} ` + (item.number ?? item.name)}
-                  </span>
-
-                  {selected.some((i) => i.id === item.id) && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-data-[focus]:text-white">
-                      <CheckIcon aria-hidden="true" className="size-5" />
-                    </span>
-                  )}
-                </ListboxOption>
-              ))
-            ) : (
-              <div className="py-2 px-3 text-gray-500">No items available</div>
-            )}
-          </ListboxOptions>
+          {open && (
+            <ListboxOptions
+              ref={refs.setFloating}
+              style={floatingStyles}
+              className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
+            >
+              {Array.isArray(items) && items.length > 0 ? (
+                items.map((item) => (
+                  <ListboxOption
+                    key={item.id}
+                    value={item}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-3 pr-9 ${
+                        active ? "bg-blue-50 text-blue-900" : "text-gray-900"
+                      }`
+                    }
+                  >
+                    {({ selected, active }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {`${prefix ?? ""} ` + (item.number ?? item.name)}
+                        </span>
+                        {selected && (
+                          <span
+                            className={`absolute inset-y-0 right-0 flex items-center pr-4 ${
+                              active ? "text-blue-600" : "text-blue-500"
+                            }`}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </ListboxOption>
+                ))
+              ) : (
+                <div className="py-2 px-3 text-gray-500">No items available</div>
+              )}
+            </ListboxOptions>
+          )}
         </div>
       </div>
     </Listbox>

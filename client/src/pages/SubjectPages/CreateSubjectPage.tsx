@@ -314,60 +314,78 @@ export default function CreateSubjectPage() {
 
   return (
     <MainLayout>
-      <div className="py-8">
-        <PageHeader title={"Create Subject"} />
-        <div
-          className={"grid grid-cols-1 md:grid-cols-2 gap-x-32 gap-y-12 mt-12"}
-        >
-          <TextInputField
-            value={name}
-            setValue={setName}
-            placeholder={"Program Elective - V"}
-            label={"Name"}
-          />
-          <SingleSelectMenu
-            items={subjectTypes}
-            selected={subjectType}
-            setSelected={setSubjectType}
-            label={"Subject type"}
-          />
-          <SingleSelectMenu
-            label={"Batch"}
-            items={batches}
-            prefix={"Batch"}
-            selected={selectedBatch}
-            setSelected={setSelectedBatch}
-          />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PageHeader title="Create Subject" />
+        
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Basic Information</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Fill in the basic details about the subject.
+            </p>
+          </div>
 
-          <SingleSelectEnumSelector
-            label={"Program Type"}
-            items={programTypes}
-            selected={selectedProgramType}
-            setSelected={setSelectedProgramType}
-          />
+          <div className="px-6 py-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <TextInputField
+                value={name}
+                setValue={setName}
+                placeholder="Program Elective - V"
+                label="Name"
+              />
+              <SingleSelectMenu
+                items={subjectTypes}
+                selected={subjectType}
+                setSelected={setSubjectType}
+                label="Subject type"
+              />
+              <SingleSelectMenu
+                label="Batch"
+                items={batches}
+                prefix="Batch"
+                selected={selectedBatch}
+                setSelected={setSelectedBatch}
+              />
+              <SingleSelectEnumSelector
+                label="Program Type"
+                items={programTypes}
+                selected={selectedProgramType}
+                setSelected={setSelectedProgramType}
+              />
+              {subjectType?.allotmentType === AllotmentType.BUCKET && (
+                <NumberInputField
+                  maxValue={10}
+                  minValue={0}
+                  value={numberOfCoursesInABucket}
+                  setValue={setNumberOfCoursesInABucket}
+                  label="Number of Courses in a Bucket"
+                />
+              )}
+              {renderScopeSetter()}
+              {subjectType?.allotmentType === AllotmentType.STANDALONE && (
+                <SingleSelectMenu
+                  prefix="Semester"
+                  items={semesters}
+                  selected={selectedSemester}
+                  setSelected={setSelectedSemester}
+                  label="Semester"
+                />
+              )}
+            </div>
+          </div>
+        </div>
 
-          {subjectType?.allotmentType === AllotmentType.BUCKET && (
-            <NumberInputField
-              maxValue={10}
-              minValue={0}
-              value={numberOfCoursesInABucket}
-              setValue={setNumberOfCoursesInABucket}
-              label={"Number of Courses in a Bucket"}
-            />
-          )}
-          {renderScopeSetter()}
-          {subjectType?.allotmentType === AllotmentType.STANDALONE && (
-            <SingleSelectMenu
-              prefix={"Semester"}
-              items={semesters}
-              selected={selectedSemester}
-              setSelected={setSelectedSemester}
-              label={"Semester"}
-            />
-          )}
-          <div className={"col-span-2 mb-4 flex flex-col gap-2"}>
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Program Selection</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Choose the programs that will be associated with this subject.
+            </p>
+          </div>
+
+          <div className="px-6 py-5">
             <ProgramsTable
-              label={"Choose programs"}
+              label="Choose programs"
               programs={programs}
               loading={programsLoading}
               showActionButtons={false}
@@ -377,72 +395,86 @@ export default function CreateSubjectPage() {
               currentPage={programsCurrentPage}
               totalPages={programsTotalPages}
             />
-            {subjectType?.allotmentType === "Standalone" && (
-              <>
-                <CoursesTable
-                  courses={courses}
-                  totalPages={coursesTotalPages}
-                  currentPage={coursesCurrentPage}
-                  setCurrentPage={setCoursesCurrentPage}
-                  isLoading={coursesLoading}
-                  selectedCourses={selectedCourses}
-                  setSelectedCourses={setSelectedCourses}
-                  showActionButtons={false}
-                />
-              </>
-            )}
           </div>
+        </div>
 
-          {subjectType?.allotmentType === "Bucket" && (
-            <>
-              <div className={"col-span-2"}>
-                <CourseBucketsTable
-                  buckets={courseBuckets}
-                  totalPages={courseBucketsTotalPages}
-                  currentPage={courseBucketsPage}
-                  setCurrentPage={setCourseBucketsPage}
-                  isLoading={courseBucketsLoading}
-                  selectedBuckets={selectedCourseBuckets}
-                  setSelectedBuckets={setSelectedCourseBuckets}
-                />
-                <div className={"mt-8 mb-2 font-semibold text-sm"}>
+        {subjectType?.allotmentType === "Standalone" && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-5 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Course Selection</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Select the courses that will be part of this subject.
+              </p>
+            </div>
+
+            <div className="px-6 py-5">
+              <CoursesTable
+                courses={courses}
+                totalPages={coursesTotalPages}
+                currentPage={coursesCurrentPage}
+                setCurrentPage={setCoursesCurrentPage}
+                isLoading={coursesLoading}
+                selectedCourses={selectedCourses}
+                setSelectedCourses={setSelectedCourses}
+                showActionButtons={false}
+              />
+            </div>
+          </div>
+        )}
+
+        {subjectType?.allotmentType === "Bucket" && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-5 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Course Bucket Selection</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Select the course buckets and map them to semesters.
+              </p>
+            </div>
+
+            <div className="px-6 py-5">
+              <CourseBucketsTable
+                buckets={courseBuckets}
+                totalPages={courseBucketsTotalPages}
+                currentPage={courseBucketsPage}
+                setCurrentPage={setCourseBucketsPage}
+                isLoading={courseBucketsLoading}
+                selectedBuckets={selectedCourseBuckets}
+                setSelectedBuckets={setSelectedCourseBuckets}
+              />
+
+              <div className="mt-8">
+                <h3 className="text-base font-medium text-gray-900 mb-4">
                   Course-Semester Mapping
-                </div>
-                <table className="w-full border border-gray-200 rounded-lg shadow-md overflow-hidden">
-                  <thead className="bg-gray-200 text-sm">
-                    <tr>
-                      <th className="border border-gray-300 px-4 py-2 text-left rounded-tl-lg">
-                        S.no
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2 text-left">
-                        Course no.
-                      </th>
-                      <th className="border border-gray-300 px-4 py-2 text-center rounded-tr-lg">
-                        Semester
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {numberOfCoursesInABucket &&
-                    numberOfCoursesInABucket > 0 ? (
-                      Array.from(
-                        { length: numberOfCoursesInABucket },
-                        (_, index) => (
-                          <tr key={index} className="even:bg-gray-100 text-xs">
-                            <td
-                              className={`border border-gray-300 px-4 py-2 ${index === numberOfCoursesInABucket - 1 ? "rounded-bl-lg" : ""}`}
-                            >
+                </h3>
+                <div className="overflow-hidden rounded-lg border border-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          S.no
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Course no.
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Semester
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {numberOfCoursesInABucket && numberOfCoursesInABucket > 0 ? (
+                        Array.from({ length: numberOfCoursesInABucket }, (_, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                               {index + 1}
                             </td>
-                            <td className="border border-gray-300 px-4 py-2">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                               Course {index + 1}
                             </td>
-                            <td
-                              className={`border border-gray-300 px-4 py-2 text-center ${index === numberOfCoursesInABucket - 1 ? "rounded-br-lg" : ""}`}
-                            >
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                               <SingleSelectMenuAlternate
                                 items={semesters}
-                                name={"Semester"}
+                                name="Semester"
                                 selected={selectedSemesters[index] ?? null}
                                 setSelected={(value: Semester | null) => {
                                   setSelectedSemesters((prevSemesters) => {
@@ -450,150 +482,160 @@ export default function CreateSubjectPage() {
                                     newSemesters[index] = value!;
                                     return newSemesters;
                                   });
-
-                                  // Ensure that the value is directly set for SingleSelectMenu
-                                  return value; // Direct assignment to match the expected type
+                                  return value;
                                 }}
-                                prefix={"Semester"}
+                                prefix="Semester"
                               />
                             </td>
                           </tr>
-                        ),
-                      )
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={3}
-                          className="text-center py-4 text-gray-500 text-sm font-semibold"
-                        >
-                          Number of courses in a bucket not selected yet
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="px-4 py-4 text-center text-sm text-gray-500"
+                          >
+                            Number of courses in a bucket not selected yet
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="px-6 py-5 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">
+              {subjectType?.allotmentType === AllotmentType.BUCKET
+                ? "Course Bucket"
+                : "Course"}-Seat Mapping
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Assign seats to each {subjectType?.allotmentType === AllotmentType.BUCKET ? "course bucket" : "course"}.
+            </p>
+          </div>
+
+          <div className="px-6 py-5">
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      S.no
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {subjectType?.allotmentType === AllotmentType.BUCKET
+                        ? "Course Bucket name"
+                        : "Course name"}
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Seats
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {subjectType?.allotmentType === AllotmentType.STANDALONE &&
+                  selectedCoursesWithSeats.length > 0 ? (
+                    selectedCoursesWithSeats.map((courseWithSeat, index) => (
+                      <tr key={courseWithSeat.selectedCourse.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {courseWithSeat.selectedCourse.name}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <input
+                            type="number"
+                            className="w-24 text-center border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value={courseWithSeat.seats}
+                            onChange={(e) => {
+                              const newSeats = parseInt(e.target.value, 10) || 0;
+                              setSelectedCoursesWithSeats((prev) =>
+                                prev.map((cws) =>
+                                  cws.selectedCourse.id ===
+                                  courseWithSeat.selectedCourse.id
+                                    ? { ...cws, seats: newSeats }
+                                    : cws,
+                                ),
+                              );
+                            }}
+                          />
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+                    ))
+                  ) : subjectType?.allotmentType === AllotmentType.BUCKET &&
+                    selectedCourseBuckets.length > 0 ? (
+                    selectedCourseBucketsWithSeats.map((bucket, index) => (
+                      <tr key={bucket.selectedBucket.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {bucket.selectedBucket.name}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <input
+                            type="number"
+                            className="w-24 text-center border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value={bucket.seats || 0}
+                            onChange={(e) => {
+                              const newSeats = parseInt(e.target.value, 10) || 0;
+                              setSelectedCourseBucketsWithSeats((prev) =>
+                                prev.map((cws) =>
+                                  cws.selectedBucket.id === bucket.selectedBucket.id
+                                    ? { ...cws, seats: newSeats }
+                                    : cws,
+                                ),
+                              );
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="px-4 py-4 text-center text-sm text-gray-500"
+                      >
+                        {`${subjectType?.allotmentType === AllotmentType.BUCKET ? "Course buckets" : "Courses"} not added yet`}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div className={"mt-12" + " mb-2 font-semibold text-sm"}>
-          {subjectType?.allotmentType === AllotmentType.BUCKET
-            ? "Course Bucket"
-            : "Course"}
-          -Seat Mapping
-        </div>
-        <table className="w-full border border-gray-200 rounded-lg shadow-md overflow-hidden">
-          <thead className="bg-gray-200 text-sm">
-            <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left rounded-tl-lg">
-                S.no
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-left">
-                {subjectType?.allotmentType === AllotmentType.BUCKET
-                  ? "Course Bucket name"
-                  : "Course name"}
-              </th>
-              <th className="border border-gray-300 px-4 py-2 text-center rounded-tr-lg">
-                Seats
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjectType?.allotmentType === AllotmentType.STANDALONE &&
-            selectedCoursesWithSeats.length > 0 ? (
-              selectedCoursesWithSeats.map((courseWithSeat, index, arr) => (
-                <tr
-                  key={courseWithSeat.selectedCourse.id}
-                  className="even:bg-gray-100 text-xs"
-                >
-                  <td
-                    className={`border border-gray-300 px-4 py-2 ${index === arr.length - 1 ? "rounded-bl-lg" : ""}`}
-                  >
-                    {index + 1}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {courseWithSeat.selectedCourse.name}
-                  </td>
-                  <td
-                    className={`border border-gray-300 px-4 py-2 text-center ${index === arr.length - 1 ? "rounded-br-lg" : ""}`}
-                  >
-                    <input
-                      type="number"
-                      className="w-20 text-center border border-gray-400 rounded-md p-1 text-xs"
-                      value={courseWithSeat.seats}
-                      onChange={(e) => {
-                        const newSeats = parseInt(e.target.value, 10) || 0;
-                        setSelectedCoursesWithSeats((prev) =>
-                          prev.map((cws) =>
-                            cws.selectedCourse.id ===
-                            courseWithSeat.selectedCourse.id
-                              ? { ...cws, seats: newSeats }
-                              : cws,
-                          ),
-                        );
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))
-            ) : subjectType?.allotmentType === AllotmentType.BUCKET &&
-              selectedCourseBuckets.length > 0 ? (
-              selectedCourseBucketsWithSeats.map((bucket, index, arr) => (
-                <tr
-                  key={bucket.selectedBucket.id}
-                  className="even:bg-gray-100 text-xs"
-                >
-                  <td
-                    className={`border border-gray-300 px-4 py-2 ${index === arr.length - 1 ? "rounded-bl-lg" : ""}`}
-                  >
-                    {index + 1}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {bucket.selectedBucket.name}
-                  </td>
-                  <td
-                    className={`border border-gray-300 px-4 py-2 text-center ${index === arr.length - 1 ? "rounded-br-lg" : ""}`}
-                  >
-                    <input
-                      type="number"
-                      className="w-20 text-center border border-gray-400 rounded-md p-1 text-xs"
-                      value={bucket.seats || 0}
-                      onChange={(e) => {
-                        const newSeats = parseInt(e.target.value, 10) || 0;
-                        setSelectedCourseBucketsWithSeats((prev) =>
-                          prev.map((cws) =>
-                            cws.selectedBucket.id === bucket.selectedBucket.id
-                              ? { ...cws, seats: newSeats }
-                              : cws,
-                          ),
-                        );
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="text-center py-4 text-gray-500 text-sm font-semibold"
-                >
-                  {`${subjectType?.allotmentType === AllotmentType.BUCKET ? "Course buckets" : "Courses"} not added yet`}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {error && <div className={"bg-red-200 text-red-600 p-4"}>{error}</div>}
 
-        <button
-          onClick={handleSubmit}
-          className={
-            "bg-blue-400 w-full p-2 rounded-lg hover:bg-blue-300 mt-12 text-white"
-          }
-        >
-          Create
-        </button>
+        {error && (
+          <div className="mt-8 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleSubmit}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+          >
+            Create Subject
+          </button>
+        </div>
       </div>
     </MainLayout>
   );
