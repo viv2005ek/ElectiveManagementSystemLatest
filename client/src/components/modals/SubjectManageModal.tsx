@@ -13,6 +13,7 @@ import dayjs, { Dayjs } from "dayjs";
 import DeletionModal from "./DeletionModal.tsx";
 import { useDeleteSubject } from "../../hooks/subjectHooks/useDeleteSubject.ts";
 import { TrashIcon } from "@heroicons/react/24/solid";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface SubjectManageModalProps {
   open: boolean;
@@ -99,67 +100,126 @@ export default function SubjectManageModal({
       onClose={() => setOpen(false)}
       className="relative z-50 transition-all"
     >
-      <DialogBackdrop className="fixed inset-0 bg-gray-500/75" />
+      <DialogBackdrop className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm" />
       <div className="fixed inset-0 z-10 overflow-y-auto transition-all">
         <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0 transition-all">
-          <DialogPanel className="relative transform  overflow-hidden rounded-lg bg-white px-6 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
-            <DialogTitle
-              as="h3"
-              className="text-lg text-center font-semibold leading-6 text-gray-900"
-            >
-              Manage Settings of {subject?.name} for Batch {subject?.batch.year}
-            </DialogTitle>
-            <div className="mt-8 flex flex-col gap-8">
-              <ToggleWithDescription
-                title="Is preference window open?"
-                description="Enabling this will allow students to fill out their preferences for this particular subject."
-                enabled={isPreferenceWindowOpen}
-                setEnabled={setIsPreferenceWindowOpen}
-              />
-              {isPreferenceWindowOpen && (
-                <DatePicker
-                  label={"Due date"}
-                  autoFocus={focusDate}
-                  value={dueDate ? dayjs(dueDate) : null}
-                  onChange={(date: Dayjs | null) =>
-                    setDueDate(date?.toISOString() || null)
-                  }
-                />
-              )}
-              <ToggleWithDescription
-                warning={true}
-                title="Are allotments finalized?"
-                description="Turning this on will make the current allotments final and will delete all the preferences data for this subject."
-                enabled={isAllotmentFinalized}
-                setEnabled={setIsAllotmentFinalized}
-              />
-            </div>
-            <div className="mt-12 flex justify-end gap-4">
-              <div className={"flex flex-row flex-grow"}>
-                <button
-                  onClick={() => setShowDeletionModal(true)}
-                  className="inline-flex justify-center gap-1  rounded-md border bg-red-400 hover:bg-red-300  px-4 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  <div className={"text-white"}>Delete</div>
-                  <TrashIcon className={"h-5 w-5 text-white"} />
-                </button>
-              </div>
-
+          <DialogPanel className="relative transform overflow-hidden rounded-xl bg-white px-6 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-6">
+            <div className="absolute right-0 top-0 pr-4 pt-4">
               <button
                 type="button"
-                className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                <span className="sr-only">Close</span>
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
+            </div>
+
+            <div className="sm:flex sm:items-start">
+              <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                <DialogTitle
+                  as="h3"
+                  className="text-xl font-semibold leading-6 text-gray-900"
+                >
+                  Manage Subject Settings
+                </DialogTitle>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    {subject?.name} for Batch {subject?.batch.year}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-8">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <ToggleWithDescription
+                  title="Preference Window"
+                  description="Allow students to fill out their preferences for this subject."
+                  enabled={isPreferenceWindowOpen}
+                  setEnabled={setIsPreferenceWindowOpen}
+                />
+                {isPreferenceWindowOpen && (
+                  <div className="mt-4">
+                    <DatePicker
+                      label="Due Date"
+                      autoFocus={focusDate}
+                      value={dueDate ? dayjs(dueDate) : null}
+                      onChange={(date: Dayjs | null) =>
+                        setDueDate(date?.toISOString() || null)
+                      }
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          variant: "outlined",
+                          size: "small",
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <ExclamationTriangleIcon
+                      className="h-5 w-5 text-red-400"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <ToggleWithDescription
+                      warning={true}
+                      title="Finalize Allotments"
+                      description="This will make the current allotments final and delete all preferences data for this subject."
+                      enabled={isAllotmentFinalized}
+                      setEnabled={setIsAllotmentFinalized}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-between items-center">
               <button
-                type="button"
-                disabled={isPreferenceWindowOpen && !dueDate}
-                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                onClick={handleSubmit}
+                onClick={() => setShowDeletionModal(true)}
+                className="inline-flex items-center gap-2 rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150"
               >
-                {submitLoading ? "Saving..." : "Save"}
+                <TrashIcon className="h-5 w-5" />
+                Delete Subject
               </button>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  className="inline-flex justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-150"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isPreferenceWindowOpen && !dueDate}
+                  className="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                  onClick={handleSubmit}
+                >
+                  {submitLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
             </div>
           </DialogPanel>
         </div>
@@ -168,11 +228,9 @@ export default function SubjectManageModal({
         open={showDeletionModal}
         setOpen={setShowDeletionModal}
         onDelete={handleDeletion}
-        title={"Delete Subject"}
-        description={`Are you sure you want to delete the subject ${subject?.name} ?`}
-        note={
-          "Note: Deleting this subject will also result in deletion of all the preference related data"
-        }
+        title="Delete Subject"
+        description={`Are you sure you want to delete the subject ${subject?.name}?`}
+        note="Note: Deleting this subject will also result in deletion of all the preference related data"
       />
     </Dialog>
   );

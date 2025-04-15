@@ -2,17 +2,38 @@ import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
+import { Dispatch, SetStateAction, useState } from "react";
+import PaginationFooter from "../PaginationFooter.tsx";
+import SubjectManageModal from "../modals/SubjectManageModal.tsx";
+import { Cog6ToothIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 export default function SubjectsTable({
   subjects,
   loading,
   label,
+  totalPages = 1,
+  currentPage = 1,
+  setCurrentPage,
+  refresh,
 }: {
   subjects: Subject[] | null;
   loading: boolean;
   label?: string;
+  totalPages?: number;
+  currentPage?: number;
+  setCurrentPage?: Dispatch<SetStateAction<number>>;
+  refresh?: () => void;
 }) {
   const navigate = useNavigate();
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+
+  const openManageModal = (subject: Subject, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedSubject(subject);
+    setIsManageModalOpen(true);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {label && (
@@ -92,17 +113,38 @@ export default function SubjectsTable({
                     <td className="py-4 px-4 text-sm text-gray-900">
                       {subject.batch.year}
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      {subject.isPreferenceWindowOpen ? 'Open' : 'Closed'}
+                    <td className="py-4 px-4 text-sm">
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
+                        subject.isAllotmentFinalized 
+                          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' 
+                          : subject.isPreferenceWindowOpen 
+                            ? 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20' 
+                            : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
+                      }`}>
+                        {subject.isAllotmentFinalized 
+                          ? 'Finalized' 
+                          : subject.isPreferenceWindowOpen 
+                            ? 'Open' 
+                            : 'Closed'}
+                      </span>
                     </td>
-                    <td className="py-4 px-4 text-right text-sm">
+                    <td className="py-4 px-4 text-right text-sm space-x-4">
+                      <button
+                        onClick={(e) => openManageModal(subject, e)}
+                        className="text-indigo-600 hover:text-indigo-900 transition-colors duration-150 inline-flex items-center gap-1"
+                      >
+                        <Cog6ToothIcon className="h-4 w-4" />
+                        Manage
+                        <span className="sr-only">, {subject.name}</span>
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/subjects/${subject.id}/edit`);
                         }}
-                        className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                        className="text-blue-600 hover:text-blue-900 transition-colors duration-150 inline-flex items-center gap-1"
                       >
+                        <PencilIcon className="h-4 w-4" />
                         Edit
                         <span className="sr-only">, {subject.name}</span>
                       </button>
@@ -112,6 +154,21 @@ export default function SubjectsTable({
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && setCurrentPage && (
+        <div className="px-6 py-4 border-t border-gray-200">
+          <PaginationFooter
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setPage={setCurrentPage}
+          />
+        </div>
+      )}
+      <SubjectManageModal
+        open={isManageModalOpen}
+        setOpen={setIsManageModalOpen}
+        subject={selectedSubject}
+        refresh={refresh || (() => {})}
+      />
     </div>
   );
 }

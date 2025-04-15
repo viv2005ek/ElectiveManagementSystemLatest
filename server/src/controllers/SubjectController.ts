@@ -284,6 +284,28 @@ const SubjectController = {
     }
 
     try {
+      // First, delete preferences if the subject is being finalized
+      if (isAllotmentFinalized) {
+        console.log(`Deleting preferences for subject ${id} as it is being finalized`);
+        
+        // Delete standalone preferences
+        const deletedStandalone = await prisma.standaloneSubjectPreference.deleteMany({
+          where: {
+            subjectId: id,
+          },
+        });
+        console.log(`Deleted ${deletedStandalone.count} standalone preferences`);
+        
+        // Delete bucket preferences
+        const deletedBucket = await prisma.bucketSubjectPreference.deleteMany({
+          where: {
+            subjectId: id,
+          },
+        });
+        console.log(`Deleted ${deletedBucket.count} bucket preferences`);
+      }
+
+      // Then update the subject status
       const updatedSubject = await prisma.subject.update({
         where: { id },
         data: {
@@ -292,19 +314,6 @@ const SubjectController = {
           dueDate: isPreferenceWindowOpen ? dueDate : null,
         },
       });
-
-      if (isAllotmentFinalized) {
-        await prisma.standaloneSubjectPreference.deleteMany({
-          where: {
-            subjectId: id,
-          },
-        });
-        await prisma.bucketSubjectPreference.deleteMany({
-          where: {
-            subjectId: id,
-          },
-        });
-      }
 
       res.status(200).json(updatedSubject);
     } catch (error) {
