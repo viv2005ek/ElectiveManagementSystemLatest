@@ -21,6 +21,8 @@ model Credential {
   student      Student?
   professor    Professor?
   admin        Admin?
+
+  @@index([passwordHash])
 }
 
 model Admin {
