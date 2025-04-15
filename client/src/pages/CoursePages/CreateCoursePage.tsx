@@ -13,12 +13,17 @@ import useFetchSubjectTypes, {
   SubjectType,
 } from "../../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import MultiSelectMenu from "../../components/FormComponents/MultiSelectMenu.tsx";
+import useFetchSemesters, {
+  Semester,
+} from "../../hooks/semesterHooks/useFetchSemesters.ts";
+import SingleSelectMenu from "../../components/FormComponents/SingleSelectMenu.tsx";
 
 export default function CreateCoursePage() {
   const { departments } = useFetchDepartments();
   const { createCourse, loading, error } = useCreateCourse();
   const { subjectTypes } = useFetchSubjectTypes();
   const { notify } = useNotification();
+  const { semesters } = useFetchSemesters();
 
   const [courseName, setCourseName] = useState("");
   const [courseCode, setCourseCode] = useState("");
@@ -27,6 +32,7 @@ export default function CreateCoursePage() {
   const [selectedSubjectTypes, setSelectedSubjectTypes] = useState<
     SubjectType[]
   >([]);
+  const [semester, setSemester] = useState<Semester | null>(null);
 
   const handleSubmit = async () => {
     if (!courseName || !courseCode || !credits || !department) {
@@ -39,7 +45,8 @@ export default function CreateCoursePage() {
       code: courseCode,
       credits,
       departmentId: department.id,
-      subjectTypeIds: subjectTypes.map((subjectType) => subjectType.id),
+      subjectTypeIds: selectedSubjectTypes.map((subjectType) => subjectType.id),
+      semesterId: semester?.id,
     };
 
     const response = await createCourse(courseData);
@@ -50,6 +57,7 @@ export default function CreateCoursePage() {
       setCredits(undefined);
       setDepartment(null);
       setSelectedSubjectTypes([]);
+      setSemester(null);
     }
   };
 
@@ -84,6 +92,13 @@ export default function CreateCoursePage() {
             items={subjectTypes}
             selected={selectedSubjectTypes}
             setSelected={setSelectedSubjectTypes}
+          />
+          <SingleSelectMenu
+            label={"Semester"}
+            prefix={"Semester"}
+            items={semesters}
+            selected={semester}
+            setSelected={setSemester}
           />
         </div>
         {error && <p className="text-red-500 mt-4">{error}</p>}

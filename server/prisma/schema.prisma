@@ -91,6 +91,7 @@ model Student {
   lastName                     String?
   gender                       Gender
   semester                     Int
+  cgpa                         Float?
   batchId                      String
   batch                        Batch                         @relation(fields: [batchId], references: [id])
   contactNumber                String                        @unique @db.VarChar(15)
@@ -130,6 +131,8 @@ model Course {
   credits                 Int
   departmentId            String
   department              Department                    @relation(fields: [departmentId], references: [id])
+  semesterId              String?
+  semester                Semester?                     @relation(fields: [semesterId], references: [id])
   courseBucketCourses     CourseBucketCourse[]
   isDeleted               Boolean                       @default(false)
   subjectTypes            SubjectType[]                 @relation("courseToSubjectCategory")
@@ -141,6 +144,7 @@ model Course {
   thirdPreferenceCourses  StandaloneSubjectPreference[] @relation("ThirdPreferenceCourse")
 
   @@unique([code, departmentId])
+  @@index([departmentId])
 }
 
 model CourseBucket {
@@ -165,9 +169,9 @@ model CourseBucket {
 model CourseBucketCourse {
   id             String       @id @default(uuid())
   courseBucketId String
-  courseBucket   CourseBucket @relation(fields: [courseBucketId], references: [id])
+  courseBucket   CourseBucket @relation(fields: [courseBucketId], references: [id], onDelete: Cascade)
   courseId       String
-  course         Course       @relation(fields: [courseId], references: [id])
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   orderIndex     Int
 
   @@unique([courseBucketId, courseId])
@@ -212,6 +216,10 @@ model Subject {
   coursesWithSeats             SubjectCourseWithSeats[]       @relation("subjectCoursesWithSeats")
   courseBucketsWithSeats       SubjectCourseBucketWithSeats[] @relation("subjectCourseBucketsWithSeats")
   numberOfCoursesInBucket      Int?
+
+  @@index([batchId])
+  @@index([semesterId])
+  @@index([departmentId])
 }
 
 model SubjectCourseWithSeats {
@@ -224,6 +232,7 @@ model SubjectCourseWithSeats {
   availableSeats Int?
 
   @@unique([courseId, subjectId])
+  @@index([subjectId])
 }
 
 model SubjectCourseBucketWithSeats {
@@ -254,6 +263,8 @@ model StandaloneSubjectPreference {
   createdAt                DateTime @default(now())
 
   @@unique([subjectId, studentId])
+  @@index([subjectId])
+  @@index([studentId])
 }
 
 model BucketSubjectPreference {
@@ -281,12 +292,11 @@ model StandaloneAllotment {
   studentId       String
   student         Student         @relation(fields: [studentId], references: [id])
   courseId        String
-  course          Course          @relation(fields: [courseId], references: [id])
-  semesterId      String
-  semester        Semester        @relation(fields: [semesterId], references: [id])
+  course          Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   allotmentStatus AllotmentStatus
 
   @@unique([studentId, subjectId])
+  @@index([studentId])
 }
 
 model BucketAllotment {
@@ -314,13 +324,13 @@ model Batch {
 }
 
 model Semester {
-  id                   String                @id @default(uuid())
-  number               Int                   @unique
-  subjects             Subject[]             @relation("subjectSemesters")
-  standaloneAllotments StandaloneAllotment[]
-  bucketAllotments     BucketAllotment[]
-  subject              Subject[]
-  programs             Program[]             @relation("programToSemesters")
+  id               String            @id @default(uuid())
+  number           Int               @unique
+  subjects         Subject[]         @relation("subjectSemesters")
+  bucketAllotments BucketAllotment[]
+  subject          Subject[]
+  programs         Program[]         @relation("programToSemesters")
+  courses          Course[]
 }
 
 model ProfessorRank {

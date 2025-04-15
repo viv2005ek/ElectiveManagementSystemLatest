@@ -54,7 +54,9 @@ export default function ProgramsTable({
 
   return (
     <div className="">
-      {label && <div className={"font-semibold text-sm"}>{label}</div>}
+      {label && (
+        <div className={"font-semibold text-sm underline"}>{label}</div>
+      )}
       <div className="mt-4 flow-root">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">

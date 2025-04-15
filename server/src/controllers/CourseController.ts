@@ -17,6 +17,7 @@ const CourseController = {
         include: {
           department: true,
           subjectTypes: true,
+          semester: true,
         },
       });
 
@@ -38,6 +39,7 @@ const CourseController = {
         categoryIds,
         credits,
         search,
+        semesterId,
         page = 1,
         limit = 10,
       } = req.query;
@@ -45,6 +47,7 @@ const CourseController = {
       const filters: any = { isDeleted: false };
 
       if (departmentId) filters.departmentId = departmentId;
+      if (semesterId) filters.semesterId = semesterId;
       if (categoryId) {
         // Override categoryIds if categoryId is provided
         filters.courseBuckets = { some: { id: categoryId } };
@@ -95,6 +98,7 @@ const CourseController = {
         departmentId,
         subjectTypeIds,
         courseBucketIds,
+        semesterId,
       } = req.body;
 
       if (!name || !code || !credits || !departmentId) {
@@ -118,6 +122,9 @@ const CourseController = {
           department: {
             connect: { id: departmentId },
           },
+          semester: {
+            connect: { id: semesterId },
+          },
           subjectTypes: {
             connect: subjectTypeIds.map((id: string) => ({ id })),
           },
@@ -135,7 +142,8 @@ const CourseController = {
   updateCourse: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;
-      const { code, name, credits, departmentId, subjectTypeIds } = req.body;
+      const { code, name, credits, departmentId, subjectTypeIds, semesterId } =
+        req.body;
 
       // Validate required fields
       if (
@@ -150,6 +158,7 @@ const CourseController = {
       if (name) updateData.name = name;
       if (credits) updateData.credits = credits;
       if (departmentId) updateData.departmentId = departmentId;
+      if (semesterId) updateData.semesterId = semesterId;
       if (subjectTypeIds) {
         updateData.subjectTypes = {
           set: subjectTypeIds.map((subjectTypeId: string) => ({

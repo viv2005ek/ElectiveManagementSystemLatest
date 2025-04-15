@@ -4,6 +4,7 @@ import axiosInstance from "../../axiosInstance.ts";
 interface Department {
   id: string;
   name: string;
+  schoolId: string;
 }
 
 interface SubjectType {
@@ -17,11 +18,9 @@ export interface Course {
   name: string;
   code: string;
   credits: number;
-  departmentId: string;
-  createdAt: string;
-  updatedAt: string;
+  // departmentId: string;
   department: Department;
-  subjectTypes: SubjectType[];
+  subjectTypes?: SubjectType[];
 }
 
 const useFetchCourses = (options?: {
@@ -29,6 +28,7 @@ const useFetchCourses = (options?: {
   categories?: SubjectType[] | null;
   departmentId?: string | null;
   credits?: number;
+  semesterId?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -81,6 +81,7 @@ const useFetchCourses = (options?: {
     options?.departmentId,
     options?.limit,
     options?.page,
+    options?.semesterId,
     options?.search,
   ]);
 

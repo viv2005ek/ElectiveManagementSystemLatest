@@ -201,8 +201,10 @@ const SubjectController = {
             select: {
               course: {
                 select: {
+                  id: true,
                   code: true,
                   name: true,
+                  credits: true,
                   department: true,
                 },
               },
@@ -220,6 +222,7 @@ const SubjectController = {
                         select: {
                           id: true,
                           code: true,
+                          credits: true,
                           name: true,
                         },
                       },
@@ -564,7 +567,7 @@ const SubjectController = {
       }
 
       // Get valid semester ID
-      const semesterId = subject.semesterId || subject.semesters[0]?.id;
+      const semesterId = subject.semester?.id;
       if (!semesterId) {
         res
           .status(400)
@@ -608,7 +611,6 @@ const SubjectController = {
               subjectId: subject.id,
               studentId: preference.studentId,
               courseId: preference.firstPreferenceCourseId!,
-              semesterId,
               allotmentStatus: AllotmentStatus.Pending,
             });
 
@@ -963,6 +965,152 @@ const SubjectController = {
       res.status(200).json(result);
     } catch (error) {
       console.error("Error fetching allotment stats:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  updateSubject: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const {
+      name,
+      batchId,
+      subjectTypeId,
+      semesterId,
+      departmentId,
+      schoolId,
+      facultyId,
+      programIds,
+      coursesWithSeats,
+    } = req.body;
+
+    try {
+      // Build the update data object dynamically
+      const updateData: any = {};
+
+      if (name) updateData.name = name;
+      if (batchId) updateData.batch = { connect: { id: batchId } };
+      if (subjectTypeId)
+        updateData.subjectType = { connect: { id: subjectTypeId } };
+      if (semesterId) updateData.semester = { connect: { id: semesterId } };
+      if (departmentId)
+        updateData.department = { connect: { id: departmentId } };
+      if (schoolId) updateData.school = { connect: { id: schoolId } };
+      if (facultyId) updateData.faculty = { connect: { id: facultyId } };
+      if (programIds) {
+        updateData.programs = {
+          set: programIds.map((programId: string) => ({ id: programId })),
+        };
+      }
+
+      // Update the subject
+      const updatedSubject = await prisma.subject.update({
+        where: { id },
+        data: updateData,
+      });
+
+      // Update courses with seats if provided
+      if (coursesWithSeats && coursesWithSeats.length > 0) {
+        await prisma.subjectCourseWithSeats.deleteMany({
+          where: { subjectId: id },
+        });
+
+        await prisma.subjectCourseWithSeats.createMany({
+          data: coursesWithSeats.map(
+            ({ id: courseId, seats }: { id: string; seats: number }) => ({
+              courseId,
+              subjectId: id,
+              totalSeats: seats && seats !== 0 ? seats : null,
+              availableSeats: seats && seats !== 0 ? seats : null,
+            }),
+          ),
+        });
+      }
+
+      res.status(200).json({
+        message: "Subject updated successfully",
+        subject: updatedSubject,
+      });
+    } catch (error) {
+      console.error("Error updating subject:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  getStudentAllotments: async (req: Request, res: Response): Promise<void> => {
+    const { id: studentId } = req.user; // Assuming `req.user` contains the authenticated student's ID
+
+    try {
+      // Fetch standalone allotments
+      const standaloneAllotments = await prisma.standaloneAllotment.findMany({
+        where: { studentId },
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              credits: true,
+              department: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Fetch bucket allotments
+      const bucketAllotments = await prisma.bucketAllotment.findMany({
+        where: { studentId },
+        include: {
+          courseBucket: {
+            select: {
+              id: true,
+              name: true,
+              courses: {
+                select: {
+                  course: {
+                    select: {
+                      id: true,
+                      name: true,
+                      code: true,
+                      credits: true,
+                      department: {
+                        select: {
+                          id: true,
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Combine results
+      res.status(200).json({
+        standaloneAllotments,
+        bucketAllotments,
+      });
+    } catch (error) {
+      console.error("Error fetching student allotments:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },

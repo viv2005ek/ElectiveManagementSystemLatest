@@ -9,6 +9,7 @@ export const setupMiddleware = (app: Express) => {
       origin: [
         "https://elective-management-system.vercel.app", // Updated frontend URL
         "http://localhost:3000", // For local development
+        "http://localhost:4173", // For local development
       ],
       credentials: true, // Allow cookies
       allowedHeaders: [

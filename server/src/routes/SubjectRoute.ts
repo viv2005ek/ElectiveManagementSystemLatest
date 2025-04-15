@@ -443,4 +443,16 @@ router.get(
   SubjectController.getAllotmentStats,
 );
 
+router.put(
+  "/:id",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.updateSubject,
+);
+
+router.get(
+  "/allotments/me",
+  authorizeRoles([UserRole.Student]),
+  SubjectController.getStudentAllotments,
+);
+
 export default router;

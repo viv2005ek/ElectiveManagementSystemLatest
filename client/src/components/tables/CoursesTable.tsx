@@ -73,7 +73,7 @@ export default function CoursesTable({
                     scope="col"
                     className="py-3 px-4 text-left text-sm font-semibold text-gray-900"
                   >
-                    Categories
+                    Subject Types
                   </th>
                   {showActionButtons && (
                     <th
@@ -135,7 +135,8 @@ export default function CoursesTable({
                           {course.department.name}
                         </td>
                         <td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">
-                          {course.subjectTypes?.length > 0 ? (
+                          {course.subjectTypes &&
+                          course.subjectTypes?.length > 0 ? (
                             course.subjectTypes.map((type) => (
                               <div
                                 key={type.id} // Adding a key for better React performance

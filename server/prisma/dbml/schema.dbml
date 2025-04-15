@@ -80,6 +80,7 @@ Table Student {
   lastName String
   gender Gender [not null]
   semester Int [not null]
+  cgpa Float
   batchId String [not null]
   batch Batch [not null]
   contactNumber String [unique, not null]
@@ -117,6 +118,8 @@ Table Course {
   credits Int [not null]
   departmentId String [not null]
   department Department [not null]
+  semesterId String
+  semester Semester
   courseBucketCourses CourseBucketCourse [not null]
   isDeleted Boolean [not null, default: false]
   subjectTypes SubjectType [not null]
@@ -283,8 +286,6 @@ Table StandaloneAllotment {
   student Student [not null]
   courseId String [not null]
   course Course [not null]
-  semesterId String [not null]
-  semester Semester [not null]
   allotmentStatus AllotmentStatus [not null]
 
   indexes {
@@ -322,10 +323,10 @@ Table Semester {
   id String [pk]
   number Int [unique, not null]
   subjects Subject [not null]
-  standaloneAllotments StandaloneAllotment [not null]
   bucketAllotments BucketAllotment [not null]
   subject Subject [not null]
   programs Program [not null]
+  courses Course [not null]
 }
 
 Table ProfessorRank {
@@ -422,11 +423,13 @@ Ref: Professor.credentialId - Credential.id
 
 Ref: Course.departmentId > Department.id
 
+Ref: Course.semesterId > Semester.id
+
 Ref: CourseBucket.departmentId > Department.id
 
-Ref: CourseBucketCourse.courseBucketId > CourseBucket.id
+Ref: CourseBucketCourse.courseBucketId > CourseBucket.id [delete: Cascade]
 
-Ref: CourseBucketCourse.courseId > Course.id
+Ref: CourseBucketCourse.courseId > Course.id [delete: Cascade]
 
 Ref: Subject.semesterId > Semester.id
 
@@ -472,9 +475,7 @@ Ref: StandaloneAllotment.subjectId > Subject.id [delete: Cascade]
 
 Ref: StandaloneAllotment.studentId > Student.id
 
-Ref: StandaloneAllotment.courseId > Course.id
-
-Ref: StandaloneAllotment.semesterId > Semester.id
+Ref: StandaloneAllotment.courseId > Course.id [delete: Cascade]
 
 Ref: BucketAllotment.studentId > Student.id
 

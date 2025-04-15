@@ -27,6 +27,7 @@ import SubjectPreferencesFillingPage from "./pages/SubjectPages/SubjectPreferenc
 import SubjectPreferencesPage from "./pages/SubjectPages/SubjectPreferencesPage.tsx";
 import SubjectPreferencesUpdatingPage from "./pages/SubjectPages/SubjectPreferencesUpdatingPage.tsx";
 import ViewSubjectAllotmentsPage from "./pages/AllotmentPage/ViewSubjectAllotmentsPage.tsx";
+import ViewStudentsAllotmentsPage from "./pages/ViewStudentsAllotmentsPage.tsx";
 
 export default function Router() {
   return (
@@ -231,6 +232,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <ViewSubjectAllotmentsPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/my-subjects"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.STUDENT]}>
+              <ViewStudentsAllotmentsPage />
             </RoleWrapper>
           }
         />

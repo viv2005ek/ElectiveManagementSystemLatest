@@ -45,6 +45,13 @@ const navigation = [
     requiredRoles: [UserRole.ADMIN, UserRole.STUDENT],
   },
   {
+    name: "My Subjects",
+    href: "/my-subjects",
+    icon: BookIcon,
+    current: true,
+    requiredRoles: [UserRole.STUDENT],
+  },
+  {
     name: "Users",
     href: "#",
     icon: UserIcon,

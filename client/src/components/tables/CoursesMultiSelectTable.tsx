@@ -117,7 +117,8 @@ export default function CoursesMultiSelectTable({
                           {course.department.name}
                         </td>
                         <td className="whitespace-nowrap py-4 px-4 text-sm flex flex-col text-gray-900 gap-0.5">
-                          {course.subjectTypes?.length > 0 ? (
+                          {course.subjectTypes &&
+                          course.subjectTypes?.length > 0 ? (
                             course.subjectTypes.map((type) => (
                               <div
                                 key={type.id}

@@ -38,9 +38,9 @@ import MultiSelectMenuWithSearch from "../../components/FormComponents/MultiSele
 import ProgramsTable from "../../components/tables/ProgramsTable.tsx";
 import CoursesWithSeatsTable from "../../components/tables/CoursesWithSeatsTable.tsx";
 import CourseBucketsWithSeatsTable from "../../components/tables/CourseBucketsWithSeatsTable.tsx";
-import useFetchCourses from "../../hooks/courseHooks/useFetchCourses.ts";
 import useFetchCourseBuckets from "../../hooks/courseBucketHooks/useFetchCourseBuckets.ts";
-import CoursesTable from "../../components/tables/CoursesTable.tsx";
+import useUpdateSubject from "../../hooks/subjectHooks/useUpdateSubject.ts";
+import useFetchCourses from "../../hooks/courseHooks/useFetchCourses.ts";
 
 export default function SubjectViewPage() {
   const { id } = useParams();
@@ -57,9 +57,10 @@ export default function SubjectViewPage() {
   const [faculty, setFaculty] = useState<Faculty | null>(null);
   const [selectedPrograms, setSelectedPrograms] = useState<Program[]>([]);
   const [selectedSemesters, setSelectedSemesters] = useState<Semester[]>([]);
-  const [coursesWithSeats, setCoursesWithSeats] = useState<CourseWithSeats[]>(
-    [],
-  );
+
+  const [selectedCoursesWithSeats, setSelectedCoursesWithSeats] = useState<
+    CourseWithSeats[]
+  >([]);
   const [coursesPage, setCoursesPage] = useState(1);
   const [courseBucketsWithSeats, setCourseBucketsWithSeats] = useState<
     CourseBucketWithSeats[]
@@ -72,16 +73,10 @@ export default function SubjectViewPage() {
   const { semesters } = useFetchSemesters();
   const { departments } = useFetchDepartments();
   const { faculties } = useFetchFaculties();
-  const {
-    courses,
-    loading: coursesLoading,
-    totalPages: coursesTotalPages,
-    error: coursesError,
-  } = useFetchCourses({
-    category: data?.subjectType,
-    page: coursesPage,
-    departmentId: department?.id,
-    search: offeringsSearch,
+
+  const { courses } = useFetchCourses({
+    semesterId: semester?.id,
+    category: subjectType,
   });
   const { data: courseBucketsData } = useFetchCourseBuckets({
     page: coursesPage,
@@ -92,6 +87,8 @@ export default function SubjectViewPage() {
     numberOfCourses: data?.numberOfCoursesInBucket,
   });
 
+  const { updateSubject } = useUpdateSubject();
+
   useEffect(() => {
     if (!data) return;
     setName(data.name);
@@ -101,7 +98,34 @@ export default function SubjectViewPage() {
     setDepartment(data.department);
     setSelectedPrograms(data.programs);
     setSelectedSemesters(data.semesters);
+    setSelectedCoursesWithSeats(data.coursesWithSeats);
   }, [data]);
+
+  const handleSave = async () => {
+    if (!id) return;
+
+    const payload = {
+      name,
+      batchId: batch?.id,
+      subjectTypeId: subjectType?.id,
+      semesterId: semester?.id,
+      departmentId: department?.id,
+      schoolId: school?.id,
+      facultyId: faculty?.id,
+      programIds: selectedPrograms.map((program) => program.id),
+      coursesWithSeats: selectedCoursesWithSeats.map((course) => ({
+        id: course.course.id,
+        seats: course.totalSeats,
+      })),
+    };
+
+    const success = await updateSubject(id, payload);
+
+    if (success) {
+      fetchSubjectInfo();
+      setViewMode(true);
+    }
+  };
 
   const renderScopeSetter = () => {
     switch (data?.subjectType.scope) {
@@ -139,6 +163,7 @@ export default function SubjectViewPage() {
         return null;
     }
   };
+
   return (
     <MainLayout>
       <div className={"mt-8"}>
@@ -153,7 +178,7 @@ export default function SubjectViewPage() {
           </button>
         </div>
 
-        <div className={"mt-8 grid grid-cols-2 gap-x-32 gap-y-12"}>
+        <div className={" grid grid-cols-2 gap-x-32 gap-y-12"}>
           <TextInputField
             label={"Subject name"}
             disabled={viewMode}
@@ -203,7 +228,7 @@ export default function SubjectViewPage() {
             selected={selectedPrograms}
             setSelected={setSelectedPrograms}
           />
-          <div className={"col-span-2"}>
+          <div className={"col-span-2 my-8"}>
             <ProgramsTable
               programs={data?.programs}
               loading={loading}
@@ -213,8 +238,12 @@ export default function SubjectViewPage() {
             {data?.subjectType.allotmentType === AllotmentType.STANDALONE && (
               <>
                 <CoursesWithSeatsTable
-                  coursesWithSeats={data.coursesWithSeats}
+                  courses={courses}
+                  coursesWithSeats={selectedCoursesWithSeats}
+                  setCoursesWithSeats={setSelectedCoursesWithSeats}
                   isLoading={loading}
+                  viewMode={viewMode}
+                  label={"Courses"}
                 />
               </>
             )}
@@ -227,17 +256,16 @@ export default function SubjectViewPage() {
                 />
               </>
             )}
-            {!viewMode && (
-              <CoursesTable
-                courses={courses}
-                totalPages={coursesTotalPages}
-                currentPage={coursesPage}
-                setCurrentPage={setCoursesPage}
-                isLoading={coursesLoading}
-              />
-            )}
           </div>
         </div>
+        {!viewMode && (
+          <button
+            onClick={handleSave}
+            className={"w-full p-2 bg-blue-400 text-white rounded-lg my-8"}
+          >
+            Save
+          </button>
+        )}
       </div>
     </MainLayout>
   );

@@ -15,6 +15,10 @@ import useFetchCourse from "../../hooks/courseHooks/useFetchCourse.ts";
 import useUpdateCourse from "../../hooks/courseHooks/useUpdateCourse.ts";
 import { useNotification } from "../../contexts/NotificationContext.tsx";
 import { useParams } from "react-router-dom";
+import useFetchSemesters, {
+  Semester,
+} from "../../hooks/semesterHooks/useFetchSemesters.ts";
+import SingleSelectMenu from "../../components/FormComponents/SingleSelectMenu.tsx";
 
 export default function ViewCoursePage() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +35,7 @@ export default function ViewCoursePage() {
   const { departments } = useFetchDepartments();
   const { subjectTypes } = useFetchSubjectTypes();
   const { notify } = useNotification();
+  const { semesters } = useFetchSemesters();
 
   const [isEditing, setIsEditing] = useState(false);
   const [courseName, setCourseName] = useState("");
@@ -40,6 +45,7 @@ export default function ViewCoursePage() {
   const [selectedSubjectTypes, setSelectedSubjectTypes] = useState<
     SubjectType[]
   >([]);
+  const [semester, setSemester] = useState<Semester | null>(null);
 
   useEffect(() => {
     if (course) {
@@ -48,11 +54,12 @@ export default function ViewCoursePage() {
       setCredits(course.credits);
       setDepartment(course.department);
       setSelectedSubjectTypes(course.subjectTypes);
+      setSemester(course.semester);
     }
   }, [course]);
 
   const handleSubmit = async () => {
-    if (!courseName || !courseCode || !credits || !department) {
+    if (!courseName || !courseCode || !credits || !department || !semester) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -63,6 +70,7 @@ export default function ViewCoursePage() {
       credits,
       departmentId: department.id,
       subjectTypeIds: selectedSubjectTypes.map((subjectType) => subjectType.id),
+      semesterId: semester.id,
     };
 
     const response = updateCourse(id!, courseData);
@@ -104,6 +112,13 @@ export default function ViewCoursePage() {
                   items={subjectTypes}
                   selected={selectedSubjectTypes}
                   setSelected={setSelectedSubjectTypes}
+                />
+                <SingleSelectMenu
+                  label={"Semester"}
+                  prefix={"Semester"}
+                  items={semesters}
+                  selected={semester}
+                  setSelected={setSemester}
                 />
               </>
             ) : (
@@ -147,6 +162,14 @@ export default function ViewCoursePage() {
                       {selectedSubjectTypes.map((st) => st.name).join(", ")}
                     </p>
                   )}
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2 text-sm">
+                    Semester
+                  </label>
+                  <p className="p-2 border rounded text-sm">
+                    {semester?.number}
+                  </p>
                 </div>
               </>
             )}
