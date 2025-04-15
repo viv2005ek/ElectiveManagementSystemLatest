@@ -179,23 +179,25 @@ export default function CourseBucketsTable({
                               </h3>
                               {bucket.courses?.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {bucket.courses.map(({ course, orderIndex }) => (
-                                    <Link
-                                      to={`/courses/${course.id}`}
-                                      key={course.id}
-                                      className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors duration-150"
-                                    >
-                                      <p className="text-sm font-medium text-gray-900">
-                                        {course.name || "N/A"}
-                                      </p>
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        {course.code || "N/A"}
-                                      </p>
-                                      <span className="inline-flex items-center mt-2 text-xs font-medium text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-                                        Order: {orderIndex ?? "N/A"}
-                                      </span>
-                                    </Link>
-                                  ))}
+                                  {bucket.courses.map(
+                                    ({ course, orderIndex }) => (
+                                      <Link
+                                        to={`/courses/${course.id}`}
+                                        key={course.id}
+                                        className="p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors duration-150"
+                                      >
+                                        <p className="text-sm font-medium text-gray-900">
+                                          {course.name || "N/A"}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {course.code || "N/A"}
+                                        </p>
+                                        <span className="inline-flex items-center mt-2 text-xs font-medium text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                                          Order: {orderIndex ?? "N/A"}
+                                        </span>
+                                      </Link>
+                                    ),
+                                  )}
                                 </div>
                               ) : (
                                 <p className="text-sm text-gray-500">

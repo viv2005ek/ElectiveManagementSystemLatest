@@ -1,7 +1,7 @@
 import { Student } from "../hooks/subjectPreferenceHooks/useSubjectPreferences.ts";
 import { useState } from "react";
 import { AllotmentType } from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
-import { ChevronDown, User, Hash, Clock, BookOpen } from "lucide-react";
+import { ChevronDown, Clock, User } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -32,7 +32,10 @@ export default function StudentPreferenceCard({
       2: "bg-purple-50 text-purple-700 border-purple-200",
       3: "bg-indigo-50 text-indigo-700 border-indigo-200",
     };
-    return colors[preferenceNumber as keyof typeof colors] || "bg-gray-50 text-gray-700 border-gray-200";
+    return (
+      colors[preferenceNumber as keyof typeof colors] ||
+      "bg-gray-50 text-gray-700 border-gray-200"
+    );
   };
 
   return (
@@ -65,19 +68,15 @@ export default function StudentPreferenceCard({
               <User className="h-4 w-4 mr-1" />
               <span className="truncate">{student.registrationNumber}</span>
             </div>
-            {student.course && (
-              <div className="flex items-center text-sm text-gray-600">
-                <BookOpen className="h-4 w-4 mr-1" />
-                <span className="truncate">{student.course.name}</span>
-              </div>
-            )}
           </div>
         </div>
         {student.preferences && (
           <button
             onClick={toggleExpand}
             className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
-            aria-label={isExpanded ? "Collapse preferences" : "Expand preferences"}
+            aria-label={
+              isExpanded ? "Collapse preferences" : "Expand preferences"
+            }
           >
             <ChevronDown
               className={`h-5 w-5 transform transition-transform duration-300 ${
@@ -98,16 +97,27 @@ export default function StudentPreferenceCard({
             {allotmentType === "Standalone" ? (
               <>
                 {[
-                  { number: 1, course: student.preferences.firstPreferenceCourse },
-                  { number: 2, course: student.preferences.secondPreferenceCourse },
-                  { number: 3, course: student.preferences.thirdPreferenceCourse },
+                  {
+                    number: 1,
+                    course: student.preferences.firstPreferenceCourse,
+                  },
+                  {
+                    number: 2,
+                    course: student.preferences.secondPreferenceCourse,
+                  },
+                  {
+                    number: 3,
+                    course: student.preferences.thirdPreferenceCourse,
+                  },
                 ].map((pref) => (
                   <div
                     key={pref.number}
                     className={`p-3 rounded-lg border ${getPreferenceColor(pref.number)}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">Preference {pref.number}</span>
+                      <span className="text-xs font-medium">
+                        Preference {pref.number}
+                      </span>
                       <span className="text-sm font-medium truncate">
                         {pref.course?.name || "Not selected"}
                       </span>
@@ -118,16 +128,27 @@ export default function StudentPreferenceCard({
             ) : (
               <>
                 {[
-                  { number: 1, bucket: student.preferences.firstPreferenceCourseBucket },
-                  { number: 2, bucket: student.preferences.secondPreferenceCourseBucket },
-                  { number: 3, bucket: student.preferences.thirdPreferenceCourseBucket },
+                  {
+                    number: 1,
+                    bucket: student.preferences.firstPreferenceCourseBucket,
+                  },
+                  {
+                    number: 2,
+                    bucket: student.preferences.secondPreferenceCourseBucket,
+                  },
+                  {
+                    number: 3,
+                    bucket: student.preferences.thirdPreferenceCourseBucket,
+                  },
                 ].map((pref) => (
                   <div
                     key={pref.number}
                     className={`p-3 rounded-lg border ${getPreferenceColor(pref.number)}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">Preference {pref.number}</span>
+                      <span className="text-xs font-medium">
+                        Preference {pref.number}
+                      </span>
                       <span className="text-sm font-medium truncate">
                         {pref.bucket?.name || "Not selected"}
                       </span>

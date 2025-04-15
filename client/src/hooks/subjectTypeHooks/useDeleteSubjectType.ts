@@ -32,4 +32,4 @@ export const useDeleteSubjectType = (): UseDeleteSubjectTypeResult => {
   };
 
   return { deleteSubjectType, loading, error };
-}; 
+};

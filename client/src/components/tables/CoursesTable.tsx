@@ -166,7 +166,7 @@ export default function CoursesTable({
                     {showActionButtons && (
                       <td className="py-4 px-4 text-right text-sm">
                         <div className="flex flex-row justify-end gap-3">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/courses/${course.id}`);
@@ -176,7 +176,7 @@ export default function CoursesTable({
                             <EyeIcon className="h-5 w-5" />
                             <span className="sr-only">View, {course.name}</span>
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/courses/${course.id}/edit`);

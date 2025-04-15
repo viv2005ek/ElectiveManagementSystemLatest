@@ -81,7 +81,7 @@ export default function DepartmentsTable({
                       {department.name}
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-900">
-                      {department.school?.name || 'N/A'}
+                      {department.school?.name || "N/A"}
                     </td>
                     <td className="py-4 px-4 text-right text-sm">
                       <button

@@ -37,7 +37,7 @@ export default function MultiSelectMenu<T extends Identifiable>({
   disabled,
 }: MultiSelectMenuProps<T>) {
   const [open, setOpen] = useState(false);
-  
+
   const { refs, floatingStyles } = useFloating({
     placement: "bottom-start",
     middleware: [offset(4), flip(), shift()],
@@ -69,7 +69,9 @@ export default function MultiSelectMenu<T extends Identifiable>({
             ref={refs.setReference}
             onClick={() => setOpen(!open)}
             className={`w-full cursor-default rounded-md bg-white py-2.5 px-3.5 text-left text-gray-900 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-150 ${
-              disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "hover:border-gray-400"
+              disabled
+                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
+                : "hover:border-gray-400"
             }`}
           >
             <span className="block truncate">
@@ -129,7 +131,9 @@ export default function MultiSelectMenu<T extends Identifiable>({
                   </ListboxOption>
                 ))
               ) : (
-                <div className="py-2 px-3 text-gray-500">No items available</div>
+                <div className="py-2 px-3 text-gray-500">
+                  No items available
+                </div>
               )}
             </ListboxOptions>
           )}

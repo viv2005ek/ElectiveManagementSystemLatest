@@ -1,11 +1,14 @@
-import React from 'react';
+import React from "react";
 
 interface ErrorMessageProps {
   message: string;
   className?: string;
 }
 
-export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, className = '' }) => {
+export const ErrorMessage: React.FC<ErrorMessageProps> = ({
+  message,
+  className = "",
+}) => {
   return (
     <div className={`rounded-md bg-red-50 p-4 ${className}`}>
       <div className="flex">
@@ -29,4 +32,4 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, className =
       </div>
     </div>
   );
-}; 
+};

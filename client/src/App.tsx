@@ -10,8 +10,6 @@ import { ToastContainer } from "react-toastify";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"; // Correct import here
-import SubjectTypesPage from "./pages/SubjectTypePages/SubjectTypesPage";
-import SubjectTypeEditPage from "./pages/SubjectTypePages/SubjectTypeEditPage";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();

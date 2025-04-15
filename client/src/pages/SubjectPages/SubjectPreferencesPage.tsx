@@ -1,8 +1,20 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { AlertCircle, Clock, RefreshCw, ArrowLeft, Users, Calendar, BookOpen, Filter, Download, Info, ClipboardCheck } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  BookOpen,
+  Calendar,
+  ClipboardCheck,
+  Clock,
+  Download,
+  Filter,
+  Info,
+  RefreshCw,
+  Users,
+} from "lucide-react";
 import useRunAllotment from "../../hooks/subjectHooks/useRunAllotment.ts";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -146,57 +158,76 @@ export default function SubjectPreferencesPage() {
 
   const renderStats = () => {
     if (!data) return null;
-    
+
     const totalStudents = data.totalStudents || 0;
-    const completedCount = data.students.filter(s => s.isPreferenceFilled).length;
+    const completedCount = data.students.filter(
+      (s) => s.isPreferenceFilled,
+    ).length;
     const pendingCount = totalStudents - completedCount;
-    const completionPercentage = totalStudents > 0 ? Math.round((completedCount / totalStudents) * 100) : 0;
-    
+    const completionPercentage =
+      totalStudents > 0
+        ? Math.round((completedCount / totalStudents) * 100)
+        : 0;
+
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-medium text-gray-900">Preference Statistics</h3>
-          <button 
+          <h3 className="text-lg font-medium text-gray-900">
+            Preference Statistics
+          </h3>
+          <button
             onClick={() => setShowStats(!showStats)}
             className="text-indigo-600 hover:text-indigo-900 transition-colors"
           >
             <Filter className="h-5 w-5" />
           </button>
         </div>
-        
+
         {showStats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-blue-700">Total Students</span>
+                <span className="text-sm font-medium text-blue-700">
+                  Total Students
+                </span>
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-blue-800 mt-1">{totalStudents}</p>
+              <p className="text-2xl font-bold text-blue-800 mt-1">
+                {totalStudents}
+              </p>
             </div>
-            
+
             <div className="bg-green-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-green-700">Completed</span>
+                <span className="text-sm font-medium text-green-700">
+                  Completed
+                </span>
                 <ClipboardCheck className="h-5 w-5 text-green-600" />
               </div>
-              <p className="text-2xl font-bold text-green-800 mt-1">{completedCount}</p>
+              <p className="text-2xl font-bold text-green-800 mt-1">
+                {completedCount}
+              </p>
               <div className="w-full bg-green-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full" 
+                <div
+                  className="bg-green-600 h-2 rounded-full"
                   style={{ width: `${completionPercentage}%` }}
                 ></div>
               </div>
             </div>
-            
+
             <div className="bg-yellow-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-yellow-700">Pending</span>
+                <span className="text-sm font-medium text-yellow-700">
+                  Pending
+                </span>
                 <Clock className="h-5 w-5 text-yellow-600" />
               </div>
-              <p className="text-2xl font-bold text-yellow-800 mt-1">{pendingCount}</p>
+              <p className="text-2xl font-bold text-yellow-800 mt-1">
+                {pendingCount}
+              </p>
               <div className="w-full bg-yellow-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-yellow-600 h-2 rounded-full" 
+                <div
+                  className="bg-yellow-600 h-2 rounded-full"
                   style={{ width: `${100 - completionPercentage}%` }}
                 ></div>
               </div>
@@ -213,14 +244,14 @@ export default function SubjectPreferencesPage() {
         <PageHeader title="Subject Preferences" />
 
         {renderSubjectHeader()}
-        
+
         {renderStats()}
 
         {/* Search and Buttons */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="w-full sm:w-96">
-            <SearchBarWithDebounce 
-              value={search} 
+            <SearchBarWithDebounce
+              value={search}
               setValue={setSearch}
               placeholder="Search by student name or registration number..."
             />
@@ -233,7 +264,7 @@ export default function SubjectPreferencesPage() {
               <Download className="h-4 w-4" />
               <span>Export</span>
             </button>
-            
+
             <button
               onClick={() => navigate(`/subjects/${id}/allotments`)}
               className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
@@ -312,9 +343,13 @@ export default function SubjectPreferencesPage() {
             {data.students.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
                 <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No students found</h3>
-                <p className="text-gray-500">Try adjusting your search or filters</p>
-                <button 
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
+                  No students found
+                </h3>
+                <p className="text-gray-500">
+                  Try adjusting your search or filters
+                </p>
+                <button
                   onClick={() => setSearch("")}
                   className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium"
                 >
@@ -343,12 +378,14 @@ export default function SubjectPreferencesPage() {
             />
           </div>
         )}
-        
+
         {data && data.students.length > 0 && (
           <div className="mt-8 text-center text-sm text-gray-500">
             <div className="flex items-center justify-center gap-1">
               <Info className="h-4 w-4" />
-              <span>Showing {data.students.length} of {data.totalStudents} students</span>
+              <span>
+                Showing {data.students.length} of {data.totalStudents} students
+              </span>
             </div>
           </div>
         )}

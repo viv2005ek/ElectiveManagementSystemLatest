@@ -161,8 +161,7 @@ export default function ProgramsTable({
                     {selectedPrograms &&
                       setSelectedPrograms &&
                       !selectedPrograms.some(
-                        (selectedProgram) =>
-                          selectedProgram.id === program.id,
+                        (selectedProgram) => selectedProgram.id === program.id,
                       ) && (
                         <td className="py-4 px-4 text-right text-sm">
                           <button

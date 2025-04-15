@@ -1,20 +1,28 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
 import useSubjectAllotments from "../../hooks/subjectPreferenceHooks/useSubjectAllotments.ts";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AllotmentType } from "../../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import SearchBarWithDebounce from "../../components/SearchBarWithDebounce.tsx";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import PaginationFooter from "../../components/PaginationFooter.tsx";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import SubjectAllotmentCard from "../../components/SubjectAllotmentCard.tsx";
 import useFetchSubjectInfo from "../../hooks/subjectHooks/useFetchSubjectInfo.ts";
 import useAllotmentStats from "../../hooks/subjectHooks/useAllotmentStats.ts";
-import { ArrowLeft, RefreshCw, BookOpen, Users, Calendar, CheckCircle, Clock, AlertCircle, BarChart3 } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  BarChart3,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  Users,
+} from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { ReactNode } from "react";
 import CourseStatsSection from "../../components/CourseStatsSection";
 
 dayjs.extend(relativeTime);
@@ -110,7 +118,9 @@ export default function ViewSubjectAllotmentsPage() {
               className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
               disabled={allotmentsLoading}
             >
-              <RefreshCw className={`h-4 w-4 ${allotmentsLoading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${allotmentsLoading ? "animate-spin" : ""}`}
+              />
               <span>Refresh</span>
             </button>
           </div>
@@ -134,7 +144,10 @@ export default function ViewSubjectAllotmentsPage() {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="bg-white rounded-lg p-4 border border-gray-200">
+            <div
+              key={index}
+              className="bg-white rounded-lg p-4 border border-gray-200"
+            >
               <Skeleton height={20} width="60%" className="mb-2" />
               <Skeleton height={30} width="40%" />
             </div>
@@ -154,12 +167,14 @@ export default function ViewSubjectAllotmentsPage() {
 
     if (!stats) return null;
 
-    const totalAllottedStudents = stats.courses.reduce((acc, course) => acc + course.studentCount, 0) +
+    const totalAllottedStudents =
+      stats.courses.reduce((acc, course) => acc + course.studentCount, 0) +
       stats.courseBuckets.reduce((acc, bucket) => acc + bucket.studentCount, 0);
     const totalStudents = totalAllottedStudents + stats.unallottedStudents;
-    const completionRate = totalStudents > 0 
-      ? Math.round((totalAllottedStudents / totalStudents) * 100) 
-      : 0;
+    const completionRate =
+      totalStudents > 0
+        ? Math.round((totalAllottedStudents / totalStudents) * 100)
+        : 0;
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -167,25 +182,25 @@ export default function ViewSubjectAllotmentsPage() {
           title: "Total Students",
           value: totalStudents,
           icon: <Users className="h-5 w-5" />,
-          color: "blue"
+          color: "blue",
         })}
         {renderStatsCard({
           title: "Allotted Students",
           value: totalAllottedStudents,
           icon: <CheckCircle className="h-5 w-5" />,
-          color: "green"
+          color: "green",
         })}
         {renderStatsCard({
           title: "Pending Allotments",
           value: stats.unallottedStudents,
           icon: <Clock className="h-5 w-5" />,
-          color: "yellow"
+          color: "yellow",
         })}
         {renderStatsCard({
           title: "Completion Rate",
           value: `${completionRate}%`,
           icon: <BarChart3 className="h-5 w-5" />,
-          color: "indigo"
+          color: "indigo",
         })}
       </div>
     );
@@ -194,8 +209,8 @@ export default function ViewSubjectAllotmentsPage() {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <PageHeader 
-          title="Subject Allotments" 
+        <PageHeader
+          title="Subject Allotments"
           description="View and manage course allotments for this subject"
         />
 
@@ -203,7 +218,9 @@ export default function ViewSubjectAllotmentsPage() {
 
         {/* Allotment Stats Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Allotment Statistics</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Allotment Statistics
+          </h3>
           {renderAllotmentStats()}
         </div>
 
@@ -254,46 +271,48 @@ export default function ViewSubjectAllotmentsPage() {
                 Try again
               </button>
             </div>
-          ) : subjectAllotments && (
-            <>
-              {subjectAllotments.standaloneAllotments.length === 0 &&
-              subjectAllotments.bucketAllotments.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No allotments found.
-                </div>
-              ) : (
-                <>
-                  {subjectInfo?.subjectType.allotmentType ===
-                    AllotmentType.STANDALONE && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {subjectAllotments.standaloneAllotments.map(
-                        (allotment, index) => (
-                          <SubjectAllotmentCard
-                            allotment={allotment}
-                            index={index}
-                            key={index}
-                          />
-                        ),
-                      )}
-                    </div>
-                  )}
-                  {subjectInfo?.subjectType.allotmentType ===
-                    AllotmentType.BUCKET && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {subjectAllotments.bucketAllotments.map(
-                        (allotment, index) => (
-                          <SubjectAllotmentCard
-                            allotment={allotment}
-                            index={index}
-                            key={index}
-                          />
-                        ),
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </>
+          ) : (
+            subjectAllotments && (
+              <>
+                {subjectAllotments.standaloneAllotments.length === 0 &&
+                subjectAllotments.bucketAllotments.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No allotments found.
+                  </div>
+                ) : (
+                  <>
+                    {subjectInfo?.subjectType.allotmentType ===
+                      AllotmentType.STANDALONE && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {subjectAllotments.standaloneAllotments.map(
+                          (allotment, index) => (
+                            <SubjectAllotmentCard
+                              allotment={allotment}
+                              index={index}
+                              key={index}
+                            />
+                          ),
+                        )}
+                      </div>
+                    )}
+                    {subjectInfo?.subjectType.allotmentType ===
+                      AllotmentType.BUCKET && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {subjectAllotments.bucketAllotments.map(
+                          (allotment, index) => (
+                            <SubjectAllotmentCard
+                              allotment={allotment}
+                              index={index}
+                              key={index}
+                            />
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )
           )}
 
           {/* Pagination Section */}

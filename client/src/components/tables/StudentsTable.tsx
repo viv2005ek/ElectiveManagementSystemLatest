@@ -115,7 +115,8 @@ export default function StudentsTable({
                       {student.registrationNumber}
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-900">
-                      {student.firstName} {student.middleName} {student.lastName}
+                      {student.firstName} {student.middleName}{" "}
+                      {student.lastName}
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-900">
                       {student.program.name}
@@ -139,7 +140,9 @@ export default function StudentsTable({
                           className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
                         >
                           <EyeIcon className="h-5 w-5" />
-                          <span className="sr-only">View {student.firstName}</span>
+                          <span className="sr-only">
+                            View {student.firstName}
+                          </span>
                         </button>
                         <button
                           onClick={(e) => {
@@ -149,7 +152,9 @@ export default function StudentsTable({
                           className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
                         >
                           <PencilIcon className="h-5 w-5" />
-                          <span className="sr-only">Edit {student.firstName}</span>
+                          <span className="sr-only">
+                            Edit {student.firstName}
+                          </span>
                         </button>
                       </div>
                     </td>

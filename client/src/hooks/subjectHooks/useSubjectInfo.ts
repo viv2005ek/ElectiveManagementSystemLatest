@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import  axiosInstance  from '../../utils/axiosInstance';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../utils/axiosInstance";
 
 interface Subject {
   id: string;
@@ -28,7 +28,9 @@ export const useSubjectInfo = (id: string) => {
         const response = await axiosInstance.get(`/subjects/${id}`);
         setData(response.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch subject info');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch subject info",
+        );
       } finally {
         setLoading(false);
       }
@@ -38,4 +40,4 @@ export const useSubjectInfo = (id: string) => {
   }, [id]);
 
   return { data, loading, error };
-}; 
+};

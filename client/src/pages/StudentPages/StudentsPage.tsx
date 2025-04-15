@@ -13,7 +13,10 @@ import useFetchSemesters, {
 import useFetchBatches, {
   Batch,
 } from "../../hooks/batchHooks/useFetchBatches.ts";
-import { Program, useFetchPrograms } from "../../hooks/programHooks/useFetchPrograms.ts";
+import {
+  Program,
+  useFetchPrograms,
+} from "../../hooks/programHooks/useFetchPrograms.ts";
 import useFetchSchools, {
   School,
 } from "../../hooks/schoolHooks/useFetchSchools.ts";
@@ -53,13 +56,15 @@ export default function StudentsPage() {
     <MainLayout>
       <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <PageHeader title="Students" />
-        
+
         <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="mb-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Filters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Search</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Search
+                </label>
                 <div className="h-[42px]">
                   <SearchBarWithDebounce
                     value={searchQuery}
@@ -115,7 +120,7 @@ export default function StudentsPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-end mb-4">
             <Link
               to="/students/create"
@@ -124,7 +129,7 @@ export default function StudentsPage() {
               Add Student
             </Link>
           </div>
-          
+
           <StudentsTable
             students={students}
             currentPage={currentPage}

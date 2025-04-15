@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
 interface SpinnerProps {
   className?: string;
 }
 
-export const Spinner: React.FC<SpinnerProps> = ({ className = '' }) => {
+export const Spinner: React.FC<SpinnerProps> = ({ className = "" }) => {
   return (
     <svg
       className={`animate-spin h-5 w-5 text-indigo-600 ${className}`}
@@ -27,4 +27,4 @@ export const Spinner: React.FC<SpinnerProps> = ({ className = '' }) => {
       />
     </svg>
   );
-}; 
+};

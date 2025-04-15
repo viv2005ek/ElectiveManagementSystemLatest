@@ -5,7 +5,12 @@ import { Subject } from "../../hooks/subjectHooks/useFetchSubjects.ts";
 import { Dispatch, SetStateAction, useState } from "react";
 import PaginationFooter from "../PaginationFooter.tsx";
 import SubjectManageModal from "../modals/SubjectManageModal.tsx";
-import { Cog6ToothIcon, PencilIcon, ClipboardDocumentListIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import {
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
 
 export default function SubjectsTable({
   subjects,
@@ -114,18 +119,20 @@ export default function SubjectsTable({
                       {subject.batch.year}
                     </td>
                     <td className="py-4 px-4 text-sm">
-                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-                        subject.isAllotmentFinalized 
-                          ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' 
-                          : subject.isPreferenceWindowOpen 
-                            ? 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20' 
-                            : 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20'
-                      }`}>
-                        {subject.isAllotmentFinalized 
-                          ? 'Finalized' 
-                          : subject.isPreferenceWindowOpen 
-                            ? 'Open' 
-                            : 'Closed'}
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
+                          subject.isAllotmentFinalized
+                            ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
+                            : subject.isPreferenceWindowOpen
+                              ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                              : "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20"
+                        }`}
+                      >
+                        {subject.isAllotmentFinalized
+                          ? "Finalized"
+                          : subject.isPreferenceWindowOpen
+                            ? "Open"
+                            : "Closed"}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right text-sm">

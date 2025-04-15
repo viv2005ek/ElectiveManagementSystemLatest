@@ -34,7 +34,7 @@ export default function SubjectsPage() {
     <MainLayout>
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <PageHeader title={"Subjects"} />
-        
+
         <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -53,7 +53,7 @@ export default function SubjectsPage() {
                 </button>
               </Link>
             </div>
-            
+
             <div className="mt-4">
               <SearchBarWithDebounce
                 value={searchQuery}
@@ -62,7 +62,7 @@ export default function SubjectsPage() {
               />
             </div>
           </div>
-          
+
           <SubjectsTable
             refresh={refresh}
             subjects={subjects}

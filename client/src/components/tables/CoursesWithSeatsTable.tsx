@@ -26,7 +26,7 @@ export default function CoursesWithSeatsTable({
       ...(coursesWithSeats || []),
       {
         course: {
-          id: "",  // Empty ID for new rows
+          id: "", // Empty ID for new rows
           code: "",
           name: "",
           credits: 0,
@@ -164,7 +164,9 @@ export default function CoursesWithSeatsTable({
                           }}
                         />
                       ) : (
-                        <span className="font-medium">{courseWithSeats.course.name}</span>
+                        <span className="font-medium">
+                          {courseWithSeats.course.name}
+                        </span>
                       )}
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-900">

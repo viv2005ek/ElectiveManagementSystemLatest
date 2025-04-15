@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ReactNode, useEffect, useState } from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -23,19 +23,12 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store.ts";
-import {
-  BookIcon,
-  BuildingIcon,
-  GraduationCap,
-  SchoolIcon,
-  UniversityIcon,
-  UserIcon,
-} from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store.ts";
+import {BookIcon, BuildingIcon, GraduationCap, SchoolIcon, UniversityIcon, UserIcon,} from "lucide-react";
+import {Link, useLocation} from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import { UserRole } from "../types/UserTypes.ts";
+import {UserRole} from "../types/UserTypes.ts";
 
 interface NavigationItem {
   name: string;

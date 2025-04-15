@@ -286,16 +286,21 @@ const SubjectController = {
     try {
       // First, delete preferences if the subject is being finalized
       if (isAllotmentFinalized) {
-        console.log(`Deleting preferences for subject ${id} as it is being finalized`);
-        
+        console.log(
+          `Deleting preferences for subject ${id} as it is being finalized`,
+        );
+
         // Delete standalone preferences
-        const deletedStandalone = await prisma.standaloneSubjectPreference.deleteMany({
-          where: {
-            subjectId: id,
-          },
-        });
-        console.log(`Deleted ${deletedStandalone.count} standalone preferences`);
-        
+        const deletedStandalone =
+          await prisma.standaloneSubjectPreference.deleteMany({
+            where: {
+              subjectId: id,
+            },
+          });
+        console.log(
+          `Deleted ${deletedStandalone.count} standalone preferences`,
+        );
+
         // Delete bucket preferences
         const deletedBucket = await prisma.bucketSubjectPreference.deleteMany({
           where: {

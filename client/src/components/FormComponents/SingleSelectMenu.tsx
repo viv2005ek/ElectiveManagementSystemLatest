@@ -63,7 +63,9 @@ export default function SingleSelectMenu<T extends Identifiable>({
             ref={refs.setReference}
             onClick={() => setOpen(!open)}
             className={`w-full cursor-default rounded-md bg-white py-2.5 px-3.5 text-left text-gray-900 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-150 ${
-              disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : "hover:border-gray-400"
+              disabled
+                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
+                : "hover:border-gray-400"
             }`}
           >
             <span className="block truncate">

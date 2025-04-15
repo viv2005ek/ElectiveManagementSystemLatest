@@ -173,8 +173,8 @@ export default function SubjectViewPage() {
             <button
               onClick={() => setViewMode(!viewMode)}
               className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm ${
-                viewMode 
-                  ? "bg-blue-600 text-white hover:bg-blue-700" 
+                viewMode
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150`}
             >
@@ -237,7 +237,7 @@ export default function SubjectViewPage() {
                   />
                 )}
               </div>
-              
+
               <div className="space-y-6">
                 {renderScopeSetter()}
                 <MultiSelectMenuWithSearch
@@ -252,7 +252,9 @@ export default function SubjectViewPage() {
 
             <div className="mt-8 space-y-8">
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Programs</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Programs
+                </h3>
                 <ProgramsTable
                   programs={data?.programs}
                   loading={loading}
@@ -260,7 +262,7 @@ export default function SubjectViewPage() {
                   showActionButtons={false}
                 />
               </div>
-              
+
               {data?.subjectType.allotmentType === AllotmentType.STANDALONE && (
                 <CoursesWithSeatsTable
                   courses={courses}
@@ -271,7 +273,7 @@ export default function SubjectViewPage() {
                   label={"Courses"}
                 />
               )}
-              
+
               {data?.subjectType.allotmentType === AllotmentType.BUCKET && (
                 <CourseBucketsWithSeatsTable
                   label={"Course Buckets"}
@@ -280,7 +282,7 @@ export default function SubjectViewPage() {
                 />
               )}
             </div>
-            
+
             {!viewMode && (
               <div className="mt-8 flex justify-end">
                 <button
