@@ -16,8 +16,15 @@ import {
   Cog6ToothIcon,
   HomeIcon,
   XMarkIcon,
+  ChevronDownIcon,
+  ChartBarIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  ClipboardDocumentListIcon,
+  BookOpenIcon,
+  ClipboardDocumentCheckIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store.ts";
 import {
@@ -47,35 +54,35 @@ const navigation = [
   {
     name: "My Subjects",
     href: "/my-subjects",
-    icon: BookIcon,
+    icon: BookOpenIcon,
     current: true,
     requiredRoles: [UserRole.STUDENT],
   },
   {
     name: "Users",
     href: "#",
-    icon: UserIcon,
+    icon: UserGroupIcon,
     current: false,
     requiredRoles: [UserRole.ADMIN],
     children: [
       {
         name: "Professors",
         href: "/professors",
-        icon: GiTeacher,
+        icon: AcademicCapIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
       {
         name: "Students",
         href: "/students",
-        icon: PiStudentBold,
+        icon: UserIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
       {
         name: "Admins",
         href: "/admins",
-        icon: RiAdminFill,
+        icon: ClipboardDocumentCheckIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
@@ -84,7 +91,7 @@ const navigation = [
   {
     name: "Management",
     href: "#",
-    icon: UniversityIcon,
+    icon: BuildingIcon,
     current: false,
     requiredRoles: [UserRole.ADMIN],
     children: [
@@ -121,7 +128,7 @@ const navigation = [
       {
         name: "Programs",
         href: "/programs",
-        icon: GraduationCap,
+        icon: AcademicCapIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
@@ -135,14 +142,14 @@ const navigation = [
       {
         name: "Course Buckets",
         href: "/course-buckets",
-        icon: BsBucket,
+        icon: ClipboardDocumentListIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
       {
         name: "Subjects",
         href: "/subjects",
-        icon: PiBooks,
+        icon: BookOpenIcon,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
@@ -175,16 +182,31 @@ const SidebarDisclosure = ({
   return (
     <div className="space-y-1">
       <button
-        className="flex w-full justify-between text-white font-semibold"
+        className={classNames(
+          "flex w-full justify-between text-white font-semibold p-2 rounded-lg transition-all duration-200",
+          "hover:bg-white/10 active:bg-white/20",
+          isOpen ? "bg-white/10" : ""
+        )}
         onClick={onToggle}
       >
-        {item.name}
+        <div className="flex items-center gap-3">
+          <item.icon className="h-5 w-5" />
+          {item.name}
+        </div>
         <ChevronDownIcon
-          className={classNames(isOpen ? "rotate-180 transform" : "", "size-5")}
+          className={classNames(
+            "h-5 w-5 transition-transform duration-300",
+            isOpen ? "rotate-180 transform" : ""
+          )}
         />
       </button>
-      {isOpen && (
-        <div className="ml-4 space-y-1">
+      <div
+        className={classNames(
+          "overflow-hidden transition-all duration-300 ease-in-out",
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        <div className="ml-4 space-y-1 mt-2">
           {item.children.map(
             (child: any) =>
               hasRequiredRole(child.requiredRoles) && (
@@ -193,27 +215,26 @@ const SidebarDisclosure = ({
                     to={child.href}
                     className={classNames(
                       location.pathname === child.href
-                        ? "bg-gray-50 text-indigo-600"
-                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                        ? "bg-white/20 text-white"
+                        : "text-white/70 hover:bg-white/10 hover:text-white",
+                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
                     )}
                   >
                     <child.icon
-                      aria-hidden="true"
                       className={classNames(
+                        "h-5 w-5 transition-colors duration-200",
                         location.pathname === child.href
-                          ? "text-indigo-600"
-                          : "text-white-400 group-hover:text-indigo-600",
-                        "size-6 shrink-0",
+                          ? "text-white"
+                          : "text-white/70 group-hover:text-white"
                       )}
                     />
                     {child.name}
                   </Link>
                 </li>
-              ),
+              )
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -295,11 +316,11 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                   </button>
                 </div>
               </TransitionChild>
-              <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4">
+              <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 bg-muj-orange">
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
-                    src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                    src="/MUJ_logo.png"
                     className="h-8 w-auto"
                   />
                 </div>
@@ -324,36 +345,34 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                     to={item.href}
                                     className={classNames(
                                       location.pathname === item.href
-                                        ? "bg-gray-50 text-indigo-600"
-                                        : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                                      "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                        ? "bg-white/20 text-white"
+                                        : "text-white/70 hover:bg-white/10 hover:text-white",
+                                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
                                     )}
                                   >
                                     <item.icon
-                                      aria-hidden="true"
                                       className={classNames(
+                                        "h-5 w-5 transition-colors duration-200",
                                         location.pathname === item.href
-                                          ? "text-indigo-600"
-                                          : "text-white-400 group-hover:text-indigo-600",
-                                        "size-6 shrink-0",
+                                          ? "text-white"
+                                          : "text-white/70 group-hover:text-white"
                                       )}
                                     />
                                     {item.name}
                                   </Link>
                                 )}
                               </li>
-                            ),
+                            )
                         )}
                       </ul>
                     </li>
                     <li className="mt-auto">
                       <Link
                         to="#"
-                        className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-white hover:bg-gray-50 hover:text-indigo-600"
+                        className="group -mx-2 flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
                       >
                         <Cog6ToothIcon
-                          aria-hidden="true"
-                          className="size-6 shrink-0 text-white group-hover:text-indigo-600"
+                          className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white"
                         />
                         Settings
                       </Link>
@@ -366,68 +385,70 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         </Dialog>
 
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col bg-muj-orange">
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 px-6 pb-4 ">
-            <div className="flex h-20 items-center justify-center bg-white rounded-lg shadow-sm p-4 mb-8 mt-2 ">
-              <img alt="Your Company" src="/MUJ_logo.png" className="w-max" />
+          <div className="flex flex-col h-full border-r border-white/10">
+            {/* Sticky Logo */}
+            <div className="sticky top-0 z-10 bg-muj-orange px-6 pt-4">
+              <div className="flex h-20 items-center justify-center bg-white rounded-lg shadow-sm p-4">
+                <img alt="Your Company" src="/MUJ_logo.png" className="w-max" />
+              </div>
             </div>
 
-            <nav className="flex flex-1 flex-col">
-              <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                <li>
-                  <ul role="list" className="-mx-2 space-y-4">
-                    {navigation.map(
-                      (item) =>
-                        hasRequiredRole(item.requiredRoles) && (
-                          <li key={item.name}>
-                            {item.children ? (
-                              <SidebarDisclosure
-                                item={item}
-                                isOpen={!!activeSections[item.name]}
-                                onToggle={() => toggleSection(item.name)}
-                                location={location}
-                                hasRequiredRole={hasRequiredRole}
-                              />
-                            ) : (
-                              <Link
-                                to={item.href}
+            {/* Scrollable Content */}
+            <div className="flex-1 px-6 overflow-y-auto scrollbar-hide">
+              <nav className="py-4">
+                <ul role="list" className="space-y-2">
+                  {navigation.map(
+                    (item) =>
+                      hasRequiredRole(item.requiredRoles) && (
+                        <li key={item.name}>
+                          {item.children ? (
+                            <SidebarDisclosure
+                              item={item}
+                              isOpen={!!activeSections[item.name]}
+                              onToggle={() => toggleSection(item.name)}
+                              location={location}
+                              hasRequiredRole={hasRequiredRole}
+                            />
+                          ) : (
+                            <Link
+                              to={item.href}
+                              className={classNames(
+                                location.pathname === item.href
+                                  ? "bg-white/20 text-white"
+                                  : "text-white/70 hover:bg-white/10 hover:text-white",
+                                "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
+                              )}
+                            >
+                              <item.icon
                                 className={classNames(
+                                  "h-5 w-5 transition-colors duration-200",
                                   location.pathname === item.href
-                                    ? "bg-gray-50 text-indigo-600"
-                                    : "text-white hover:bg-gray-50 hover:text-indigo-600",
-                                  "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold",
+                                    ? "text-white"
+                                    : "text-white/70 group-hover:text-white"
                                 )}
-                              >
-                                <item.icon
-                                  aria-hidden="true"
-                                  className={classNames(
-                                    location.pathname === item.href
-                                      ? "text-indigo-600"
-                                      : "text-white-400 group-hover:text-indigo-600",
-                                    "size-6 shrink-0",
-                                  )}
-                                />
-                                {item.name}
-                              </Link>
-                            )}
-                          </li>
-                        ),
-                    )}
-                  </ul>
-                </li>
-                <li className="mt-auto">
-                  <Link
-                    to="#"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-white hover:bg-gray-50 hover:text-indigo-600"
-                  >
-                    <Cog6ToothIcon
-                      aria-hidden="true"
-                      className="size-6 shrink-0 text-white group-hover:text-indigo-600"
-                    />
-                    Settings
-                  </Link>
-                </li>
-              </ul>
-            </nav>
+                              />
+                              {item.name}
+                            </Link>
+                          )}
+                        </li>
+                      )
+                  )}
+                </ul>
+              </nav>
+            </div>
+
+            {/* Sticky Settings */}
+            <div className="sticky bottom-0 bg-muj-orange px-6 py-4 border-t border-white/10">
+              <Link
+                to="#"
+                className="group flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
+              >
+                <Cog6ToothIcon
+                  className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white"
+                />
+                Settings
+              </Link>
+            </div>
           </div>
         </div>
 
