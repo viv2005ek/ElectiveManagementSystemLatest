@@ -15,6 +15,7 @@ import { ArrowLeft, RefreshCw, BookOpen, Users, Calendar, CheckCircle, Clock, Al
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { ReactNode } from "react";
+import CourseStatsSection from "../../components/CourseStatsSection";
 
 dayjs.extend(relativeTime);
 
@@ -206,8 +207,19 @@ export default function ViewSubjectAllotmentsPage() {
           {renderAllotmentStats()}
         </div>
 
+        {/* Course Statistics Section */}
+        {stats && (
+          <CourseStatsSection
+            courses={stats.courses}
+            courseBuckets={stats.courseBuckets}
+            unallottedStudents={stats.unallottedStudents}
+            loading={statsLoading}
+            error={statsError}
+          />
+        )}
+
         {/* Allotments Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-lg font-medium text-gray-900">Allotments</h3>
             <div className="w-full sm:w-96">
