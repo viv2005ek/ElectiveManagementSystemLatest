@@ -82,7 +82,7 @@ export default function SubjectPreferencesPage() {
 
   const renderSubjectHeader = () =>
     infoLoading ? (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
+      <div className="bg-white rounded-lg shadow-md p-6 my-6 border-l-4 border-blue-500">
         <Skeleton height={28} width={240} />
         <div className="mt-3 flex gap-3">
           <Skeleton height={24} width={100} />
@@ -91,7 +91,7 @@ export default function SubjectPreferencesPage() {
         </div>
       </div>
     ) : (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
+      <div className="bg-white rounded-lg shadow-md p-6 my-6 border-l-4 border-blue-500">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
