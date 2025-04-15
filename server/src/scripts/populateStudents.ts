@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import csv from "csv-parser";
+import * as csv from "csv-parser";
 import { formatName } from "./formatName";
 import { hash } from "bcrypt";
 import * as fs from "node:fs";

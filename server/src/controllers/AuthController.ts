@@ -49,7 +49,7 @@ const AuthController = {
       const student = await prisma.student.findUnique({
         where: { credentialId: credential.id },
       });
-      if (student) role = UserRole.Professor;
+      if (student) role = UserRole.Student;
 
       if (!role) {
         return res.status(401).json({ message: "Invalid user role" });
