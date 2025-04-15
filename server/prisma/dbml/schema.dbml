@@ -177,6 +177,7 @@ Table SubjectType {
   allotmentType AllotmentType [not null]
   scope SubjectScope [not null]
   subjects Subject [not null]
+  isDeleted Boolean [not null, default: false]
   courses Course [not null]
   courseBuckets CourseBucket [not null]
 }

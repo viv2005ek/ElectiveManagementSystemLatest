@@ -185,6 +185,7 @@ model SubjectType {
   allotmentType AllotmentType
   scope         SubjectScope
   subjects      Subject[]
+  isDeleted     Boolean        @default(false)
   courses       Course[]       @relation("courseToSubjectCategory")
   courseBuckets CourseBucket[] @relation("courseBucketToSubjectTypes")
 }

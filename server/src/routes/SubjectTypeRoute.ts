@@ -169,4 +169,6 @@ router.put("/:id", SubjectTypeController.updateSubjectType);
  */
 router.delete("/:id", SubjectTypeController.deleteSubjectType);
 
+router.get("/:id", SubjectTypeController.getSubjectTypeById);
+
 export default router;

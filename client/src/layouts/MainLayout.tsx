@@ -11,19 +11,17 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import {
+  AcademicCapIcon,
   Bars3Icon,
   BellIcon,
+  BookOpenIcon,
+  ChevronDownIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
   Cog6ToothIcon,
   HomeIcon,
-  XMarkIcon,
-  ChevronDownIcon,
-  ChartBarIcon,
-  AcademicCapIcon,
   UserGroupIcon,
-  ClipboardDocumentListIcon,
-  BookOpenIcon,
-  ClipboardDocumentCheckIcon,
-  ArrowPathIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store.ts";
@@ -35,15 +33,20 @@ import {
   UniversityIcon,
   UserIcon,
 } from "lucide-react";
-import { BsBucket } from "react-icons/bs";
-import { PiBooks, PiStudentBold } from "react-icons/pi";
 import { Link, useLocation } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
-import { GiTeacher } from "react-icons/gi";
-import { RiAdminFill } from "react-icons/ri";
 import { UserRole } from "../types/UserTypes.ts";
 
-const navigation = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  current?: boolean;
+  requiredRoles?: UserRole[];
+  children?: NavigationItem[];
+}
+
+const navigation: NavigationItem[] = [
   {
     name: "Home",
     href: "/home",
@@ -153,6 +156,11 @@ const navigation = [
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
+      {
+        name: "Subject Types",
+        href: "/subject-types",
+        icon: BookOpenIcon,
+      },
     ],
   },
 ];
@@ -185,7 +193,7 @@ const SidebarDisclosure = ({
         className={classNames(
           "flex w-full justify-between text-white font-semibold p-2 rounded-lg transition-all duration-200",
           "hover:bg-white/10 active:bg-white/20",
-          isOpen ? "bg-white/10" : ""
+          isOpen ? "bg-white/10" : "",
         )}
         onClick={onToggle}
       >
@@ -196,14 +204,14 @@ const SidebarDisclosure = ({
         <ChevronDownIcon
           className={classNames(
             "h-5 w-5 transition-transform duration-300",
-            isOpen ? "rotate-180 transform" : ""
+            isOpen ? "rotate-180 transform" : "",
           )}
         />
       </button>
       <div
         className={classNames(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
         <div className="ml-4 space-y-1 mt-2">
@@ -217,7 +225,7 @@ const SidebarDisclosure = ({
                       location.pathname === child.href
                         ? "bg-white/20 text-white"
                         : "text-white/70 hover:bg-white/10 hover:text-white",
-                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
+                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
                     )}
                   >
                     <child.icon
@@ -225,13 +233,13 @@ const SidebarDisclosure = ({
                         "h-5 w-5 transition-colors duration-200",
                         location.pathname === child.href
                           ? "text-white"
-                          : "text-white/70 group-hover:text-white"
+                          : "text-white/70 group-hover:text-white",
                       )}
                     />
                     {child.name}
                   </Link>
                 </li>
-              )
+              ),
           )}
         </div>
       </div>
@@ -279,8 +287,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     }));
   };
 
-  const hasRequiredRole = (requiredRoles: UserRole[]) => {
-    return requiredRoles.some((role: UserRole) => user?.role.includes(role));
+  const hasRequiredRole = (requiredRoles?: UserRole[]) => {
+    if (!requiredRoles) return true;
+    return requiredRoles.some((role) => user?.role === role);
   };
 
   return (
@@ -347,7 +356,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                       location.pathname === item.href
                                         ? "bg-white/20 text-white"
                                         : "text-white/70 hover:bg-white/10 hover:text-white",
-                                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
+                                      "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
                                     )}
                                   >
                                     <item.icon
@@ -355,14 +364,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                         "h-5 w-5 transition-colors duration-200",
                                         location.pathname === item.href
                                           ? "text-white"
-                                          : "text-white/70 group-hover:text-white"
+                                          : "text-white/70 group-hover:text-white",
                                       )}
                                     />
                                     {item.name}
                                   </Link>
                                 )}
                               </li>
-                            )
+                            ),
                         )}
                       </ul>
                     </li>
@@ -371,9 +380,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                         to="#"
                         className="group -mx-2 flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
                       >
-                        <Cog6ToothIcon
-                          className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white"
-                        />
+                        <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />
                         Settings
                       </Link>
                     </li>
@@ -416,7 +423,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                 location.pathname === item.href
                                   ? "bg-white/20 text-white"
                                   : "text-white/70 hover:bg-white/10 hover:text-white",
-                                "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200"
+                                "group flex gap-x-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
                               )}
                             >
                               <item.icon
@@ -424,14 +431,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                   "h-5 w-5 transition-colors duration-200",
                                   location.pathname === item.href
                                     ? "text-white"
-                                    : "text-white/70 group-hover:text-white"
+                                    : "text-white/70 group-hover:text-white",
                                 )}
                               />
                               {item.name}
                             </Link>
                           )}
                         </li>
-                      )
+                      ),
                   )}
                 </ul>
               </nav>
@@ -443,9 +450,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                 to="#"
                 className="group flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
               >
-                <Cog6ToothIcon
-                  className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white"
-                />
+                <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />
                 Settings
               </Link>
             </div>

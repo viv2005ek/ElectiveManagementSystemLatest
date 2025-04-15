@@ -28,6 +28,8 @@ import SubjectPreferencesPage from "./pages/SubjectPages/SubjectPreferencesPage.
 import SubjectPreferencesUpdatingPage from "./pages/SubjectPages/SubjectPreferencesUpdatingPage.tsx";
 import ViewSubjectAllotmentsPage from "./pages/AllotmentPage/ViewSubjectAllotmentsPage.tsx";
 import ViewStudentsAllotmentsPage from "./pages/ViewStudentsAllotmentsPage.tsx";
+import SubjectTypesPage from "./pages/SubjectPages/SubjectTypesPage.tsx";
+import SubjectTypeEditPage from "./pages/SubjectTypePages/SubjectTypeEditPage.tsx";
 
 export default function Router() {
   return (
@@ -64,6 +66,22 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <CreateSubjectTypePage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subject-types"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <SubjectTypesPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/subject-types/:id/edit"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <SubjectTypeEditPage />
             </RoleWrapper>
           }
         />

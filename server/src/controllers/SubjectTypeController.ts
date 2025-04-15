@@ -1,17 +1,19 @@
 import { Request, Response } from "express";
-import { AllotmentType, PrismaClient } from "@prisma/client";
+import { AllotmentType, PrismaClient, SubjectScope } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 const SubjectTypeController = {
-  // Get all subject types
-  // Get all subject types
   getAllSubjectTypes: async (req: Request, res: Response): Promise<void> => {
     try {
       const { allotmentType } = req.query;
 
-      // Type validation for allotmentType
-      let filter;
+      let filter: any = {
+        where: {
+          isDeleted: false, // Ensure only non-deleted records are fetched
+        },
+      };
+
       if (allotmentType) {
         if (
           !Object.values(AllotmentType).includes(allotmentType as AllotmentType)
@@ -19,43 +21,56 @@ const SubjectTypeController = {
           res.status(400).json({ error: "Invalid allotment type" });
           return;
         }
-        filter = { where: { allotmentType: allotmentType as AllotmentType } };
+        filter.where.allotmentType = allotmentType as AllotmentType;
       }
 
       const subjectTypes = await prisma.subjectType.findMany(filter);
       console.log(`Found ${subjectTypes.length} subject types`);
 
       res.status(200).json(subjectTypes);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching subject types:", error);
       res.status(500).json({ error: "Failed to fetch subject types" });
     }
   },
-  // Get a single subject type by ID
-  getSubjectTypeById: async (req: Request, res: Response): Promise<any> => {
+  getSubjectTypeById: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
       const subjectType = await prisma.subjectType.findUnique({
         where: { id },
-        include: {
-          subjects: true,
-          courses: true,
-        },
       });
 
       if (!subjectType) {
-        return res.status(404).json({ error: "Subject type not found" });
+        res.status(404).json({ error: "Subject type not found" });
+        return;
       }
 
-      res.json(subjectType);
-    } catch (error) {
+      res.status(200).json(subjectType);
+    } catch (error: any) {
+      console.error("Error fetching subject type:", error);
       res.status(500).json({ error: "Failed to fetch subject type" });
     }
   },
 
-  // Create a new subject type
-  createSubjectType: async (req: Request, res: Response): Promise<any> => {
+  createSubjectType: async (req: Request, res: Response): Promise<void> => {
     const { name, description, allotmentType, scope } = req.body;
+
+    if (!name || !allotmentType || !scope) {
+      res
+        .status(400)
+        .json({ error: "Name, allotmentType, and scope are required" });
+      return;
+    }
+
+    if (!Object.values(AllotmentType).includes(allotmentType)) {
+      res.status(400).json({ error: "Invalid allotment type" });
+      return;
+    }
+
+    if (!Object.values(SubjectScope).includes(scope)) {
+      res.status(400).json({ error: "Invalid scope" });
+      return;
+    }
 
     try {
       const newSubjectType = await prisma.subjectType.create({
@@ -68,40 +83,83 @@ const SubjectTypeController = {
       });
 
       res.status(201).json(newSubjectType);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create subject type" });
+    } catch (error: any) {
+      console.error("Error creating subject type:", error);
+      if (error.code === "P2002") {
+        res
+          .status(400)
+          .json({ error: "A subject type with this name already exists" });
+      } else {
+        res.status(500).json({ error: "Failed to create subject type" });
+      }
     }
   },
 
-  // Update a subject type by ID
-  updateSubjectType: async (req: Request, res: Response): Promise<any> => {
+  updateSubjectType: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const updateData = req.body;
+    const { name, description, scope } = req.body;
+
+    if (scope && !Object.values(SubjectScope).includes(scope)) {
+      res.status(400).json({ error: "Invalid scope" });
+      return;
+    }
 
     try {
+      const existingSubjectType = await prisma.subjectType.findUnique({
+        where: { id },
+      });
+
+      if (!existingSubjectType) {
+        res.status(404).json({ error: "Subject type not found" });
+        return;
+      }
+
       const updatedSubjectType = await prisma.subjectType.update({
         where: { id },
-        data: updateData,
+        data: {
+          name,
+          description,
+          scope,
+        },
       });
 
-      res.json(updatedSubjectType);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update subject type" });
+      res.status(200).json(updatedSubjectType);
+    } catch (error: any) {
+      console.error("Error updating subject type:", error);
+      if (error.code === "P2002") {
+        res
+          .status(400)
+          .json({ error: "A subject type with this name already exists" });
+      } else {
+        res.status(500).json({ error: "Failed to update subject type" });
+      }
     }
   },
 
-  // Delete a subject type by ID
-  deleteSubjectType: async (req: Request, res: Response): Promise<any> => {
+  deleteSubjectType: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
     try {
-      await prisma.subjectType.delete({
+      const existingSubjectType = await prisma.subjectType.findUnique({
         where: { id },
       });
 
-      res.json({ message: "Subject type deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete subject type" });
+      if (!existingSubjectType) {
+        res.status(404).json({ error: "Subject type not found" });
+        return;
+      }
+
+      await prisma.subjectType.update({
+        where: { id },
+        data: { isDeleted: true },
+      });
+
+      res
+        .status(200)
+        .json({ message: "Subject type marked as deleted successfully" });
+    } catch (error: any) {
+      console.error("Error marking subject type as deleted:", error);
+      res.status(500).json({ error: "Failed to mark subject type as deleted" });
     }
   },
 };
