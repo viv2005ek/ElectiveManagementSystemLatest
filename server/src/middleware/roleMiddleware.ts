@@ -16,8 +16,6 @@ export const authorizeRoles = (allowedRoles: UserRole[]) => {
     }
 
     if (!allowedRoles.includes(authenticatedReq.user.role)) {
-      console.log("User's role", authenticatedReq.user.role);
-      console.log("Required roles", allowedRoles);
       res.status(403).json({ message: "Access denied" });
       return;
     }
