@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {ReactNode, useEffect, useState} from "react";
+import {ReactNode, useEffect, useState, useRef, useCallback} from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -183,12 +183,17 @@ const SidebarDisclosure = ({
   return (
     <div className="space-y-1">
       <button
+        type="button"
         className={classNames(
           "flex w-full justify-between text-white font-semibold p-2 rounded-lg transition-all duration-200",
           "hover:bg-white/10 active:bg-white/20",
           isOpen ? "bg-white/10" : "",
         )}
-        onClick={onToggle}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggle();
+        }}
       >
         <div className="flex items-center gap-3">
           <item.icon className="h-5 w-5" />
@@ -242,41 +247,23 @@ const SidebarDisclosure = ({
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeSections, setActiveSections] = useState<{
-    [key: string]: boolean;
-  }>({});
   const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
 
-  useEffect(() => {
-    const savedActiveSections = localStorage.getItem("activeSections");
-    if (savedActiveSections) {
-      setActiveSections(JSON.parse(savedActiveSections));
+  // Initialize all sections as open by default
+  const defaultSections = navigation.reduce((acc, item) => {
+    if (item.children) {
+      acc[item.name] = true;
     }
+    return acc;
+  }, {} as Record<string, boolean>);
 
-    navigation.forEach((item) => {
-      if (item.children) {
-        const isPathInSection = item.children.some(
-          (child: any) => location.pathname === child.href,
-        );
-        if (isPathInSection) {
-          setActiveSections((prev) => ({
-            ...prev,
-            [item.name]: true,
-          }));
-        }
-      }
-    });
-  }, [location.pathname]);
-
-  useEffect(() => {
-    localStorage.setItem("activeSections", JSON.stringify(activeSections));
-  }, [activeSections]);
+  const [activeSections, setActiveSections] = useState(defaultSections);
 
   const toggleSection = (sectionName: string) => {
-    setActiveSections((prevState) => ({
-      ...prevState,
-      [sectionName]: !prevState[sectionName],
+    setActiveSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
     }));
   };
 
@@ -396,7 +383,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             {/* Scrollable Content */}
             <div className="flex-1 px-6 overflow-y-auto scrollbar-hide">
               <nav className="py-4">
-                <ul role="list" className="space-y-2">
+                <ul role="list" className="space-y-2" key="sidebar-navigation">
                   {navigation.map(
                     (item) =>
                       hasRequiredRole(item.requiredRoles) && (
