@@ -7,11 +7,14 @@ import { setupMiddleware } from "./middleware";
 import { setupRoutes } from "./routes";
 import swaggerDocs from "./utils/swagger";
 import rateLimit from "express-rate-limit";
+import { UserRole } from "@prisma/client";
 
 const numCPUs = os.cpus().length;
+const isProduction = process.env.NODE_ENV === "production";
 
-if (process.env.NODE_ENV === "production" && cluster.isPrimary) {
-  logger.info(`Primary process ${process.pid} is running`);
+// Only use clustering in production
+if (isProduction && cluster.isPrimary) {
+  logger.info(`Primary process ${process.pid} is running in production mode`);
 
   // Fork workers for each CPU core
   for (let i = 0; i < numCPUs; i++) {
@@ -30,20 +33,58 @@ if (process.env.NODE_ENV === "production" && cluster.isPrimary) {
   const app = express();
   const port = env.PORT;
 
-  const apiLimiter = rateLimit({
+  // Create rate limiter middleware for student routes
+  const studentApiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     limit: 100, // Limit each IP to 100 requests per windowMs
     message: {
       message: "Too many requests from this IP, please try again later.",
     },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req: Request) => {
+      // Skip rate limiting if not in production
+      if (!isProduction) return true;
+
+      const userRole = req.user?.role;
+      return userRole !== UserRole.Student;
+    },
   });
 
-  // Apply the rate limiter globally
-  app.use(apiLimiter);
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 5, // Limit each IP to 5 login attempts per windowMs
+    message: {
+      message:
+        "Too many login attempts from this IP, please try again after 15 minutes.",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req: Request) => {
+      // Skip rate limiting if not in production
+      return !isProduction;
+    },
+  });
+
+  app.use(
+    ["/auth/login", "/auth/forgot-password", "/auth/reset-password"],
+    loginLimiter,
+  );
 
   setupMiddleware(app);
+
+  // Apply student rate limiter to student-specific routes after auth middleware
+  app.use(
+    [
+      "/students/*",
+      "/subjects/*",
+      "/subject-preferences/*",
+      "/courses/*",
+      "/course-buckets/*",
+    ],
+    studentApiLimiter,
+  );
+
   swaggerDocs(app, 8080);
   setupRoutes(app);
 
@@ -54,8 +95,10 @@ if (process.env.NODE_ENV === "production" && cluster.isPrimary) {
   });
 
   app.listen(port, () => {
+    const mode = isProduction ? "production" : "development";
+    const processType = cluster.isPrimary ? "Primary" : `Worker ${process.pid}`;
     logger.info(
-      `Server is running on port ${port} (Worker: ${process.pid || "Single"})`,
+      `Server is running in ${mode} mode on port ${port} (${processType})`,
     );
   });
 }
