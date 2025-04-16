@@ -165,3 +165,5 @@ const SubjectTypeController = {
 };
 
 export default SubjectTypeController;
+
+

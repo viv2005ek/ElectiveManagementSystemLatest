@@ -36,30 +36,53 @@ export function useFetchPrograms(options?: FetchProgramsOptions) {
 
   useEffect(() => {
     const fetchPrograms = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
-        const params = new URLSearchParams({
-          ...options,
-          page: String(currentPage),
-          limit: String(options?.limit || 10),
-        });
+        setLoading(true);
+        setError(null);
 
-        const response = await axiosInstance.get(
-          `/programs?${params.toString()}`,
-        );
-        setPrograms(response.data.programs);
-        setTotalPages(response.data.totalPages);
+        const params = new URLSearchParams();
+        
+        if (options?.departmentId) params.append('departmentId', options.departmentId);
+        if (options?.schoolId) params.append('schoolId', options.schoolId);
+        if (options?.facultyId) params.append('facultyId', options.facultyId);
+        if (options?.programType) params.append('programType', options.programType);
+        if (options?.search) params.append('search', options.search);
+        
+        params.append('page', String(currentPage));
+        params.append('limit', String(options?.limit || 10));
+
+        const response = await axiosInstance.get(`/programs?${params.toString()}`);
+        
+        if (!response.data) {
+          throw new Error('No data received from server');
+        }
+
+        const programsData = response.data.programs;
+        if (!Array.isArray(programsData)) {
+          throw new Error('Invalid programs data received');
+        }
+
+        setPrograms(programsData);
+        setTotalPages(response.data.totalPages || 1);
       } catch (err) {
-        setError("Failed to fetch programs");
+        console.error("Error fetching programs:", err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch programs');
+        setPrograms([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPrograms();
-  }, [JSON.stringify(options), currentPage]);
+  }, [
+    options?.departmentId,
+    options?.schoolId,
+    options?.facultyId,
+    options?.programType,
+    options?.search,
+    options?.limit,
+    currentPage
+  ]);
 
   return { programs, totalPages, currentPage, setCurrentPage, loading, error };
 }

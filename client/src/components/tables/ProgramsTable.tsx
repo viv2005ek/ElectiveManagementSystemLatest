@@ -22,11 +22,11 @@ const mapProgramTypeTag = (programType: ProgramType): string => {
 };
 
 export default function ProgramsTable({
-  programs,
+  programs = [],
   loading,
   label,
   showActionButtons = true,
-  selectedPrograms,
+  selectedPrograms = [],
   setSelectedPrograms,
   totalPages,
   currentPage,
@@ -51,6 +51,10 @@ export default function ProgramsTable({
       setSelectedPrograms([...selectedPrograms, program]);
     }
   };
+
+  // Ensure programs is always an array
+  const programsArray = Array.isArray(programs) ? programs : [];
+  const selectedProgramsArray = Array.isArray(selectedPrograms) ? selectedPrograms : [];
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -126,56 +130,64 @@ export default function ProgramsTable({
                     </td>
                   </tr>
                 ))
-              : programs?.map((program, index) => (
-                  <tr
-                    key={program.id}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="py-4 px-4 text-sm font-medium text-gray-900">
-                      {program.name}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      {program.department.name}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      <div
-                        className={`${mapProgramTypeTag(program.programType)} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
-                      >
-                        {program.programType}
-                      </div>
-                    </td>
-                    {showActionButtons && (
-                      <td className="py-4 px-4 text-right text-sm font-medium">
-                        <Link
-                          to={`/programs/${program.id}`}
-                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
-                        >
-                          Edit
-                          <span className="sr-only">, {program.name}</span>
-                        </Link>
+              : programsArray.length > 0 ? (
+                  programsArray.map((program, index) => (
+                    <tr
+                      key={program.id}
+                      className="hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      <td className="py-4 px-4 text-sm text-gray-900">
+                        {index + 1}
                       </td>
-                    )}
-                    {selectedPrograms &&
-                      setSelectedPrograms &&
-                      !selectedPrograms.some(
-                        (selectedProgram) => selectedProgram.id === program.id,
-                      ) && (
-                        <td className="py-4 px-4 text-right text-sm">
-                          <button
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
-                            onClick={(e: MouseEvent<HTMLButtonElement>) =>
-                              handleSelection(e, program)
-                            }
+                      <td className="py-4 px-4 text-sm font-medium text-gray-900">
+                        {program.name}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-900">
+                        {program.department?.name || 'N/A'}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-900">
+                        <div
+                          className={`${mapProgramTypeTag(program.programType)} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium`}
+                        >
+                          {program.programType}
+                        </div>
+                      </td>
+                      {showActionButtons && (
+                        <td className="py-4 px-4 text-right text-sm font-medium">
+                          <Link
+                            to={`/programs/${program.id}`}
+                            className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
                           >
-                            Add
-                          </button>
+                            Edit
+                            <span className="sr-only">, {program.name}</span>
+                          </Link>
                         </td>
                       )}
+                      {selectedPrograms &&
+                        setSelectedPrograms &&
+                        !selectedProgramsArray.some(
+                          (selectedProgram) => selectedProgram.id === program.id,
+                        ) && (
+                          <td className="py-4 px-4 text-right text-sm">
+                            <button
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                              onClick={(e: MouseEvent<HTMLButtonElement>) =>
+                                handleSelection(e, program)
+                              }
+                            >
+                              Add
+                            </button>
+                          </td>
+                        )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-4 px-4 text-sm text-center text-gray-500">
+                      No programs found
+                    </td>
                   </tr>
-                ))}
+                )}
           </tbody>
         </table>
       </div>

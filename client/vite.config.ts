@@ -5,20 +5,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [
     react(),
-    // VitePWA({
-    //   registerType: "autoUpdate",
-    //   devOptions: {
-    //     enabled: true,
-    //   },
-    //   manifest: {
-    //     name: "MUJ Elective Allocation System",
-    //     short_name: "MUJ EMS",
-    //     description: "App for managing elective management system",
-    //     theme_color: "#ffffff",
-    //     background_color: "#ffffff",
-    //     display: "standalone",
-    //   },
-    // }),
   ],
   server: {
     port: 3000,

@@ -1,16 +1,49 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
-import PageHeader from "../../components/PageHeader.tsx";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  Program,
+  useFetchPrograms,
+} from "../../hooks/programHooks/useFetchPrograms.ts";
 import SearchBarWithoutDebounce from "../../components/SearchBarWithoutDebounce.tsx";
-import { useFetchPrograms } from "../../hooks/programHooks/useFetchPrograms.ts";
+import { useEffect, useState } from "react";
+import PageHeader from "../../components/PageHeader.tsx";
+import { Link } from "react-router-dom";
 import ProgramsTable from "../../components/tables/ProgramsTable.tsx";
 
 export default function ProgramsPage() {
-  const { programs, loading } = useFetchPrograms();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
+  const { programs, loading, error } = useFetchPrograms();
 
-  // Filter departments based on searchQuery (case-insensitive)
+  useEffect(() => {
+    if (!loading && Array.isArray(programs)) {
+      const filtered = searchQuery.trim()
+        ? programs.filter((program) =>
+            program.name.toLowerCase().includes(searchQuery.toLowerCase()),
+          )
+        : programs;
+      setFilteredPrograms(filtered);
+    }
+  }, [programs, searchQuery, loading]);
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-red-500 bg-red-50 p-4 rounded-lg">{error}</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -54,9 +87,9 @@ export default function ProgramsPage() {
 
           <div className="p-6">
             <ProgramsTable
-              programs={programs}
+              programs={filteredPrograms}
               loading={loading}
-              label="All Programs"
+              label={"All Programs"}
             />
           </div>
         </div>
