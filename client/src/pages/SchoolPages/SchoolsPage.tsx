@@ -12,7 +12,7 @@ export default function SchoolsPage() {
       <div className={"py-8"}>
         <PageHeader title={"Schools"} />
         <div className={""}>
-          <div className={"flex flex-row items-center mt-4 justify-end"}>
+          <div className={"flex flex-row items-center my-6 justify-end"}>
             <Link to={"/schools/create"}>
               <button
                 type="button"

@@ -199,6 +199,7 @@ const SubjectController = {
           },
           coursesWithSeats: {
             select: {
+              id: true,
               course: {
                 select: {
                   id: true,
@@ -565,12 +566,8 @@ const SubjectController = {
           subjectType: true,
           semester: true,
           semesters: true,
-          standaloneSubjectPreferences: {
-            where: { runAllotment: true },
-          },
-          bucketSubjectPreferences: {
-            where: { runAllotment: true },
-          },
+          standaloneSubjectPreferences: { where: { runAllotment: true } },
+          bucketSubjectPreferences: { where: { runAllotment: true } },
         },
       });
 
@@ -580,7 +577,6 @@ const SubjectController = {
         return;
       }
 
-      // Get valid semester ID
       const semesterId = subject.semester?.id;
       if (!semesterId) {
         res
@@ -599,10 +595,11 @@ const SubjectController = {
         return;
       }
 
-      // Delete existing allotments
-      await prisma.standaloneAllotment.deleteMany({ where: { subjectId } });
-      await prisma.bucketAllotment.deleteMany({ where: { subjectId } });
-      console.log("Existing allotments deleted");
+      // Prepare write operations
+      const writeOps: any[] = [
+        prisma.standaloneAllotment.deleteMany({ where: { subjectId } }),
+        prisma.bucketAllotment.deleteMany({ where: { subjectId } }),
+      ];
 
       if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
         const standaloneAllotments = [];
@@ -629,18 +626,22 @@ const SubjectController = {
             });
 
             if (course.availableSeats !== null) {
-              await prisma.subjectCourseWithSeats.update({
-                where: { id: course.id },
-                data: { availableSeats: course.availableSeats - 1 },
-              });
+              writeOps.push(
+                prisma.subjectCourseWithSeats.update({
+                  where: { id: course.id },
+                  data: { availableSeats: course.availableSeats - 1 },
+                }),
+              );
             }
           }
         }
 
         if (standaloneAllotments.length > 0) {
-          await prisma.standaloneAllotment.createMany({
-            data: standaloneAllotments,
-          });
+          writeOps.push(
+            prisma.standaloneAllotment.createMany({
+              data: standaloneAllotments,
+            }),
+          );
         }
       } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
         const bucketAllotments = [];
@@ -658,12 +659,8 @@ const SubjectController = {
                 courseBucket: {
                   include: {
                     courses: {
-                      include: {
-                        course: true,
-                      },
-                      orderBy: {
-                        orderIndex: "asc",
-                      },
+                      include: { course: true },
+                      orderBy: { orderIndex: "asc" },
                       take: 1,
                     },
                   },
@@ -689,22 +686,29 @@ const SubjectController = {
             });
 
             if (courseBucketWithSeats.availableSeats !== null) {
-              await prisma.subjectCourseBucketWithSeats.update({
-                where: { id: courseBucketWithSeats.id },
-                data: {
-                  availableSeats: courseBucketWithSeats.availableSeats - 1,
-                },
-              });
+              writeOps.push(
+                prisma.subjectCourseBucketWithSeats.update({
+                  where: { id: courseBucketWithSeats.id },
+                  data: {
+                    availableSeats: courseBucketWithSeats.availableSeats - 1,
+                  },
+                }),
+              );
             }
           }
         }
 
         if (bucketAllotments.length > 0) {
-          await prisma.bucketAllotment.createMany({
-            data: bucketAllotments,
-          });
+          writeOps.push(
+            prisma.bucketAllotment.createMany({
+              data: bucketAllotments,
+            }),
+          );
         }
       }
+
+      // Execute all write ops inside a single transaction
+      await prisma.$transaction(writeOps);
 
       res.status(200).json({ message: "Allotments created successfully" });
     } catch (error) {
@@ -715,7 +719,7 @@ const SubjectController = {
 
   getSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
-    const { search, page = 1, pageSize = 10 } = req.query;
+    const { search, page = 1, pageSize = 6 } = req.query;
 
     try {
       const allotmentsInfo = await prisma.subject.findUnique({
@@ -1146,5 +1150,238 @@ const SubjectController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+
+  getSubjectCourseStudents: async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    const { subjectCourseWithSeatsId } = req.params;
+    const { sectionId, search, page = 1, limit = 10 } = req.query;
+
+    try {
+      if (!subjectCourseWithSeatsId) {
+        res.status(400).json({ error: "Subject course ID is required" });
+        return;
+      }
+
+      const skip = (Number(page) - 1) * Number(limit);
+
+      // First get the subject course details
+      const subjectCourse = await prisma.subjectCourseWithSeats.findUnique({
+        where: {
+          id: subjectCourseWithSeatsId,
+        },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              subjectType: {
+                select: {
+                  name: true,
+                  allotmentType: true,
+                },
+              },
+              batch: {
+                select: {
+                  year: true,
+                },
+              },
+            },
+          },
+          course: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              credits: true,
+              department: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!subjectCourse) {
+        res.status(404).json({ error: "Subject course not found" });
+        return;
+      }
+
+      const where = {
+        AND: [
+          {
+            isDeleted: false,
+            electiveSections: {
+              some: {
+                subjectCourseWithSeatsId,
+                ...(sectionId ? { id: sectionId as string } : {}),
+              },
+            },
+          },
+          search
+            ? {
+                OR: [
+                  {
+                    firstName: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    registrationNumber: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ],
+              }
+            : {},
+        ],
+      };
+
+      const [totalCount, students] = await prisma.$transaction([
+        prisma.student.count({ where }),
+        prisma.student.findMany({
+          where,
+          select: {
+            id: true,
+            firstName: true,
+            middleName: true,
+            lastName: true,
+            registrationNumber: true,
+            semester: true,
+            program: {
+              select: {
+                name: true,
+                department: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+            batch: {
+              select: {
+                year: true,
+              },
+            },
+            electiveSections: {
+              where: {
+                subjectCourseWithSeatsId,
+              },
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+          skip,
+          take: Number(limit),
+        }),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / Number(limit));
+
+      res.status(200).json({
+        subjectCourse: {
+          id: subjectCourse.id,
+          subject: subjectCourse.subject,
+          course: subjectCourse.course,
+        },
+        students,
+        pagination: {
+          currentPage: Number(page),
+          totalPages,
+          totalItems: totalCount,
+          hasMore: Number(page) < totalPages,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching subject course students:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  getSubjectCourseInfo: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { subjectCourseWithSeatsId } = req.params;
+
+      const subjectCourseWithSeats =
+        await prisma.subjectCourseWithSeats.findUnique({
+          where: {
+            id: subjectCourseWithSeatsId,
+          },
+          include: {
+            subject: {
+              include: {
+                batch: true,
+                subjectType: true,
+              },
+            },
+            course: {
+              include: {
+                department: true,
+              },
+            },
+            sections: {
+              include: {
+                students: {
+                  select: {
+                    id: true,
+                    registrationNumber: true,
+                    firstName: true,
+                    middleName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+      if (!subjectCourseWithSeats) {
+        res.status(404).json({ message: "Subject course not found" });
+        return;
+      }
+
+      const response = {
+        id: subjectCourseWithSeats.id,
+        subject: {
+          id: subjectCourseWithSeats.subject.id,
+          name: subjectCourseWithSeats.subject.name,
+          batch: subjectCourseWithSeats.subject.batch,
+          subjectType: subjectCourseWithSeats.subject.subjectType,
+        },
+        course: {
+          id: subjectCourseWithSeats.course.id,
+          name: subjectCourseWithSeats.course.name,
+          code: subjectCourseWithSeats.course.code,
+          credits: subjectCourseWithSeats.course.credits,
+          department: subjectCourseWithSeats.course.department,
+        },
+        totalSeats: subjectCourseWithSeats.totalSeats,
+        availableSeats: subjectCourseWithSeats.availableSeats,
+        sections: subjectCourseWithSeats.sections.map((section) => ({
+          id: section.id,
+          name: section.name,
+          students: section.students,
+        })),
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching subject course info:", error);
+      res.status(500).json({ message: "Error fetching subject course info" });
+    }
+  },
 };
+
 export default SubjectController;

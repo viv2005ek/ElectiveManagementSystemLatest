@@ -25,6 +25,7 @@ export default function CoursesWithSeatsTable({
     setCoursesWithSeats([
       ...(coursesWithSeats || []),
       {
+        id: "",
         course: {
           id: "", // Empty ID for new rows
           code: "",

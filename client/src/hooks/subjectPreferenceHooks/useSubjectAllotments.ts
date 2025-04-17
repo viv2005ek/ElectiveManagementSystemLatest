@@ -48,6 +48,7 @@ type UseSubjectAllotmentsReturn = {
 const useSubjectAllotments = (
   subjectId: string | undefined,
   search?: string,
+  page?: number,
 ): UseSubjectAllotmentsReturn => {
   const [data, setData] = useState<SubjectAllotmentsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +61,7 @@ const useSubjectAllotments = (
       const response = await axiosInstance.get(
         `/subjects/${subjectId}/allotments`,
         {
-          params: { search }, // Add search query parameter
+          params: { search, page }, // Add search query parameter
         },
       );
       setData(response.data);
@@ -71,7 +72,7 @@ const useSubjectAllotments = (
     } finally {
       setIsLoading(false);
     }
-  }, [subjectId, search]); // Include search in dependencies
+  }, [subjectId, search, page]); // Include search in dependencies
 
   useEffect(() => {
     if (!subjectId) return;

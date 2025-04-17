@@ -91,6 +91,12 @@ router.get(
   SubjectController.getAllSubjects,
 );
 
+router.get(
+  "/courses/:subjectCourseWithSeatsId/students",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.getSubjectCourseStudents,
+);
+
 /**
  * @swagger
  * /subjects/{id}:
@@ -453,6 +459,12 @@ router.get(
   "/allotments/me",
   authorizeRoles([UserRole.Student]),
   SubjectController.getStudentAllotments,
+);
+
+router.get(
+  "/courses/:subjectCourseWithSeatsId/info",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.getSubjectCourseInfo,
 );
 
 export default router;

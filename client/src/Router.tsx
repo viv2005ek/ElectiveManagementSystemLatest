@@ -30,6 +30,8 @@ import ViewSubjectAllotmentsPage from "./pages/AllotmentPage/ViewSubjectAllotmen
 import ViewStudentsAllotmentsPage from "./pages/ViewStudentsAllotmentsPage.tsx";
 import SubjectTypesPage from "./pages/SubjectPages/SubjectTypesPage.tsx";
 import SubjectTypeEditPage from "./pages/SubjectTypePages/SubjectTypeEditPage.tsx";
+import ElectiveSectionsPage from "./pages/SectionPages/ElectiveSectionsPage.tsx";
+import ProfessorsPage from "./pages/ProfessorsPages/ProfessorsPage.tsx";
 
 export default function Router() {
   return (
@@ -258,6 +260,22 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.STUDENT]}>
               <ViewStudentsAllotmentsPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/elective-sections/:subjectCourseWithSeatsId"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ElectiveSectionsPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/professors"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ProfessorsPage />
             </RoleWrapper>
           }
         />

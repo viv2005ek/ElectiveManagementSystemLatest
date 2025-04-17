@@ -65,6 +65,17 @@ Table Program {
   students Student [not null]
   subjects Subject [not null]
   semesters Semester [not null]
+  sections Section [not null]
+}
+
+Table Section {
+  id String [pk]
+  name String [not null]
+  batchId String [not null]
+  batch Batch [not null]
+  programId String [not null]
+  program Program [not null]
+  students Student [not null]
 }
 
 Table Student {
@@ -83,6 +94,8 @@ Table Student {
   cgpa Float
   batchId String [not null]
   batch Batch [not null]
+  sectionId String
+  section Section
   contactNumber String [unique, not null]
   credentialId String [unique, not null]
   credential Credential [not null]
@@ -91,6 +104,7 @@ Table Student {
   bucketSubjectPreferences BucketSubjectPreference [not null]
   standaloneAllotments StandaloneAllotment [not null]
   bucketAllotments BucketAllotment [not null]
+  electiveSections ElectiveSection [not null]
 }
 
 Table Professor {
@@ -109,6 +123,7 @@ Table Professor {
   credentialId String [unique, not null]
   credential Credential [not null]
   isDeleted Boolean [not null, default: false]
+  ElectiveSection ElectiveSection [not null]
 }
 
 Table Course {
@@ -129,6 +144,7 @@ Table Course {
   firstPreferenceCourses StandaloneSubjectPreference [not null]
   secondPreferenceCourses StandaloneSubjectPreference [not null]
   thirdPreferenceCourses StandaloneSubjectPreference [not null]
+  SubjectSection ElectiveSection [not null]
 
   indexes {
     (code, departmentId) [unique]
@@ -219,6 +235,7 @@ Table SubjectCourseWithSeats {
   subject Subject [not null]
   totalSeats Int
   availableSeats Int
+  sections ElectiveSection [not null]
 
   indexes {
     (courseId, subjectId) [unique]
@@ -318,6 +335,7 @@ Table Batch {
   year Int [unique, not null]
   students Student [not null]
   subjects Subject [not null]
+  Section Section [not null]
 }
 
 Table Semester {
@@ -328,6 +346,23 @@ Table Semester {
   subject Subject [not null]
   programs Program [not null]
   courses Course [not null]
+}
+
+Table ElectiveSection {
+  id String [pk]
+  name String [not null]
+  professorId String
+  professor Professor
+  students Student [not null]
+  studentId String
+  Course Course
+  courseId String
+  SubjectCourseWithSeats SubjectCourseWithSeats
+  subjectCourseWithSeatsId String
+
+  indexes {
+    (name, subjectCourseWithSeatsId) [unique]
+  }
 }
 
 Table ProfessorRank {
@@ -345,6 +380,11 @@ Table programToSubject {
 Table programToSemesters {
   semestersId String [ref: > Semester.id]
   programsId String [ref: > Program.id]
+}
+
+Table SubjectSections {
+  electivesectionsId String [ref: > ElectiveSection.id]
+  studentsId String [ref: > Student.id]
 }
 
 Table courseToSubjectCategory {
@@ -410,9 +450,15 @@ Ref: Department.schoolId > School.id
 
 Ref: Program.departmentId > Department.id
 
+Ref: Section.batchId > Batch.id
+
+Ref: Section.programId > Program.id
+
 Ref: Student.programId > Program.id
 
 Ref: Student.batchId > Batch.id
+
+Ref: Student.sectionId > Section.id
 
 Ref: Student.credentialId - Credential.id
 
@@ -487,3 +533,9 @@ Ref: BucketAllotment.courseBucketId > CourseBucket.id
 Ref: BucketAllotment.courseId > Course.id
 
 Ref: BucketAllotment.semesterId > Semester.id
+
+Ref: ElectiveSection.professorId > Professor.id
+
+Ref: ElectiveSection.courseId > Course.id
+
+Ref: ElectiveSection.subjectCourseWithSeatsId > SubjectCourseWithSeats.id

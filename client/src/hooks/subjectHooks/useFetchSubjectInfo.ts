@@ -43,6 +43,7 @@ type SubjectInfoResponse = {
 };
 
 export interface CourseWithSeats {
+  id: string;
   course: {
     id: string;
     name: string;

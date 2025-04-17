@@ -11,7 +11,7 @@ export default function FacultiesPage() {
       <div className={"py-8"}>
         <PageHeader title={"Faculties"} />
         <div className={""}>
-          <div className={"flex flex-row items-center mt-4 justify-end"}>
+          <div className={"flex flex-row items-center my-6 justify-end"}>
             <Link to={"/faculties/create"}>
               <button
                 type="button"

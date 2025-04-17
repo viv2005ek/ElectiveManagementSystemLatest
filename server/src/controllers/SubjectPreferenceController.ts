@@ -163,7 +163,7 @@ const SubjectPreferenceController = {
     }
   },
 
-  getSubjectPreferences: async (req: Request, res: Response) => {
+  getSubjectPreferences: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
     const page = Number(req.query.page) || 1;
     const search = String(req.query.search || "").trim();
@@ -174,6 +174,7 @@ const SubjectPreferenceController = {
     const skip = (page - 1) * pageSize;
 
     try {
+      // Fetch the subject details
       const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
         select: {
@@ -187,6 +188,7 @@ const SubjectPreferenceController = {
         return;
       }
 
+      // Construct the where clause for filtering students
       const whereClause: any = {
         batchId: subject.batchId,
         OR: [
@@ -215,8 +217,12 @@ const SubjectPreferenceController = {
         ];
       }
 
-      const totalStudents = await prisma.student.count({ where: whereClause });
+      // Get the total count of students for pagination
+      const totalStudents = await prisma.student.count({
+        where: whereClause,
+      });
 
+      // Fetch students with preferences
       const studentsWithPreferences = await prisma.student.findMany({
         where: whereClause,
         include: {
@@ -245,19 +251,25 @@ const SubjectPreferenceController = {
         take: pageSize,
       });
 
+      // Map students to include preferences
       const students = studentsWithPreferences.map((student) => ({
         id: student.id,
         firstName: student.firstName,
         lastName: student.lastName,
         registrationNumber: student.registrationNumber,
-        preferences:
-          student.standaloneSubjectPreferences.length > 0
-            ? student.standaloneSubjectPreferences[0]
-            : student.bucketSubjectPreferences.length > 0
+        preferences: {
+          standalone:
+            student.standaloneSubjectPreferences.length > 0
+              ? student.standaloneSubjectPreferences[0]
+              : null,
+          bucket:
+            student.bucketSubjectPreferences.length > 0
               ? student.bucketSubjectPreferences[0]
               : null,
+        },
       }));
 
+      // Calculate filled and pending preferences count
       const filledPreferencesCount = await prisma.student.count({
         where: {
           batchId: subject.batchId,
@@ -271,6 +283,7 @@ const SubjectPreferenceController = {
       const pendingStudentsCount = totalStudents - filledPreferencesCount;
       const totalPages = Math.ceil(totalStudents / pageSize);
 
+      // Return paginated response
       res.status(200).json({
         students,
         totalStudents,

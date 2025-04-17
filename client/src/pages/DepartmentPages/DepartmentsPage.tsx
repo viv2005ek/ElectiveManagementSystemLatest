@@ -20,7 +20,7 @@ export default function DepartmentsPage() {
       <div className={"py-8"}>
         <PageHeader title={"Departments"} />
         <div>
-          <div className={"flex flex-row items-center mt-4 justify-end"}>
+          <div className={"flex flex-row items-center my-6c justify-end"}>
             <div className={"flex flex-grow"}>
               <SearchBarWithoutDebounce
                 value={searchQuery}

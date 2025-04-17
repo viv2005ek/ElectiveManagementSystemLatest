@@ -78,6 +78,17 @@ model Program {
   students     Student[]
   subjects     Subject[]   @relation("programToSubject")
   semesters    Semester[]  @relation("programToSemesters")
+  sections     Section[]
+}
+
+model Section {
+  id        String    @id @default(uuid())
+  name      String
+  batchId   String
+  batch     Batch     @relation(fields: [batchId], references: [id])
+  programId String
+  program   Program   @relation(fields: [programId], references: [id])
+  students  Student[]
 }
 
 model Student {
@@ -96,6 +107,8 @@ model Student {
   cgpa                         Float?
   batchId                      String
   batch                        Batch                         @relation(fields: [batchId], references: [id])
+  sectionId                    String?
+  section                      Section?                      @relation(fields: [sectionId], references: [id])
   contactNumber                String                        @unique @db.VarChar(15)
   credentialId                 String                        @unique
   credential                   Credential                    @relation(fields: [credentialId], references: [id])
@@ -104,26 +117,28 @@ model Student {
   bucketSubjectPreferences     BucketSubjectPreference[]
   standaloneAllotments         StandaloneAllotment[]
   bucketAllotments             BucketAllotment[]
+  electiveSections             ElectiveSection[]             @relation("SubjectSections")
 
   @@index([registrationNumber])
 }
 
 model Professor {
-  id                 String        @id @default(uuid())
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                 String            @id @default(uuid())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
   professorRankId    String
-  professorRank      ProfessorRank @relation(fields: [professorRankId], references: [id])
-  registrationNumber String        @unique
+  professorRank      ProfessorRank     @relation(fields: [professorRankId], references: [id])
+  registrationNumber String            @unique
   departmentId       String
-  department         Department    @relation(fields: [departmentId], references: [id])
-  email              String        @unique
+  department         Department        @relation(fields: [departmentId], references: [id])
+  email              String            @unique
   firstName          String
   middleName         String?
   lastName           String?
-  credentialId       String        @unique
-  credential         Credential    @relation(fields: [credentialId], references: [id])
-  isDeleted          Boolean       @default(false)
+  credentialId       String            @unique
+  credential         Credential        @relation(fields: [credentialId], references: [id])
+  isDeleted          Boolean           @default(false)
+  ElectiveSection    ElectiveSection[]
 }
 
 model Course {
@@ -144,6 +159,7 @@ model Course {
   firstPreferenceCourses  StandaloneSubjectPreference[] @relation("FirstPreferenceCourse")
   secondPreferenceCourses StandaloneSubjectPreference[] @relation("SecondPreferenceCourse")
   thirdPreferenceCourses  StandaloneSubjectPreference[] @relation("ThirdPreferenceCourse")
+  SubjectSection          ElectiveSection[]
 
   @@unique([code, departmentId])
   @@index([departmentId])
@@ -226,13 +242,14 @@ model Subject {
 }
 
 model SubjectCourseWithSeats {
-  id             String  @id @default(uuid())
+  id             String            @id @default(uuid())
   courseId       String
-  course         Course  @relation("courseWithSeats", fields: [courseId], references: [id], onDelete: Cascade)
+  course         Course            @relation("courseWithSeats", fields: [courseId], references: [id], onDelete: Cascade)
   subjectId      String
-  subject        Subject @relation("subjectCoursesWithSeats", fields: [subjectId], references: [id], onDelete: Cascade)
+  subject        Subject           @relation("subjectCoursesWithSeats", fields: [subjectId], references: [id], onDelete: Cascade)
   totalSeats     Int?
   availableSeats Int?
+  sections       ElectiveSection[]
 
   @@unique([courseId, subjectId])
   @@index([subjectId])
@@ -324,6 +341,7 @@ model Batch {
   year     Int       @unique
   students Student[]
   subjects Subject[]
+  Section  Section[]
 }
 
 model Semester {
@@ -334,6 +352,21 @@ model Semester {
   subject          Subject[]
   programs         Program[]         @relation("programToSemesters")
   courses          Course[]
+}
+
+model ElectiveSection {
+  id                       String                  @id @default(ulid())
+  name                     String
+  professorId              String?
+  professor                Professor?              @relation(fields: [professorId], references: [id])
+  students                 Student[]               @relation("SubjectSections")
+  studentId                String?
+  Course                   Course?                 @relation(fields: [courseId], references: [id])
+  courseId                 String?
+  SubjectCourseWithSeats   SubjectCourseWithSeats? @relation(fields: [subjectCourseWithSeatsId], references: [id])
+  subjectCourseWithSeatsId String?
+
+  @@unique([name, subjectCourseWithSeatsId])
 }
 
 model ProfessorRank {

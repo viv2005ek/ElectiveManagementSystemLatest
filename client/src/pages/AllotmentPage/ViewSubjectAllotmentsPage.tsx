@@ -1,7 +1,7 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
 import useSubjectAllotments from "../../hooks/subjectPreferenceHooks/useSubjectAllotments.ts";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AllotmentType } from "../../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 import SearchBarWithDebounce from "../../components/SearchBarWithDebounce.tsx";
 import { ReactNode, useState } from "react";
@@ -11,19 +11,33 @@ import "react-loading-skeleton/dist/skeleton.css";
 import SubjectAllotmentCard from "../../components/SubjectAllotmentCard.tsx";
 import useFetchSubjectInfo from "../../hooks/subjectHooks/useFetchSubjectInfo.ts";
 import useAllotmentStats from "../../hooks/subjectHooks/useAllotmentStats.ts";
+import useSubjectSections, {
+  Section,
+} from "../../hooks/sectionHooks/useSubjectSections.ts";
 import {
   AlertCircle,
   ArrowLeft,
   BarChart3,
   BookOpen,
   CheckCircle,
+  ChevronDown,
   Clock,
   RefreshCw,
+  Trash2,
   Users,
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import CourseStatsSection from "../../components/CourseStatsSection";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import AddSectionModal from "../../components/AddSectionModal";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from "@headlessui/react";
+import { toast } from "sonner";
+import axiosInstance from "../../axiosInstance";
 
 dayjs.extend(relativeTime);
 
@@ -39,13 +53,14 @@ export default function ViewSubjectAllotmentsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const {
     data: subjectAllotments,
     isLoading: allotmentsLoading,
     error: allotmentsError,
     refetch,
-  } = useSubjectAllotments(id, search);
+  } = useSubjectAllotments(id, search, currentPage);
   const {
     data: stats,
     loading: statsLoading,
@@ -56,6 +71,12 @@ export default function ViewSubjectAllotmentsPage() {
     loading: infoLoading,
     error: infoError,
   } = useFetchSubjectInfo(id);
+  const {
+    data: sections,
+    isLoading: sectionsLoading,
+    error: sectionsError,
+    refetch: refetchSections,
+  } = useSubjectSections(id);
 
   const renderSubjectHeader = () => {
     if (infoLoading) {
@@ -206,6 +227,238 @@ export default function ViewSubjectAllotmentsPage() {
     );
   };
 
+  const renderSectionsTable = () => {
+    const handleDeleteSection = async (sectionId: string) => {
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this section? This action cannot be undone.",
+        )
+      ) {
+        return;
+      }
+
+      try {
+        await axiosInstance.delete(`/elective-sections/${sectionId}`);
+        toast.success("Section deleted successfully");
+        await refetchSections();
+      } catch (error) {
+        console.error("Error deleting section:", error);
+        toast.error("Failed to delete section");
+      }
+    };
+
+    if (sectionsLoading) {
+      return (
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 rounded mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, idx) => (
+              <div key={idx} className="h-16 bg-gray-100 rounded"></div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (sectionsError) {
+      return (
+        <div className="text-center py-4">
+          <AlertCircle className="h-5 w-5 text-red-500 mx-auto mb-2" />
+          <p className="text-red-600">Error loading sections.</p>
+        </div>
+      );
+    }
+
+    if (!sections || sections.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No sections found for this subject.</p>
+        </div>
+      );
+    }
+
+    // Group sections by course
+    const sectionsByCourse = sections.reduce(
+      (acc, section) => {
+        const courseId = section.Course.id;
+        if (!acc[courseId]) {
+          acc[courseId] = {
+            course: section.Course,
+            sections: [],
+          };
+        }
+        acc[courseId].sections.push(section);
+        return acc;
+      },
+      {} as Record<string, { course: Section["Course"]; sections: Section[] }>,
+    );
+
+    return (
+      <div className="space-y-4">
+        {Object.entries(sectionsByCourse).map(
+          ([courseId, { course, sections }]) => (
+            <Disclosure
+              key={courseId}
+              as="div"
+              className="bg-white overflow-hidden border border-gray-200 shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200"
+            >
+              {({ open }) => (
+                <>
+                  <DisclosureButton className="w-full px-6 py-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                          <BookOpen className="h-5 w-5 text-indigo-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 flex items-center gap-3">
+                          {course.name}
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            {course.code}
+                          </span>
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {sections.length} section
+                          {sections.length !== 1 ? "s" : ""} •{" "}
+                          {sections.reduce(
+                            (acc, section) => acc + section.students.length,
+                            0,
+                          )}{" "}
+                          students enrolled
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/elective-sections/${course.id}`}
+                      className={
+                        "text-sm font-semibold text-blue-700 hover:underline"
+                      }
+                    >
+                      Manage sections
+                    </Link>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right hidden sm:block">
+                        <div className="text-sm text-gray-900">
+                          {sections.reduce(
+                            (acc, section) =>
+                              acc +
+                              (section.SubjectCourseWithSeats.availableSeats ||
+                                0),
+                            0,
+                          )}{" "}
+                          seats available
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {sections.reduce(
+                            (acc, section) =>
+                              acc +
+                              (section.SubjectCourseWithSeats.totalSeats || 0),
+                            0,
+                          )}{" "}
+                          total seats
+                        </div>
+                      </div>
+                      <div
+                        className={`transform transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                      >
+                        <ChevronDown className="h-5 w-5 text-gray-500" />
+                      </div>
+                    </div>
+                  </DisclosureButton>
+                  <DisclosurePanel>
+                    {({ close }) => (
+                      <div className="border-t border-gray-200">
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Section Name
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Professor
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Students
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Actions
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {sections.map((section) => (
+                                <tr
+                                  key={section.id}
+                                  className="hover:bg-gray-50 transition-colors duration-150"
+                                >
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {section.name}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    {section.professor ? (
+                                      <div>
+                                        <div className="text-sm font-medium text-gray-900">
+                                          {section.professor.firstName}{" "}
+                                          {section.professor.lastName}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          Professor
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Not Assigned
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">
+                                      {section.students.length}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteSection(section.id)
+                                      }
+                                      disabled={section.students.length > 0}
+                                      className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium 
+                                      ${
+                                        section.students.length > 0
+                                          ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                                          : "text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                      }`}
+                                      title={
+                                        section.students.length > 0
+                                          ? "Cannot delete section with enrolled students"
+                                          : "Delete section"
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1.5" />
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </DisclosurePanel>
+                </>
+              )}
+            </Disclosure>
+          ),
+        )}
+      </div>
+    );
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -232,6 +485,48 @@ export default function ViewSubjectAllotmentsPage() {
             unallottedStudents={stats.unallottedStudents}
             loading={statsLoading}
             error={statsError}
+          />
+        )}
+
+        {/* Sections Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 my-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              Subject Sections
+            </h3>
+            <div className={"flex flex-row gap-4"}>
+              {/*<button*/}
+              {/*  className={*/}
+              {/*    "bg-green-500 text-white p-2 rounded-lg flex flex-row items-center gap-2"*/}
+              {/*  }*/}
+              {/*  onClick={handleSectionAllotments}*/}
+              {/*>*/}
+              {/*  <RefreshCw*/}
+              {/*    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}*/}
+              {/*  />*/}
+              {/*  <div>Allot sections</div>*/}
+              {/*</button>*/}
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex flex-row items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-sm px-3 py-2 text-white rounded-lg transition-colors"
+              >
+                <PlusIcon className="h-5 w-5 stroke-2" />
+                <span>Add Section</span>
+              </button>
+            </div>
+          </div>
+          {renderSectionsTable()}
+        </div>
+
+        {/* Add Section Modal */}
+        {id && (
+          <AddSectionModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            subjectId={id}
+            onSuccess={() => {
+              refetchSections();
+            }}
           />
         )}
 

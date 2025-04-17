@@ -1,8 +1,8 @@
 import express from "express";
 import studentController from "../controllers/StudentController";
 import { authorizeRoles } from "../middleware/roleMiddleware";
-import SubjectController from "../controllers/SubjectController";
 import { UserRole } from "@prisma/client";
+import SubjectController from "../controllers/SubjectController";
 
 const router = express.Router();
 
