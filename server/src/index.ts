@@ -67,7 +67,7 @@ if (isProduction && cluster.isPrimary) {
   });
 
   app.use(
-    ["/auth/login", "/auth/forgot-password", "/auth/reset-password"],
+    ["api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password"],
     loginLimiter,
   );
 
@@ -76,19 +76,22 @@ if (isProduction && cluster.isPrimary) {
   // Apply student rate limiter to student-specific routes after auth middleware
   app.use(
     [
-      "/students/*",
-      "/subjects/*",
-      "/subject-preferences/*",
-      "/courses/*",
-      "/course-buckets/*",
+      "api/students/*",
+      "api/subjects/*",
+      "api/subject-preferences/*",
+      "api/courses/*",
+      "api/course-buckets/*",
     ],
     studentApiLimiter,
   );
 
   swaggerDocs(app, 8080);
-  setupRoutes(app);
+  const apiRouter = express.Router();
+  setupRoutes(apiRouter);
 
-  app.get("/health-check", async (req: Request, res: Response) => {
+  app.use("/api", apiRouter);
+
+  app.get("/api/health-check", async (req: Request, res: Response) => {
     res
       .status(200)
       .json({ msg: "Server is online.", timestamp: new Date().toISOString() });

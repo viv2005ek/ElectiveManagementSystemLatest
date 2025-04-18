@@ -43,7 +43,7 @@ function swaggerDocs(app: Express, port: number) {
   const serverUrl = `${protocol}://${host}:${port}`;
 
   // Swagger page
-  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   // Swagger JSON endpoint
   app.get("docs.json", (req: Request, res: Response) => {

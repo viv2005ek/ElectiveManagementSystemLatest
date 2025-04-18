@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const isProd = import.meta.env.MODE === "production";
+
 const axiosInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_BASE}`,
+  baseURL: isProd ? undefined : `${import.meta.env.VITE_BASE}/api`,
   headers: {
     "Content-Type": "application/json",
   },

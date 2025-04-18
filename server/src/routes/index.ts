@@ -1,4 +1,4 @@
-import { Express } from "express";
+import { Router } from "express";
 import AuthRoute from "./AuthRoute";
 import StudentRoute from "./StudentRoute";
 import DepartmentRoute from "./DepartmentRoute";
@@ -16,7 +16,7 @@ import SubjectRoute from "./SubjectRoute";
 import SubjectPreferenceRoute from "./SubjectPreferenceRoute";
 import ElectiveSectionRoute from "./ElectiveSectionRoute";
 
-export const setupRoutes = (app: Express) => {
+export const setupRoutes = (app: Router) => {
   app.use("/auth", AuthRoute);
 
   app.use(authMiddleware);
