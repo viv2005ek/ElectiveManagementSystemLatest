@@ -8,6 +8,8 @@ import { setupRoutes } from "./routes";
 import swaggerDocs from "./utils/swagger";
 import rateLimit from "express-rate-limit";
 import { UserRole } from "@prisma/client";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 
 const numCPUs = os.cpus().length;
 const isProduction = process.env.NODE_ENV === "production";
@@ -88,6 +90,9 @@ if (isProduction && cluster.isPrimary) {
   swaggerDocs(app, 8080);
   const apiRouter = express.Router();
   setupRoutes(apiRouter);
+app.get("/", (req, res) => {
+  res.send("Hello, API is working 🚀");
+});
 
   app.use("/api", apiRouter);
 
@@ -96,6 +101,17 @@ if (isProduction && cluster.isPrimary) {
       .status(200)
       .json({ msg: "Server is online.", timestamp: new Date().toISOString() });
   });
+const swaggerSpec = swaggerJsdoc({
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Elective Management System API",
+      version: "1.0.0",
+    },
+  },
+  apis: ["./src/routes/*.ts"], // adjust if your routes live somewhere else
+});
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
   app.listen(port, () => {
     const mode = isProduction ? "production" : "development";
