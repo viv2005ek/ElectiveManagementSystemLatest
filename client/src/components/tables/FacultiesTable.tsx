@@ -72,16 +72,18 @@ export default function FacultiesTable({
                       {faculty.name}
                     </td>
                     <td className="py-4 px-4 text-right text-sm">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/faculties/${faculty.id}/edit`);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
-                      >
-                        Edit
-                        <span className="sr-only">, {faculty.name}</span>
-                      </button>
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/faculties/${faculty.id}`);
+                          }}
+                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                        >
+                          View
+                          <span className="sr-only">, {faculty.name}</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

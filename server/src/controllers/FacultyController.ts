@@ -45,12 +45,11 @@ const FacultyController = {
   updateFaculty: async (req: Request, res: Response): Promise<any> => {
     try {
       const { id } = req.params;
-      const { name, schoolIds } = req.body;
+      const { name } = req.body;
       const faculty = await prisma.faculty.update({
         where: { id },
         data: {
           name,
-          schools: { set: schoolIds?.map((id: string) => ({ id })) || [] },
         },
       });
       res.json(faculty);

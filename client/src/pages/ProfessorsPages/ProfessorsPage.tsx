@@ -1,5 +1,5 @@
 import MainLayout from "../../layouts/MainLayout.tsx";
-import useProfessors from "../../hooks/sectionHooks/useProfessors.ts";
+import useFetchProfessors from "../../hooks/professorHooks/useFetchProfessors.ts";
 import ProfessorsTable from "../../components/tables/ProfessorsTable.tsx";
 import { useState } from "react";
 import SearchBarWithDebounce from "../../components/SearchBarWithDebounce.tsx";
@@ -9,7 +9,10 @@ import { Link } from "react-router-dom";
 export default function ProfessorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const { data, isLoading, error, refetch } = useProfessors(searchQuery);
+  const { professors, totalPages, loading } = useFetchProfessors({
+    search: searchQuery,
+    page: currentPage,
+  });
 
   return (
     <MainLayout>
@@ -36,9 +39,9 @@ export default function ProfessorsPage() {
           </div>
 
           <ProfessorsTable
-            professors={data}
-            isLoading={isLoading}
-            totalPages={1} // Set to actual total pages if API supports pagination
+            professors={professors}
+            isLoading={loading}
+            totalPages={totalPages}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             label="Professor List"

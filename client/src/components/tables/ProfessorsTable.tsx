@@ -109,7 +109,7 @@ export default function ProfessorsTable({
                   <tr
                     key={professor.id}
                     className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
-                    onClick={() => navigate(`/professors/${professor.id}`)}
+                      onClick={() => navigate(`/professors/${professor.id}`)}
                   >
                     <td className="py-4 px-4 text-sm font-medium text-gray-900">
                       {professor.registrationNumber}
@@ -141,18 +141,6 @@ export default function ProfessorsTable({
                           <EyeIcon className="h-5 w-5" />
                           <span className="sr-only">
                             View {professor.firstName}
-                          </span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/professors/${professor.id}/edit`);
-                          }}
-                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                          <span className="sr-only">
-                            Edit {professor.firstName}
                           </span>
                         </button>
                       </div>

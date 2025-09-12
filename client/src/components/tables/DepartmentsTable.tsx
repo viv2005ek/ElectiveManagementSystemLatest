@@ -84,16 +84,18 @@ export default function DepartmentsTable({
                       {department.school?.name || "N/A"}
                     </td>
                     <td className="py-4 px-4 text-right text-sm">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/departments/${department.id}/edit`);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
-                      >
-                        Edit
-                        <span className="sr-only">, {department.name}</span>
-                      </button>
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/departments/${department.id}`);
+                          }}
+                          className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                        >
+                          View
+                          <span className="sr-only">, {department.name}</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
