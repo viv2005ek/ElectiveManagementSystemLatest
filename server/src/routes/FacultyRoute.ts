@@ -107,6 +107,13 @@ router.get("/:id", FacultyController.getFacultyById);
  *   put:
  *     summary: Update a faculty
  *     tags: [Faculties]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Faculty ID
  *     requestBody:
  *       required: true
  *       content:
@@ -114,12 +121,8 @@ router.get("/:id", FacultyController.getFacultyById);
  *           schema:
  *             type: object
  *             required:
- *               - id
  *               - name
  *             properties:
- *               id:
- *                 type: string
- *                 example: "123e4567-e89b-12d3-a456-426614174000"
  *               name:
  *                 type: string
  *                 example: "Updated Faculty Name"
@@ -134,32 +137,27 @@ router.get("/:id", FacultyController.getFacultyById);
  *       400:
  *         description: Invalid input
  */
-router.put("/", FacultyController.updateFaculty);
+router.put("/:id", FacultyController.updateFaculty);
 
 /**
  * @swagger
- * /faculties:
+ * /faculties/{id}:
  *   delete:
  *     summary: Delete a faculty
  *     tags: [Faculties]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *             properties:
- *               id:
- *                 type: string
- *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Faculty ID
  *     responses:
  *       200:
  *         description: Faculty deleted successfully
  *       404:
  *         description: Faculty not found
  */
-router.delete("/", FacultyController.deleteFaculty);
+router.delete("/:id", FacultyController.deleteFaculty);
 
 export default router;

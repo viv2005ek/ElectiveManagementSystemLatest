@@ -32,6 +32,13 @@ import SubjectTypesPage from "./pages/SubjectPages/SubjectTypesPage.tsx";
 import SubjectTypeEditPage from "./pages/SubjectTypePages/SubjectTypeEditPage.tsx";
 import ElectiveSectionsPage from "./pages/SectionPages/ElectiveSectionsPage.tsx";
 import ProfessorsPage from "./pages/ProfessorsPages/ProfessorsPage.tsx";
+import ViewDepartmentPage from "./pages/DepartmentPages/ViewDepartmentPage.tsx";
+import ViewSchoolPage from "./pages/SchoolPages/ViewSchoolPage.tsx";
+import ViewFacultyPage from "./pages/FacultyPage/ViewFacultyPage.tsx";
+import ViewProgramPage from "./pages/ProgramPages/ViewProgramPage.tsx";
+import ViewCourseBucketPage from "./pages/CourseBucketPages/ViewCourseBucketPage.tsx";
+import ViewStudentPage from "./pages/StudentPages/ViewStudentPage.tsx";
+import ViewProfessorPage from "./pages/ProfessorsPages/ViewProfessorPage.tsx";
 
 export default function Router() {
   return (
@@ -96,10 +103,26 @@ export default function Router() {
           }
         />
         <Route
+          path="/departments/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewDepartmentPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
           path="/students"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <StudentsPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/students/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewStudentPage />
             </RoleWrapper>
           }
         />
@@ -144,6 +167,14 @@ export default function Router() {
           }
         />
         <Route
+          path="/faculties/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewFacultyPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
           path="/schools"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
@@ -156,6 +187,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <CreateSchoolPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/schools/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewSchoolPage />
             </RoleWrapper>
           }
         />
@@ -184,6 +223,14 @@ export default function Router() {
           }
         />
         <Route
+          path="/programs/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewProgramPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
           path="/course-buckets"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
@@ -196,6 +243,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <CreateCourseBucketPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/course-buckets/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewCourseBucketPage />
             </RoleWrapper>
           }
         />
@@ -276,6 +331,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <ProfessorsPage />
+            </RoleWrapper>
+          }
+        />
+        <Route
+          path="/professors/:id"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ViewProfessorPage />
             </RoleWrapper>
           }
         />

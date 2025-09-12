@@ -7,6 +7,7 @@ import {
 } from "../../hooks/programHooks/useFetchPrograms.ts";
 import React, { Dispatch, MouseEvent, SetStateAction } from "react";
 import PaginationFooter from "../PaginationFooter.tsx";
+import { useNavigate } from "react-router-dom";
 
 const mapProgramTypeTag = (programType: ProgramType): string => {
   switch (programType) {
@@ -42,6 +43,8 @@ export default function ProgramsTable({
   currentPage?: number;
   setCurrentPage?: Dispatch<SetStateAction<number>>;
 }) {
+  const navigate = useNavigate();
+
   const handleSelection = (
     e: MouseEvent<HTMLButtonElement>,
     program: Program,
@@ -154,13 +157,16 @@ export default function ProgramsTable({
                       </td>
                       {showActionButtons && (
                         <td className="py-4 px-4 text-right text-sm font-medium">
-                          <Link
-                            to={`/programs/${program.id}`}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/programs/${program.id}`);
+                            }}
                             className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
                           >
-                            Edit
+                            View
                             <span className="sr-only">, {program.name}</span>
-                          </Link>
+                          </button>
                         </td>
                       )}
                       {selectedPrograms &&

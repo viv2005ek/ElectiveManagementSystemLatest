@@ -15,6 +15,7 @@ import CourseRoute from "./CourseRoute";
 import SubjectRoute from "./SubjectRoute";
 import SubjectPreferenceRoute from "./SubjectPreferenceRoute";
 import ElectiveSectionRoute from "./ElectiveSectionRoute";
+import ProfessorRoute from "./ProfessorRoute";
 
 export const setupRoutes = (app: Router) => {
   app.use("/auth", AuthRoute);
@@ -34,4 +35,5 @@ export const setupRoutes = (app: Router) => {
   app.use("/subject-preferences", SubjectPreferenceRoute);
   app.use("/enums", EnumsRoute);
   app.use("/elective-sections", ElectiveSectionRoute);
+  app.use("/professors", ProfessorRoute);
 };
