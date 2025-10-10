@@ -38,7 +38,7 @@ export default function ViewProgramPage() {
   useEffect(() => {
     if (program) {
       setProgramName(program.name);
-      setDepartment(program.department);
+     setDepartment(program.department as Department);
       setProgramType(program.programType);
     }
   }, [program]);

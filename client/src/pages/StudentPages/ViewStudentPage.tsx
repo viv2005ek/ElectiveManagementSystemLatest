@@ -107,12 +107,11 @@ export default function ViewStudentPage() {
                     </label>
                     <p className="mt-1 text-sm text-gray-900">{student.contactNumber}</p>
                   </div>
-                  {student.cgpa && (
-                    <div>
+{(student as any).cgpa && (                    <div>
                       <label className="block text-sm font-medium text-gray-500">
                         CGPA
                       </label>
-                      <p className="mt-1 text-sm text-gray-900">{student.cgpa}</p>
+                      <p className="mt-1 text-sm text-gray-900">{(student as any).cgpa}</p>
                     </div>
                   )}
                 </div>
@@ -143,12 +142,12 @@ export default function ViewStudentPage() {
                     </label>
                     <p className="mt-1 text-sm text-gray-900">{student.batch.year}</p>
                   </div>
-                  {student.section && (
-                    <div>
+{(student as any).section && (                    <div>
                       <label className="block text-sm font-medium text-gray-500">
                         Section
                       </label>
-                      <p className="mt-1 text-sm text-gray-900">{student.section.name}</p>
+                      <p className="mt-1 text-sm text-gray-900">{(student as any).section?.name}
+</p>
                     </div>
                   )}
                 </div>

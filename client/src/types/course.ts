@@ -4,6 +4,7 @@ interface Course {
   name: string;
   semester: number;
   isStandalone: boolean;
+    credits: number;
   minorSpecializationId: string;
 }
 

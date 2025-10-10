@@ -73,7 +73,7 @@ export default function ViewProfessorPage() {
               </div>
               <div className="text-white">
                 <h1 className="text-2xl font-bold">
-                  {professor.firstName} {professor.middleName} {professor.lastName}
+{professor.firstName} {(professor as any).middleName} {professor.lastName}
                 </h1>
                 <p className="text-green-100 text-lg">
                   {professor.registrationNumber}
