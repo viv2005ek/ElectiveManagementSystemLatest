@@ -60,11 +60,17 @@ const AuthController = {
         { expiresIn: "1d" },
       );
 
+      // Auto-detect environment for cookie settings
+      const isProduction = req.headers.origin?.includes('vercel.app') || 
+                          req.headers.host?.includes('onrender.com');
+      
+      // Set cookie with auto-detected settings
       res.cookie("jwt", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: isProduction, // true for Vercel + Render
+        sameSite: isProduction ? "none" : "lax", // none for cross-domain
         maxAge: 24 * 60 * 60 * 1000, // 1 day
+        path: '/',
       });
 
       res.status(200).json({
@@ -130,10 +136,15 @@ const AuthController = {
 
   logoutController: async (req: Request, res: Response): Promise<any> => {
     try {
+      // Auto-detect environment for cookie settings
+      const isProduction = req.headers.origin?.includes('vercel.app') || 
+                          req.headers.host?.includes('onrender.com');
+
       res.clearCookie("jwt", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // true on production
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        path: '/',
       });
 
       return res.status(200).json({ message: "Logout successful" });
@@ -148,16 +159,20 @@ const AuthController = {
   getUserDetails: async (req: Request, res: Response): Promise<any> => {
     try {
       const token = req.cookies.jwt;
+      
+      // Debug logging
+      console.log('Cookies received:', req.cookies);
+      console.log('JWT token present:', !!token);
+      
       if (!token) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized. Token not found" });
+        return res.status(401).json({ message: "Unauthorized. Token not found" });
       }
 
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET as string,
       ) as JwtPayload;
+      
       if (!decoded.id) {
         return res.status(401).json({ message: "Invalid token" });
       }
@@ -199,8 +214,8 @@ const AuthController = {
 
       res.json({ role, firstName, lastName });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("JWT verification error:", error);
+      res.status(401).json({ message: "Invalid or expired token" });
     }
   },
 };
