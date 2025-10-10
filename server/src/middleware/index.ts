@@ -7,10 +7,11 @@ export const setupMiddleware = (app: Express) => {
   app.use(
     cors({
       origin: [
-        "https://elective-management-system.vercel.app", // Updated frontend URL
+        "https://elective-management-system-latest.vercel.app", // Updated frontend URL
         "http://localhost:3000", // For local development
         "http://localhost:4173", // For local development
-      ],
+        "*"
+      ]
       credentials: true, // Allow cookies
       allowedHeaders: [
         "Content-Type",
