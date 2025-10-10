@@ -11,7 +11,7 @@ export const setupMiddleware = (app: Express) => {
         "http://localhost:3000", // For local development
         "http://localhost:4173", // For local development
         "*"
-      ]
+      ],
       credentials: true, // Allow cookies
       allowedHeaders: [
         "Content-Type",
