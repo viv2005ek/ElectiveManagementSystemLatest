@@ -39,7 +39,9 @@ import ViewProgramPage from "./pages/ProgramPages/ViewProgramPage.tsx";
 import ViewCourseBucketPage from "./pages/CourseBucketPages/ViewCourseBucketPage.tsx";
 import ViewStudentPage from "./pages/StudentPages/ViewStudentPage.tsx";
 import ViewProfessorPage from "./pages/ProfessorsPages/ViewProfessorPage.tsx";
-
+import CreateProfessorPage from "./pages/ProfessorsPages/ProfessorsCreate.tsx";
+import StudentsCreate from "./pages/StudentPages/StudentsCreate.tsx";
+import Admin from "./pages/AdminRegister.tsx";
 export default function Router() {
   return (
     <BrowserRouter>
@@ -54,6 +56,7 @@ export default function Router() {
             </RoleWrapper>
           }
         />
+      
         <Route
           path="/*"
           element={
@@ -110,11 +113,27 @@ export default function Router() {
             </RoleWrapper>
           }
         />
+          <Route
+          path="/Admins"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <Admin />
+            </RoleWrapper>
+          }
+        />
         <Route
           path="/students"
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <StudentsPage />
+            </RoleWrapper>
+          }
+        />
+         <Route
+          path="/students/create"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <StudentsCreate />
             </RoleWrapper>
           }
         />
@@ -339,6 +358,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <ViewProfessorPage />
+            </RoleWrapper>
+          }
+        />
+         <Route
+          path="/professors/create"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <CreateProfessorPage />
             </RoleWrapper>
           }
         />

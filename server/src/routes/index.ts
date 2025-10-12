@@ -16,7 +16,7 @@ import SubjectRoute from "./SubjectRoute";
 import SubjectPreferenceRoute from "./SubjectPreferenceRoute";
 import ElectiveSectionRoute from "./ElectiveSectionRoute";
 import ProfessorRoute from "./ProfessorRoute";
-
+import professorRankRoutes from './professorRankRoutes';
 export const setupRoutes = (app: Router) => {
   app.use("/auth", AuthRoute);
 
@@ -36,4 +36,6 @@ export const setupRoutes = (app: Router) => {
   app.use("/enums", EnumsRoute);
   app.use("/elective-sections", ElectiveSectionRoute);
   app.use("/professors", ProfessorRoute);
+  // app.use('/api/professor-ranks', professorRankRoutes);
+
 };
