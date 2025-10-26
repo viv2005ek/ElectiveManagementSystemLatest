@@ -16,6 +16,16 @@ export const createAdmin = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email address'
+      });
+      return;
+    }
+
     // Check if admin already exists with email or registration number
     const existingAdmin = await prisma.admin.findFirst({
       where: {
@@ -27,9 +37,23 @@ export const createAdmin = async (req: Request, res: Response): Promise<void> =>
     });
 
     if (existingAdmin) {
+      const duplicateField = existingAdmin.email === email ? 'email' : 'registration number';
       res.status(409).json({
         success: false,
-        message: 'Admin with this email or registration number already exists'
+        message: `Admin with this ${duplicateField} already exists`
+      });
+      return;
+    }
+
+    // Check if email exists in credentials table
+    const existingCredential = await prisma.credential.findUnique({
+      where: { email }
+    });
+
+    if (existingCredential) {
+      res.status(409).json({
+        success: false,
+        message: 'This email is already registered in the system'
       });
       return;
     }
@@ -203,42 +227,94 @@ export const updateAdmin = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Check for duplicate email or registration number if they're being updated
-    if (updateData.email || updateData.registrationNumber) {
+    // Validate email format if email is being updated
+    if (updateData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updateData.email)) {
+        res.status(400).json({
+          success: false,
+          message: 'Please provide a valid email address'
+        });
+        return;
+      }
+    }
+
+    // Check for duplicate email in Admin table
+    if (updateData.email && updateData.email !== existingAdmin.email) {
       const duplicateAdmin = await prisma.admin.findFirst({
         where: {
           id: { not: id },
           isDeleted: false,
-          OR: [
-            ...(updateData.email ? [{ email: updateData.email }] : []),
-            ...(updateData.registrationNumber ? [{ registrationNumber: updateData.registrationNumber }] : [])
-          ]
+          email: updateData.email
         }
       });
 
       if (duplicateAdmin) {
         res.status(409).json({
           success: false,
-          message: 'Another admin with this email or registration number already exists'
+          message: 'Another admin with this email already exists'
+        });
+        return;
+      }
+
+      // Check for duplicate email in Credential table
+      const duplicateCredential = await prisma.credential.findUnique({
+        where: { email: updateData.email }
+      });
+
+      if (duplicateCredential) {
+        res.status(409).json({
+          success: false,
+          message: 'This email is already registered in the system'
         });
         return;
       }
     }
 
-    // Update admin
-    const updatedAdmin = await prisma.admin.update({
-      where: { id },
-      data: updateData,
-      include: {
-        credential: {
-          select: {
-            id: true,
-            email: true,
-            role: true,
-            createdAt: true
+    // Check for duplicate registration number
+    if (updateData.registrationNumber && updateData.registrationNumber !== existingAdmin.registrationNumber) {
+      const duplicateRegistration = await prisma.admin.findFirst({
+        where: {
+          id: { not: id },
+          isDeleted: false,
+          registrationNumber: updateData.registrationNumber
+        }
+      });
+
+      if (duplicateRegistration) {
+        res.status(409).json({
+          success: false,
+          message: 'Another admin with this registration number already exists'
+        });
+        return;
+      }
+    }
+
+    // Update admin and credential (if email changed) in transaction
+    const updatedAdmin = await prisma.$transaction(async (tx) => {
+      // Update credential if email changed
+      if (updateData.email && updateData.email !== existingAdmin.email) {
+        await tx.credential.update({
+          where: { id: existingAdmin.credentialId },
+          data: { email: updateData.email }
+        });
+      }
+
+      // Update admin
+      return await tx.admin.update({
+        where: { id },
+        data: updateData,
+        include: {
+          credential: {
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              createdAt: true
+            }
           }
         }
-      }
+      });
     });
 
     res.status(200).json({
@@ -248,6 +324,16 @@ export const updateAdmin = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error('Error updating admin:', error);
+    
+    // Handle Prisma unique constraint errors
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      res.status(409).json({
+        success: false,
+        message: 'A record with this email or registration number already exists'
+      });
+      return;
+    }
+
     res.status(500).json({
       success: false,
       message: 'Internal server error'
