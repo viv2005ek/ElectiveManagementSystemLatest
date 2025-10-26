@@ -17,11 +17,15 @@ import SubjectPreferenceRoute from "./SubjectPreferenceRoute";
 import ElectiveSectionRoute from "./ElectiveSectionRoute";
 import ProfessorRoute from "./ProfessorRoute";
 import professorRankRoutes from './professorRankRoutes';
+import adminRoutes from './adminRoutes';
 export const setupRoutes = (app: Router) => {
   app.use("/auth", AuthRoute);
+app.use('/admins', adminRoutes);
 
   app.use(authMiddleware);
   app.use("/faculties", FacultyRoute);
+  app.use('/professor-ranks', professorRankRoutes);
+
   app.use("/schools", SchoolRoute);
   app.use("/departments", DepartmentRoute);
   app.use("/programs", ProgramRoute);
@@ -36,6 +40,5 @@ export const setupRoutes = (app: Router) => {
   app.use("/enums", EnumsRoute);
   app.use("/elective-sections", ElectiveSectionRoute);
   app.use("/professors", ProfessorRoute);
-  // app.use('/api/professor-ranks', professorRankRoutes);
 
 };

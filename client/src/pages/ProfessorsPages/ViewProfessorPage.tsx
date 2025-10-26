@@ -7,6 +7,8 @@ import useDeleteProfessor from "../../hooks/professorHooks/useDeleteProfessor.ts
 import useUpdateProfessor from "../../hooks/professorHooks/useUpdateProfessor.ts";
 import useFetchDepartments from "../../hooks/departmentHooks/useFetchDepartments.ts";
 import Skeleton from "react-loading-skeleton";
+// Add this import with the other imports
+import useFetchProfessorRanks from "../../hooks/professorHooks/useFetchProfessorRanks.ts";
 import "react-loading-skeleton/dist/skeleton.css";
 import { 
   UserIcon, 
@@ -41,7 +43,8 @@ export default function ViewProfessorPage() {
     departmentId: "",
     professorRankId: ""
   });
-
+// Add this line with the other hook calls
+const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
   // Initialize edit form when professor data loads
   useEffect(() => {
     if (professor) {
@@ -85,6 +88,8 @@ export default function ViewProfessorPage() {
     try {
       await updateProfessor(professor.id, editForm);
       setIsEditing(false);
+      navigate("/professors/"); // Refresh the page to show updated data
+
     } catch (error) {
       console.error("Failed to update professor:", error);
     }
@@ -263,31 +268,34 @@ export default function ViewProfessorPage() {
                   Professional Information
                 </h3>
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">
-                      Professor Rank
-                    </label>
-                    {isEditing ? (
-                      <select
-                        name="professorRankId"
-                        value={editForm.professorRankId}
-                        onChange={handleEditChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="1">Professor (Priority: 1)</option>
-                        <option value="2">Associate Professor (Priority: 2)</option>
-                        <option value="3">Assistant Professor (Priority: 3)</option>
-                        <option value="4">Lecturer (Priority: 4)</option>
-                        <option value="5">Senior Lecturer (Priority: 5)</option>
-                        <option value="6">Visiting Professor (Priority: 6)</option>
-                        <option value="7">Adjunct Professor (Priority: 7)</option>
-                      </select>
-                    ) : (
-                      <p className="mt-1 text-sm text-gray-900">
-                        {professor.professorRank.name}
-                      </p>
-                    )}
-                  </div>
+                 <div>
+  <label className="block text-sm font-medium text-gray-500">
+    Professor Rank
+  </label>
+  {isEditing ? (
+    <select
+      name="professorRankId"
+      value={editForm.professorRankId}
+      onChange={handleEditChange}
+      disabled={ranksLoading}
+      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+    >
+      <option value="">Select Rank</option>
+      {professorRanks.map((rank) => (
+        <option key={rank.id} value={rank.id}>
+          {rank.name} (Priority: {rank.priority})
+        </option>
+      ))}
+    </select>
+  ) : (
+    <p className="mt-1 text-sm text-gray-900">
+      {professor.professorRank.name} (Priority: {professor.professorRank.priority})
+    </p>
+  )}
+  {ranksLoading && isEditing && (
+    <p className="mt-1 text-sm text-gray-500">Loading professor ranks...</p>
+  )}
+</div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Department

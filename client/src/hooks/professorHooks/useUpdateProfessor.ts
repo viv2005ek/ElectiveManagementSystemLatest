@@ -19,13 +19,45 @@ export default function useUpdateProfessor() {
     setError(null);
     
     try {
-      const response = await axiosInstance.put(`/professors/${id}`, data);
+      // Prepare the payload
+      const payload = {
+        firstName: data.firstName,
+        middleName: data.middleName || null, // Send null if empty
+        lastName: data.lastName,
+        email: data.email,
+        departmentId: data.departmentId,
+        professorRankId: data.professorRankId
+      };
+
+      console.log("=== UPDATE PROFESSOR PAYLOAD ===");
+      console.log("Professor ID:", id);
+      console.log("Payload:", payload);
+      console.log("ProfessorRankId Type:", typeof payload.professorRankId);
+      console.log("ProfessorRankId Value:", payload.professorRankId);
+      console.log("=== END PAYLOAD ===");
+
+      const response = await axiosInstance.put(`/professors/${id}`, payload);
+      
+      console.log("=== UPDATE RESPONSE ===");
+      console.log("Response:", response.data);
+      console.log("=== END RESPONSE ===");
+
       setLoading(false);
       return response.data;
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update professor");
+      console.error("=== UPDATE ERROR ===");
+      console.error("Full error:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      console.error("=== END ERROR ===");
+      
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          "Failed to update professor";
+      
+      setError(errorMessage);
       setLoading(false);
-      throw err;
+      throw new Error(errorMessage);
     }
   };
 

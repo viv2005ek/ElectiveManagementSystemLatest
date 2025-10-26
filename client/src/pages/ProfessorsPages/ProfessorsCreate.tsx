@@ -4,13 +4,13 @@ import PageHeader from "../../components/PageHeader.tsx";
 import { useNavigate } from "react-router-dom";
 import useCreateProfessor from "../../hooks/professorHooks/useCreateProfessor.ts";
 import useFetchDepartments from "../../hooks/departmentHooks/useFetchDepartments.ts";
-// import useFetchProfessorRanks from "../../hooks/professorHooks/useFetchProfessorRanks.ts";
+ import useFetchProfessorRanks from "../../hooks/professorHooks/useFetchProfessorRanks.ts";
 
 export default function ProfessorsCreate() {
   const navigate = useNavigate();
   const { createProfessor, loading } = useCreateProfessor();
   const { departments, loading: departmentsLoading } = useFetchDepartments();
-//   const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
+   const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
@@ -155,7 +155,7 @@ export default function ProfessorsCreate() {
                   )}
                 </div>
 
-             <div>
+         <div>
   <label htmlFor="professorRankId" className="block text-sm font-medium text-gray-700">
     Professor Rank *
   </label>
@@ -165,17 +165,19 @@ export default function ProfessorsCreate() {
     required
     value={formData.professorRankId}
     onChange={handleChange}
-    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+    disabled={ranksLoading}
+    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
   >
     <option value="">Select Rank</option>
-    <option value="1">Professor (Priority: 1)</option>
-    <option value="2">Associate Professor (Priority: 2)</option>
-    <option value="3">Assistant Professor (Priority: 3)</option>
-    <option value="4">Lecturer (Priority: 4)</option>
-    <option value="5">Senior Lecturer (Priority: 5)</option>
-    <option value="6">Visiting Professor (Priority: 6)</option>
-    <option value="7">Adjunct Professor (Priority: 7)</option>
+    {professorRanks.map((rank) => (
+      <option key={rank.id} value={rank.id}>
+        {rank.name} (Priority: {rank.priority})
+      </option>
+    ))}
   </select>
+  {ranksLoading && (
+    <p className="mt-1 text-sm text-gray-500">Loading professor ranks...</p>
+  )}
 </div>
               </div>
             </div>
