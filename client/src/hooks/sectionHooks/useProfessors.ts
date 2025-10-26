@@ -4,9 +4,12 @@ import axiosInstance from "../../axiosInstance";
 export interface Professor {
   id: string;
   firstName: string;
+  middleName: string | "";
   lastName: string;
   email: string;
   registrationNumber: string;
+  departmentId: string;
+  professorRankId: string;
   department: {
     name: string;
     school: {
@@ -14,8 +17,10 @@ export interface Professor {
     };
   };
   professorRank: {
-    name: string;
-  };
+  id: number;
+  name: string;
+  priority: number; // Add this line
+};
 }
 
 interface UseProfessorsReturn {

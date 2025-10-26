@@ -1,5 +1,5 @@
 // StudentsCreate.tsx (Fixed)
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MainLayout from "../../layouts/MainLayout.tsx";
 import PageHeader from "../../components/PageHeader.tsx";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  
 } from "@heroicons/react/24/outline";
 
 interface ResultModalData {
@@ -52,8 +52,8 @@ export default function StudentsCreate() {
   
   const { 
     bulkAddStudents, 
-    loading: bulkLoading, 
-    error: bulkError,
+     bulkLoading, 
+    bulkError,
     bulkResult,
     uploadProgress,
     downloadTemplate,
