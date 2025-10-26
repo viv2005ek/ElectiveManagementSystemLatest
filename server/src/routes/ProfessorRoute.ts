@@ -152,6 +152,83 @@ router.post(
 
 /**
  * @swagger
+ * /professors/bulk:
+ *   post:
+ *     summary: Bulk create professors
+ *     tags: [Professors]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - professors
+ *             properties:
+ *               professors:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - firstName
+ *                     - lastName
+ *                     - email
+ *                     - registrationNumber
+ *                     - departmentId
+ *                     - professorRankId
+ *                   properties:
+ *                     firstName:
+ *                       type: string
+ *                     middleName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     registrationNumber:
+ *                       type: string
+ *                     departmentId:
+ *                       type: string
+ *                     professorRankId:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Professors created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 createdCount:
+ *                   type: integer
+ *                 failedCount:
+ *                   type: integer
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       email:
+ *                         type: string
+ *                       registrationNumber:
+ *                         type: string
+ *                       error:
+ *                         type: string
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Unable to create professors
+ */
+router.post(
+  "/bulk",
+  authorizeRoles([UserRole.Admin]),
+  ProfessorController.bulkCreateProfessors,
+);
+
+/**
+ * @swagger
  * /professors/{id}:
  *   put:
  *     summary: Update a professor

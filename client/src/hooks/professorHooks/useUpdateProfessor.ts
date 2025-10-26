@@ -57,7 +57,9 @@ export default function useUpdateProfessor() {
       
       setError(errorMessage);
       setLoading(false);
-      throw new Error(errorMessage);
+      
+      // Throw the actual error response so the component can access the details
+      throw err;
     }
   };
 

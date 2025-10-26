@@ -7,7 +7,6 @@ import useDeleteProfessor from "../../hooks/professorHooks/useDeleteProfessor.ts
 import useUpdateProfessor from "../../hooks/professorHooks/useUpdateProfessor.ts";
 import useFetchDepartments from "../../hooks/departmentHooks/useFetchDepartments.ts";
 import Skeleton from "react-loading-skeleton";
-// Add this import with the other imports
 import useFetchProfessorRanks from "../../hooks/professorHooks/useFetchProfessorRanks.ts";
 import "react-loading-skeleton/dist/skeleton.css";
 import { 
@@ -20,6 +19,15 @@ import {
   XMarkIcon 
 } from "@heroicons/react/24/outline";
 
+// Add modal interface
+interface ResultModalData {
+  isOpen: boolean;
+  type: 'success' | 'error' | null;
+  title: string;
+  message: string;
+  details?: any;
+}
+
 export default function ViewProfessorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,8 +38,9 @@ export default function ViewProfessorPage() {
   } = useFetchProfessorById(id!);
   
   const { deleteProfessor, loading: deleting } = useDeleteProfessor();
-  const { updateProfessor, loading: updating } = useUpdateProfessor();
+  const { updateProfessor, loading: updating, error: updateError } = useUpdateProfessor();
   const { departments, loading: departmentsLoading } = useFetchDepartments();
+  const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -43,8 +52,16 @@ export default function ViewProfessorPage() {
     departmentId: "",
     professorRankId: ""
   });
-// Add this line with the other hook calls
-const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
+
+  // Add modal state
+  const [resultModal, setResultModal] = useState<ResultModalData>({
+    isOpen: false,
+    type: null,
+    title: '',
+    message: '',
+    details: null
+  });
+
   // Initialize edit form when professor data loads
   useEffect(() => {
     if (professor) {
@@ -86,12 +103,32 @@ const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
     if (!professor) return;
     
     try {
-      await updateProfessor(professor.id, editForm);
+      const result = await updateProfessor(professor.id, editForm);
+      
+      // Show success modal
+      setResultModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Update Successful',
+        message: `Professor ${editForm.firstName} ${editForm.lastName} has been updated successfully.`,
+        details: result
+      });
+      
       setIsEditing(false);
-      navigate("/professors/"); // Refresh the page to show updated data
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update professor:", error);
+      
+      // Show error modal with detailed error information
+      const errorDetails = error.response?.data;
+      
+      setResultModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Update Failed',
+        message: errorDetails?.message || 'Failed to update professor',
+        details: errorDetails
+      });
     }
   };
 
@@ -108,6 +145,27 @@ const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
       });
     }
     setIsEditing(false);
+  };
+
+  // Close modal function
+  const closeModal = () => {
+    setResultModal({
+      isOpen: false,
+      type: null,
+      title: '',
+      message: '',
+      details: null
+    });
+    
+    // If it was a success modal and we're not editing anymore, refresh the page
+    if (resultModal.type === 'success' && !isEditing) {
+      window.location.reload(); // Simple refresh to show updated data
+    }
+  };
+
+  // Navigate to professors list
+  const goToProfessorsList = () => {
+    navigate("/professors");
   };
 
   if (loading) {
@@ -268,34 +326,34 @@ const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
                   Professional Information
                 </h3>
                 <div className="space-y-3">
-                 <div>
-  <label className="block text-sm font-medium text-gray-500">
-    Professor Rank
-  </label>
-  {isEditing ? (
-    <select
-      name="professorRankId"
-      value={editForm.professorRankId}
-      onChange={handleEditChange}
-      disabled={ranksLoading}
-      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-    >
-      <option value="">Select Rank</option>
-      {professorRanks.map((rank) => (
-        <option key={rank.id} value={rank.id}>
-          {rank.name} (Priority: {rank.priority})
-        </option>
-      ))}
-    </select>
-  ) : (
-    <p className="mt-1 text-sm text-gray-900">
-      {professor.professorRank.name} (Priority: {professor.professorRank.priority})
-    </p>
-  )}
-  {ranksLoading && isEditing && (
-    <p className="mt-1 text-sm text-gray-500">Loading professor ranks...</p>
-  )}
-</div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Professor Rank
+                    </label>
+                    {isEditing ? (
+                      <select
+                        name="professorRankId"
+                        value={editForm.professorRankId}
+                        onChange={handleEditChange}
+                        disabled={ranksLoading}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                      >
+                        <option value="">Select Rank</option>
+                        {professorRanks.map((rank) => (
+                          <option key={rank.id} value={rank.id}>
+                            {rank.name} (Priority: {rank.priority})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p className="mt-1 text-sm text-gray-900">
+                        {professor.professorRank.name} (Priority: {professor.professorRank.priority})
+                      </p>
+                    )}
+                    {ranksLoading && isEditing && (
+                      <p className="mt-1 text-sm text-gray-500">Loading professor ranks...</p>
+                    )}
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Department
@@ -418,6 +476,93 @@ const { professorRanks, loading: ranksLoading } = useFetchProfessorRanks();
                   >
                     {deleting ? "Deleting..." : "Delete"}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Result Modal for Edit Success/Error */}
+        {resultModal.isOpen && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                {/* Icon */}
+                <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${
+                  resultModal.type === 'success' ? 'bg-green-100' : 'bg-red-100'
+                }`}>
+                  {resultModal.type === 'success' ? (
+                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  ) : (
+                    <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  )}
+                </div>
+                
+                {/* Title */}
+                <h3 className={`text-lg leading-6 font-medium ${
+                  resultModal.type === 'success' ? 'text-green-800' : 'text-red-800'
+                } mt-2`}>
+                  {resultModal.title}
+                </h3>
+                
+                {/* Message */}
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    {resultModal.message}
+                  </p>
+                  
+                  {/* Show failed details if available */}
+                  {resultModal.type === 'error' && resultModal.details?.failed && (
+                    <div className="mt-3 p-2 bg-red-50 rounded text-left">
+                      <p className="text-xs text-red-600 font-medium">
+                        {resultModal.details.failed[0]?.error || 'Please check the form and try again.'}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Show summary if available */}
+               
+                  
+                  {/* Show individual error if available */}
+                  {resultModal.type === 'error' && resultModal.details?.error && (
+                    <div className="mt-3 p-2 bg-red-50 rounded text-left">
+                      <p className="text-xs text-red-600 font-medium">
+                        {resultModal.details.error}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Show successful details if available */}
+                  {resultModal.type === 'success' && resultModal.details?.successful && (
+                    <div className="mt-3 p-2 bg-green-50 rounded text-left">
+                      <p className="text-xs text-green-600">
+                        Registration Number: {resultModal.details.successful[0]?.registrationNumber}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Buttons */}
+                <div className="items-center px-4 py-3">
+                  {resultModal.type === 'success' ? (
+                    <button
+                      onClick={closeModal}
+                      className="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                    >
+                      OK
+                    </button>
+                  ) : (
+                    <button
+                      onClick={closeModal}
+                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                      Try Again
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
