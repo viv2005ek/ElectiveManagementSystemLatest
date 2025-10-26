@@ -42,6 +42,7 @@ import ViewProfessorPage from "./pages/ProfessorsPages/ViewProfessorPage.tsx";
 import CreateProfessorPage from "./pages/ProfessorsPages/ProfessorsCreate.tsx";
 import StudentsCreate from "./pages/StudentPages/StudentsCreate.tsx";
 import Admin from "./pages/AdminRegister.tsx";
+import ManagementPage from "./pages/ManagementPage.tsx";
 export default function Router() {
   return (
     <BrowserRouter>
@@ -86,6 +87,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <SubjectTypesPage />
+            </RoleWrapper>
+          }
+        />
+         <Route
+          path="/ManagementPage"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
+              <ManagementPage />
             </RoleWrapper>
           }
         />

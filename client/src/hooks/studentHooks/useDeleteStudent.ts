@@ -13,11 +13,16 @@ export default function useDeleteStudent() {
       await axiosInstance.delete(`/students/${id}`);
       setLoading(false);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete student");
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || "Failed to delete student";
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
   };
 
-  return { deleteStudent, loading, error };
+  const clearError = () => {
+    setError(null);
+  };
+
+  return { deleteStudent, loading, error, clearError };
 }

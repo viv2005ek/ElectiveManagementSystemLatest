@@ -147,6 +147,58 @@ router.get(
 /**
  * @swagger
  * /students/{id}:
+ *   put:
+ *     summary: Update a student
+ *     tags: [Students]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               middleName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               contactNumber:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [MALE, FEMALE, OTHER]
+ *               semester:
+ *                 type: integer
+ *               programId:
+ *                 type: string
+ *               batchId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Student updated successfully
+ *       404:
+ *         description: Student not found
+ *       500:
+ *         description: Unable to update student
+ */
+router.put(
+  "/:id",
+  // authorizeRoles([UserRole.Admin]),
+  studentController.updateStudent
+);
+/**
+ * @swagger
+ * /students/{id}:
  *   delete:
  *     summary: Soft delete a student
  *     tags: [Students]
@@ -170,7 +222,65 @@ router.delete(
   // authorizeRoles([UserRole.Admin]),
   studentController.deleteStudent,
 );
-
+/**
+ * @swagger
+ * /students:
+ *   post:
+ *     summary: Create a single student
+ *     tags: [Students]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - gender
+ *               - contactNumber
+ *               - registrationNumber
+ *               - semester
+ *               - batchId
+ *               - email
+ *               - programId
+ *               - password
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [MALE, FEMALE, OTHER]
+ *               contactNumber:
+ *                 type: string
+ *               registrationNumber:
+ *                 type: string
+ *               semester:
+ *                 type: integer
+ *               batchId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               programId:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Student created successfully
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Unable to create student
+ */
+// ADD THIS MISSING ROUTE
+router.post(
+  "/",
+  // authorizeRoles([UserRole.Admin]),
+  studentController.createStudent
+);
 /**
  * @swagger
  * /students/bulk-add:

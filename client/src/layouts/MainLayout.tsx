@@ -9,6 +9,7 @@ import {
   MenuItem,
   MenuItems,
   TransitionChild,
+
 } from "@headlessui/react";
 import {
   AcademicCapIcon,
@@ -25,7 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store.ts";
-import {BookIcon, BuildingIcon, GraduationCap, SchoolIcon, UniversityIcon, UserIcon,} from "lucide-react";
+import {BookIcon, BuildingIcon, GraduationCap, SchoolIcon, UniversityIcon, UserIcon,Smartphone} from "lucide-react";
 import {Link, useLocation} from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import {UserRole} from "../types/UserTypes.ts";
@@ -109,6 +110,13 @@ const navigation: NavigationItem[] = [
         name: "Departments",
         href: "/departments",
         icon: BuildingIcon,
+        current: false,
+        requiredRoles: [UserRole.ADMIN],
+      },
+       {
+        name: "Management",
+        href: "/ManagementPage",
+        icon: Smartphone,
         current: false,
         requiredRoles: [UserRole.ADMIN],
       },
