@@ -43,18 +43,24 @@ export default function CreateCourseBucketPage() {
 
   const { addCourseBucket } = useCreateCourseBucket();
 
-  const handleSubmit = async () => {
-    await addCourseBucket({
-      name,
-      departmentId: department?.id,
-      numberOfCourses,
-      subjectTypeIds: subjectTypes.map((type) => type.id),
-      courses: selectedCourses.map((course) => ({
-        id: course.id,
-        orderIndex: course.orderIndex,
-      })),
-    });
-  };
+const handleSubmit = async () => {
+  if (!name || !department || numberOfCourses === undefined || numberOfCourses < 1) {
+    notify("error", "Please fill in all required fields with valid values.");
+    return;
+  }
+
+  await addCourseBucket({
+    name,
+    departmentId: department.id,
+    numberOfCourses,
+    totalCredits: 0, // Add this required field - calculate or set default
+    subjectTypeIds: selectedSubjectTypes.map((type) => type.id),
+    courses: selectedCourses.map((course) => ({
+      id: course.id,
+      orderIndex: course.orderIndex,
+    })),
+  });
+};
 
   return (
     <MainLayout>

@@ -130,35 +130,42 @@ const CourseBucketsController = {
   },
 
   getCourseBucketById: async (req: Request, res: Response): Promise<any> => {
-    try {
-      const { id } = req.params;
-      const courseBucket = await prisma.courseBucket.findUnique({
-        where: { id },
-        include: {
-          courses: true,
-          department: {
-            include: {
-              school: {
-                include: {
-                  faculty: true,
-                },
+  try {
+    const { id } = req.params;
+    const courseBucket = await prisma.courseBucket.findUnique({
+      where: { id },
+      include: {
+        courses: {
+          include: {
+            course: true, // Add this line to include course data
+          },
+          orderBy: {
+            orderIndex: 'asc',
+          },
+        },
+        department: {
+          include: {
+            school: {
+              include: {
+                faculty: true,
               },
             },
           },
-          subjectTypes: true,
         },
-      });
+        subjectTypes: true,
+      },
+    });
 
-      if (!courseBucket || courseBucket.isDeleted) {
-        return res.status(404).json({ message: "Course bucket not found" });
-      }
-
-      res.status(200).json(courseBucket);
-    } catch (error) {
-      console.error("Error fetching course bucket:", error);
-      res.status(500).json({ message: "Unable to fetch course bucket" });
+    if (!courseBucket || courseBucket.isDeleted) {
+      return res.status(404).json({ message: "Course bucket not found" });
     }
-  },
+
+    res.status(200).json(courseBucket);
+  } catch (error) {
+    console.error("Error fetching course bucket:", error);
+    res.status(500).json({ message: "Unable to fetch course bucket" });
+  }
+},
 
   addCourseBucket: async (req: Request, res: Response): Promise<void> => {
     try {

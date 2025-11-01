@@ -29,9 +29,7 @@ export default function CreateCoursePage() {
   const [courseCode, setCourseCode] = useState("");
   const [credits, setCredits] = useState<number | undefined>();
   const [department, setDepartment] = useState<Department | null>(null);
-  const [selectedSubjectTypes, setSelectedSubjectTypes] = useState<
-    SubjectType[]
-  >([]);
+  const [selectedSubjectTypes, setSelectedSubjectTypes] = useState<SubjectType[]>([]);
   const [semester, setSemester] = useState<Semester | null>(null);
 
   const handleSubmit = async () => {
@@ -49,10 +47,13 @@ export default function CreateCoursePage() {
       semesterId: semester?.id,
     };
 
+    console.log("Creating course with data:", courseData); // Debug log
+
     const response = await createCourse(courseData);
 
     if (response) {
       notify("success", "Course created successfully!");
+      // Reset form
       setCourseCode("");
       setCourseName("");
       setCredits(undefined);
@@ -83,21 +84,26 @@ export default function CreateCoursePage() {
                 <TextInputField
                   value={courseName}
                   setValue={setCourseName}
-                  label="Course name"
+                  label="Course name *"
+                  placeholder="Enter course name"
+                  
                 />
               </div>
               <div>
                 <TextInputField
                   value={courseCode}
                   setValue={setCourseCode}
-                  label="Course code"
+                  label="Course code *"
+                  placeholder="Enter course code"
+                  
                 />
               </div>
               <div>
                 <NumberInputField
                   value={credits}
                   setValue={setCredits}
-                  label="Credits"
+                  label="Credits *"
+                  placeholder="Enter credits"
                 />
               </div>
               <div>
@@ -105,7 +111,8 @@ export default function CreateCoursePage() {
                   items={departments}
                   selected={department}
                   setSelected={setDepartment}
-                  label="Department"
+                  label="Department *"
+                  
                 />
               </div>
               <div>
@@ -129,7 +136,9 @@ export default function CreateCoursePage() {
 
             {error && (
               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-red-600">
+                  Error: {error}
+                </p>
               </div>
             )}
 
