@@ -45,7 +45,7 @@ export default function CreateCourseBucketPage() {
 
 const handleSubmit = async () => {
   if (!name || !department || numberOfCourses === undefined || numberOfCourses < 1) {
-    notify("error", "Please fill in all required fields with valid values.");
+    alert( "Please fill in all required fields with valid values.");
     return;
   }
 
