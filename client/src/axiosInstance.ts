@@ -1,18 +1,19 @@
 import axios from "axios";
 
 const getBaseURL = () => {
-  const isProd = import.meta.env.MODE === "production";
-  const isVercel = window.location.hostname.includes('vercel.app');
+  // Check if we're on localhost
+  const isLocalhost = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1' || 
+                      window.location.hostname === '[::1]';
   
-  if (isProd && isVercel) {
-    // When on Vercel, use Render backend
-    return "https://ems-backend-kygt.onrender.com/api";
+  if (isLocalhost) {
+    // Use localhost backend when developing locally
+    return `${import.meta.env.VITE_BASE || 'http://localhost:8080'}/api`;
   }
   
-  // Use environment variable or fallback
-  return `${import.meta.env.VITE_BASE || 'http://localhost:8080'}/api`;
+  // For all other environments (production, staging, etc.), use the actual API
+  return "https://ems-backend-kygt.onrender.com/api";
 };
-
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
   headers: {
