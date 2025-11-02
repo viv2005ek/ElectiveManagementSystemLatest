@@ -48,6 +48,7 @@ const navigation: NavigationItem[] = [
     current: true,
     requiredRoles: [UserRole.ADMIN, UserRole.STUDENT],
   },
+  
   {
     name: "My Subjects",
     href: "/my-subjects",
@@ -168,6 +169,7 @@ const navigation: NavigationItem[] = [
 
 const userNavigation = [
   { name: "Your profile", href: "/profile" },
+  { name: "Settings", href: "/settings" },
   { name: "Sign out", href: "/login" },
 ];
 
@@ -279,6 +281,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     if (!requiredRoles) return true;
     return requiredRoles.some((role) => user?.role === role);
   };
+console.log("Current pathname:", location.pathname);
 
   return (
     <>
@@ -313,7 +316,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                   </button>
                 </div>
               </TransitionChild>
-              <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 bg-muj-orange">
+              <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 bg-muj-orange z-0">
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
@@ -365,7 +368,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                     </li>
                     <li className="mt-auto">
                       <Link
-                        to="#"
+                        to="/settings"
                         className="group -mx-2 flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
                       >
                         <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />
@@ -382,14 +385,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col bg-muj-orange">
           <div className="flex flex-col h-full border-r border-white/10">
             {/* Sticky Logo */}
-            <div className="sticky top-0 z-10 bg-muj-orange px-6 pt-4">
-              <div className="flex h-20 items-center justify-center bg-white rounded-lg shadow-sm p-4">
+            <div className="sticky top-0  bg-muj-orange px-6 pt-4 z-0">
+              <div className="flex h-20 items-center justify-center bg-white rounded-lg shadow-sm p-4 z-0">
                 <img alt="Your Company" src="/MUJ_logo.png" className="w-max" />
               </div>
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 px-6 overflow-y-auto scrollbar-hide">
+            <div className="flex-1 px-6 overflow-y-auto scrollbar-hide z-10">
               <nav className="py-4">
                 <ul role="list" className="space-y-2" key="sidebar-navigation">
                   {navigation.map(
@@ -435,7 +438,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             {/* Sticky Settings */}
             <div className="sticky bottom-0 bg-muj-orange px-6 py-4 border-t border-white/10">
               <Link
-                to="#"
+                to="/settings"
                 className="group flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
               >
                 <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />

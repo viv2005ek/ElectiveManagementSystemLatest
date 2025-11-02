@@ -197,8 +197,8 @@ export default function StudentsCreate() {
     }
     
     // Password validation
-    if (formData.password && formData.password.length < 6) {
-      errors.push("Password must be at least 6 characters long");
+    if (formData.password && formData.password.length < 4) {
+      errors.push("Password must be at least 4 characters long");
     }
     
     return errors;
@@ -405,7 +405,7 @@ export default function StudentsCreate() {
                         placeholder="Enter password"
                       />
                       <p className="mt-1 text-sm text-gray-500">
-                        Minimum 6 characters. Students will use this to login initially.
+                        Minimum 4 characters. Students will use this to login initially.
                       </p>
                     </div>
 

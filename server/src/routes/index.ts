@@ -18,14 +18,19 @@ import ElectiveSectionRoute from "./ElectiveSectionRoute";
 import ProfessorRoute from "./ProfessorRoute";
 import professorRankRoutes from './professorRankRoutes';
 import adminRoutes from './adminRoutes';
+import profileRoutes from './profileRoutes';
+import passwordRoutes from './passwordRoutes'; 
+
 export const setupRoutes = (app: Router) => {
   app.use("/auth", AuthRoute);
-app.use('/admins', adminRoutes);
+
 
   app.use(authMiddleware);
+  app.use("/password", passwordRoutes);
+  app.use('/admins', adminRoutes);
   app.use("/faculties", FacultyRoute);
   app.use('/professor-ranks', professorRankRoutes);
-
+app.use("/profile", profileRoutes);
   app.use("/schools", SchoolRoute);
   app.use("/departments", DepartmentRoute);
   app.use("/programs", ProgramRoute);

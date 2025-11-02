@@ -43,6 +43,9 @@ import CreateProfessorPage from "./pages/ProfessorsPages/ProfessorsCreate.tsx";
 import StudentsCreate from "./pages/StudentPages/StudentsCreate.tsx";
 import Admin from "./pages/AdminRegister.tsx";
 import ManagementPage from "./pages/ManagementPage.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
+import Settings from "./Settings.tsx";
+
 export default function Router() {
   return (
     <BrowserRouter>
@@ -111,6 +114,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <DepartmentsPage />
+            </RoleWrapper>
+          }
+        />
+         <Route
+          path="/profile"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN,UserRole.STUDENT]}>
+              <ProfilePage />
             </RoleWrapper>
           }
         />
@@ -375,6 +386,14 @@ export default function Router() {
           element={
             <RoleWrapper requiredRoles={[UserRole.ADMIN]}>
               <CreateProfessorPage />
+            </RoleWrapper>
+          }
+        />
+         <Route
+          path="/settings"
+          element={
+            <RoleWrapper requiredRoles={[UserRole.ADMIN,UserRole.STUDENT]}>
+              <Settings />
             </RoleWrapper>
           }
         />
