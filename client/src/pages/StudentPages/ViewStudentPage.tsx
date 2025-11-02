@@ -433,7 +433,8 @@ export default function ViewStudentPage() {
                   Personal Information
                 </h3>
                 <div className="space-y-3">
-                  <div>
+                  {/*for gender */}
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Gender
                     </label>
@@ -450,7 +451,8 @@ export default function ViewStudentPage() {
                     ) : (
                       <p className="mt-1 text-sm text-gray-900">{student.gender}</p>
                     )}
-                  </div>
+                  </div> */}
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
                       Contact Number

@@ -137,8 +137,8 @@ export default function useCreateProfessor({ departments, professorRanks }: UseC
 
   // Download CSV template
   const downloadTemplate = () => {
-    const availableDepartments = departments.map(dept => `# - ${dept.name} (ID: ${dept.id})`).join('\n');
-    const availableRanks = professorRanks.map(rank => `# - ${rank.name} (Priority: ${rank.priority})`).join('\n');
+    const availableDepartments = departments.map(dept => `# - ${dept.name}`).join('\n');
+    const availableRanks = professorRanks.map(rank => `# - ${rank.name}`).join('\n');
     
     const template = `firstName,middleName,lastName,email,registrationNumber,department,professorRank
 John,,Doe,john.doe@university.edu,PROF001,Computer Science,Professor

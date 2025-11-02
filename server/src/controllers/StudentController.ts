@@ -416,280 +416,261 @@ const studentController = {
   },
 
   // Bulk add students with detailed error reporting
-  bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
-    const { students } = req.body;
+  // controllers/StudentController.ts - Optimized bulkAddStudents function
 
-    if (!Array.isArray(students) || students.length === 0) {
-      return res.status(400).json({ 
-        message: "Students array is required and cannot be empty",
-        summary: {
-          totalProcessed: 0,
-          successCount: 0,
-          failedCount: 0
-        },
-        successful: [],
-        failed: []
-      });
-    }
+// Bulk add students with optimized performance
+bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
+  const { students } = req.body;
 
-    // Validate each student data
-    const validationErrors: FailedStudent[] = [];
+  if (!Array.isArray(students) || students.length === 0) {
+    return res.status(400).json({ 
+      message: "Students array is required and cannot be empty",
+      summary: {
+        totalProcessed: 0,
+        successCount: 0,
+        failedCount: 0
+      },
+      successful: [],
+      failed: []
+    });
+  }
 
+  console.log(`Starting bulk upload for ${students.length} students`);
+
+  const results = {
+    successful: [] as SuccessfulStudent[],
+    failed: [] as FailedStudent[]
+  };
+
+  try {
+    // Pre-validation - check for required fields
     students.forEach((student: BulkStudentData, index: number) => {
-      if (!student.firstName) {
-        validationErrors.push({
+      if (!student.firstName || !student.lastName || !student.email || !student.registrationNumber) {
+        results.failed.push({
           email: student.email || 'Unknown',
           registrationNumber: student.registrationNumber || 'Unknown',
-          error: "First name is required",
-          index
-        });
-      }
-      if (!student.lastName) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Last name is required",
-          index
-        });
-      }
-      if (!student.email) {
-        validationErrors.push({
-          email: 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Email is required",
-          index
-        });
-      }
-      if (!student.registrationNumber) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: 'Unknown',
-          error: "Registration number is required",
-          index
-        });
-      }
-      if (!student.gender) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Gender is required",
-          index
-        });
-      }
-      if (!student.semester) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Semester is required",
-          index
-        });
-      }
-      if (!student.programId) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Program ID is required",
-          index
-        });
-      }
-      if (!student.batchId) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Batch ID is required",
-          index
-        });
-      }
-      if (!student.password) {
-        validationErrors.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Password is required",
+          error: "Missing required fields (firstName, lastName, email, or registrationNumber)",
           index
         });
       }
     });
 
-    if (validationErrors.length > 0) {
+    // Filter out invalid students
+    const validStudents = students.filter((student, index) => 
+      !results.failed.some(failed => failed.index === index)
+    );
+
+    if (validStudents.length === 0) {
       return res.status(400).json({
-        message: "Validation failed for some students",
+        message: "All students failed validation",
         summary: {
-          totalProcessed: 0,
+          totalProcessed: students.length,
           successCount: 0,
-          failedCount: validationErrors.length
+          failedCount: results.failed.length
         },
         successful: [],
-        failed: validationErrors
+        failed: results.failed
       });
     }
 
-    try {
-      // Check for existing students to avoid duplicates
-      const emails = students.map(s => s.email);
-      const registrationNumbers = students.map(s => s.registrationNumber);
+    // Check for duplicates in one query
+    const emails = validStudents.map(s => s.email);
+    const registrationNumbers = validStudents.map(s => s.registrationNumber);
 
-      const existingStudents = await prisma.student.findMany({
-        where: {
-          OR: [
-            { email: { in: emails } },
-            { registrationNumber: { in: registrationNumbers } }
-          ]
-        },
-        select: {
-          email: true,
-          registrationNumber: true
-        }
-      });
+    const existingStudents = await prisma.student.findMany({
+      where: {
+        OR: [
+          { email: { in: emails } },
+          { registrationNumber: { in: registrationNumbers } }
+        ]
+      },
+      select: {
+        email: true,
+        registrationNumber: true
+      }
+    });
 
-      const existingEmails = new Set(existingStudents.map(s => s.email));
-      const existingRegistrationNumbers = new Set(existingStudents.map(s => s.registrationNumber));
+    const existingEmails = new Set(existingStudents.map(s => s.email));
+    const existingRegistrationNumbers = new Set(existingStudents.map(s => s.registrationNumber));
 
-      const results = {
-        successful: [] as SuccessfulStudent[],
-        failed: [] as FailedStudent[]
-      };
+    // Check for duplicates within the current batch
+    const seenEmails = new Set();
+    const seenRegNumbers = new Set();
 
-      // First pass: Check for duplicates and add to failed list
-      students.forEach((studentData: BulkStudentData, index: number) => {
-        if (existingEmails.has(studentData.email)) {
-          results.failed.push({
-            email: studentData.email,
-            registrationNumber: studentData.registrationNumber,
-            error: "Email already exists in system",
-            index
-          });
-          return;
-        }
-
-        if (existingRegistrationNumbers.has(studentData.registrationNumber)) {
-          results.failed.push({
-            email: studentData.email,
-            registrationNumber: studentData.registrationNumber,
-            error: "Registration number already exists in system",
-            index
-          });
-          return;
-        }
-
-        // Check for duplicates within the same batch
-        const duplicateInBatch = students.slice(0, index).some((s, i) => 
-          s.email === studentData.email || s.registrationNumber === studentData.registrationNumber
-        );
-
-        if (duplicateInBatch) {
-          results.failed.push({
-            email: studentData.email,
-            registrationNumber: studentData.registrationNumber,
-            error: "Duplicate email or registration number within the batch",
-            index
-          });
-          return;
-        }
-
-        // Add to existing sets to track duplicates in current batch
-        existingEmails.add(studentData.email);
-        existingRegistrationNumbers.add(studentData.registrationNumber);
-      });
-
-      // Filter out students that failed duplicate checks
-      const studentsToProcess = students.filter((student, index) => 
-        !results.failed.some(failed => failed.index === index)
+    validStudents.forEach((student, index) => {
+      const originalIndex = students.findIndex(s => 
+        s.email === student.email && s.registrationNumber === student.registrationNumber
       );
 
-      // Process remaining students in batches
-      const BATCH_SIZE = 10;
-      
-      for (let i = 0; i < studentsToProcess.length; i += BATCH_SIZE) {
-        const batch = studentsToProcess.slice(i, i + BATCH_SIZE);
-        
-        await Promise.all(
-          batch.map(async (studentData: BulkStudentData) => {
+      if (existingEmails.has(student.email)) {
+        results.failed.push({
+          email: student.email,
+          registrationNumber: student.registrationNumber,
+          error: "Email already exists in system",
+          index: originalIndex
+        });
+        return;
+      }
+
+      if (existingRegistrationNumbers.has(student.registrationNumber)) {
+        results.failed.push({
+          email: student.email,
+          registrationNumber: student.registrationNumber,
+          error: "Registration number already exists in system",
+          index: originalIndex
+        });
+        return;
+      }
+
+      if (seenEmails.has(student.email) || seenRegNumbers.has(student.registrationNumber)) {
+        results.failed.push({
+          email: student.email,
+          registrationNumber: student.registrationNumber,
+          error: "Duplicate email or registration number within the batch",
+          index: originalIndex
+        });
+        return;
+      }
+
+      seenEmails.add(student.email);
+      seenRegNumbers.add(student.registrationNumber);
+    });
+
+    // Final list of students to process
+    const studentsToProcess = validStudents.filter((student) => 
+      !results.failed.some(failed => 
+        failed.email === student.email && failed.registrationNumber === student.registrationNumber
+      )
+    );
+
+    console.log(`Processing ${studentsToProcess.length} valid students out of ${students.length} total`);
+
+    if (studentsToProcess.length === 0) {
+      return res.status(400).json({
+        message: "All students failed duplicate checks",
+        summary: {
+          totalProcessed: students.length,
+          successCount: 0,
+          failedCount: results.failed.length
+        },
+        successful: [],
+        failed: results.failed
+      });
+    }
+
+    // Process students in smaller batches to avoid transaction timeouts
+    const BATCH_SIZE = 50; // Increased batch size for better performance
+    const totalBatches = Math.ceil(studentsToProcess.length / BATCH_SIZE);
+
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const startIdx = batchIndex * BATCH_SIZE;
+      const endIdx = Math.min(startIdx + BATCH_SIZE, studentsToProcess.length);
+      const batch = studentsToProcess.slice(startIdx, endIdx);
+
+      console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
+
+      try {
+        // Process batch in a single transaction for better performance
+        const batchResults = await prisma.$transaction(async (tx) => {
+          const batchSuccessful: SuccessfulStudent[] = [];
+          const batchFailed: FailedStudent[] = [];
+
+          // Pre-fetch all programs and batches for this batch
+          const programIds = [...new Set(batch.map(s => s.programId))];
+          const batchIds = [...new Set(batch.map(s => s.batchId))];
+
+          const programs = await tx.program.findMany({
+            where: { id: { in: programIds } },
+            select: { id: true, name: true }
+          });
+
+          const batches = await tx.batch.findMany({
+            where: { id: { in: batchIds } },
+            select: { id: true, year: true }
+          });
+
+          const programMap = new Map(programs.map(p => [p.id, p]));
+          const batchMap = new Map(batches.map(b => [b.id, b]));
+
+          // Process each student in the current batch
+          for (const studentData of batch) {
             try {
+              const program = programMap.get(studentData.programId);
+              const batch = batchMap.get(studentData.batchId);
+
+              if (!program) {
+                batchFailed.push({
+                  email: studentData.email,
+                  registrationNumber: studentData.registrationNumber,
+                  error: `Program with ID ${studentData.programId} not found`
+                });
+                continue;
+              }
+
+              if (!batch) {
+                batchFailed.push({
+                  email: studentData.email,
+                  registrationNumber: studentData.registrationNumber,
+                  error: `Batch with ID ${studentData.batchId} not found`
+                });
+                continue;
+              }
+
+              // Hash password
               const hashedPassword = await hash(studentData.password, 10);
 
-              // Create student in transaction
-              const student = await prisma.$transaction(async (tx) => {
-                // Check if program exists
-                const program = await tx.program.findUnique({
-                  where: { id: studentData.programId }
-                });
-
-                if (!program) {
-                  throw new Error(`Program with ID ${studentData.programId} not found`);
-                }
-
-                // Check if batch exists
-                const batch = await tx.batch.findUnique({
-                  where: { id: studentData.batchId }
-                });
-
-                if (!batch) {
-                  throw new Error(`Batch with ID ${studentData.batchId} not found`);
-                }
-
-                const credential = await tx.credential.create({
-                  data: {
-                    email: studentData.email,
-                    passwordHash: hashedPassword,
-                    role: UserRole.Student,
-                  },
-                });
-
-                // Create the student
-                const createdStudent = await tx.student.create({
-                  data: {
-                    firstName: studentData.firstName,
-                    lastName: studentData.lastName,
-                    email: studentData.email,
-                    registrationNumber: studentData.registrationNumber,
-                    contactNumber: studentData.contactNumber || "undefined",
-                    gender: studentData.gender,
-                    semester: studentData.semester,
-                    programId: studentData.programId,
-                    batchId: studentData.batchId,
-                    credentialId: credential.id,
-                  },
-                });
-
-                // Then fetch the student with relations separately
-                const studentWithRelations = await tx.student.findUnique({
-                  where: { id: createdStudent.id },
-                  include: {
-                    program: {
-                      select: {
-                        id: true,
-                        name: true,
-                      },
-                    },
-                    batch: {
-                      select: {
-                        id: true,
-                        year: true,
-                      },
-                    },
-                  },
-                });
-
-                if (!studentWithRelations) {
-                  throw new Error("Failed to fetch created student with relations");
-                }
-
-                return studentWithRelations;
+              // Create credential
+              const credential = await tx.credential.create({
+                data: {
+                  email: studentData.email,
+                  passwordHash: hashedPassword,
+                  role: UserRole.Student,
+                },
               });
 
-              results.successful.push({
-                id: student.id,
-                email: student.email,
-                registrationNumber: student.registrationNumber,
-                firstName: student.firstName,
-                lastName: student.lastName || '',
-                contactNumber: student.contactNumber || undefined,
-                gender: student.gender,
-                semester: student.semester,
-                programId: student.programId,
-                batchId: student.batchId,
-                programName: student.program.name,
-                batchYear: student.batch.year.toString(),
+              // Create student
+              const createdStudent = await tx.student.create({
+                data: {
+                  firstName: studentData.firstName,
+                  lastName: studentData.lastName,
+                  email: studentData.email,
+                  registrationNumber: studentData.registrationNumber,
+                  contactNumber: studentData.contactNumber || null,
+                  gender: studentData.gender,
+                  semester: studentData.semester,
+                  programId: studentData.programId,
+                  batchId: studentData.batchId,
+                  credentialId: credential.id,
+                },
+                include: {
+                  program: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                  batch: {
+                    select: {
+                      id: true,
+                      year: true,
+                    },
+                  },
+                },
+              });
+
+              batchSuccessful.push({
+                id: createdStudent.id,
+                email: createdStudent.email,
+                registrationNumber: createdStudent.registrationNumber,
+                firstName: createdStudent.firstName,
+                lastName: createdStudent.lastName || '',
+                contactNumber: createdStudent.contactNumber || undefined,
+                gender: createdStudent.gender,
+                semester: createdStudent.semester,
+                programId: createdStudent.programId,
+                batchId: createdStudent.batchId,
+                programName: createdStudent.program.name,
+                batchYear: createdStudent.batch.year.toString(),
                 defaultPassword: studentData.password,
                 message: "Student created successfully"
               });
@@ -699,70 +680,96 @@ const studentController = {
               
               let errorMessage = "Failed to create student";
               if (error instanceof Error) {
-                if (error.message.includes('Program')) {
-                  errorMessage = `Program not found: ${studentData.programId}`;
-                } else if (error.message.includes('Batch')) {
-                  errorMessage = `Batch not found: ${studentData.batchId}`;
-                } else if (error.message.includes('Unique constraint')) {
-                  errorMessage = "Duplicate email or registration number (race condition)";
+                if (error.message.includes('Unique constraint')) {
+                  errorMessage = "Duplicate email or registration number";
                 } else {
                   errorMessage = error.message;
                 }
               }
 
-              results.failed.push({
+              batchFailed.push({
                 email: studentData.email,
                 registrationNumber: studentData.registrationNumber,
                 error: errorMessage
               });
             }
-          })
-        );
+          }
+
+          return { batchSuccessful, batchFailed };
+        }, {
+          maxWait: 30000000, // 30000 seconds max wait
+          timeout: 60000000  // 60000 seconds timeout
+        });
+
+        results.successful.push(...batchResults.batchSuccessful);
+        results.failed.push(...batchResults.batchFailed);
+
+        // Small delay between batches to prevent overwhelming the database
+        if (batchIndex < totalBatches - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+      } catch (batchError) {
+        console.error(`Batch ${batchIndex + 1} failed:`, batchError);
+        
+        // Mark all students in this batch as failed
+        batch.forEach(studentData => {
+          results.failed.push({
+            email: studentData.email,
+            registrationNumber: studentData.registrationNumber,
+            error: "Batch processing failed - transaction timeout or system error"
+          });
+        });
       }
-
-      // Prepare final response
-      const successCount = results.successful.length;
-      const failedCount = results.failed.length;
-      const totalProcessed = successCount + failedCount;
-
-      let finalMessage = "";
-      if (successCount === totalProcessed) {
-        finalMessage = "All students created successfully";
-      } else if (failedCount === totalProcessed) {
-        finalMessage = "All students failed to create";
-      } else {
-        finalMessage = `Bulk operation completed with ${successCount} successful and ${failedCount} failed`;
-      }
-
-      res.status(201).json({
-        message: finalMessage,
-        summary: {
-          totalProcessed,
-          successCount,
-          failedCount
-        },
-        successful: results.successful,
-        failed: results.failed
-      });
-
-    } catch (error) {
-      console.error("Error in bulk student creation:", error);
-      res.status(500).json({ 
-        message: "Unable to process bulk student creation",
-        summary: {
-          totalProcessed: 0,
-          successCount: 0,
-          failedCount: students.length
-        },
-        successful: [],
-        failed: students.map(student => ({
-          email: student.email,
-          registrationNumber: student.registrationNumber,
-          error: "System error during bulk processing"
-        }))
-      });
     }
-  },
+
+    // Prepare final response
+    const successCount = results.successful.length;
+    const failedCount = results.failed.length;
+    const totalProcessed = students.length;
+
+    let finalMessage = "";
+    if (successCount === totalProcessed) {
+      finalMessage = "All students created successfully";
+    } else if (failedCount === totalProcessed) {
+      finalMessage = "All students failed to create";
+    } else {
+      finalMessage = `Bulk operation completed with ${successCount} successful and ${failedCount} failed`;
+    }
+
+    console.log(`Bulk upload completed: ${successCount} successful, ${failedCount} failed`);
+
+    res.status(201).json({
+      message: finalMessage,
+      summary: {
+        totalProcessed,
+        successCount,
+        failedCount
+      },
+      successful: results.successful,
+      failed: results.failed
+    });
+
+  } catch (error) {
+    console.error("Error in bulk student creation:", error);
+    
+    // If we get here, it's a system-level error
+    res.status(500).json({ 
+      message: "Unable to process bulk student creation due to system error",
+      summary: {
+        totalProcessed: students.length,
+        successCount: 0,
+        failedCount: students.length
+      },
+      successful: [],
+      failed: students.map(student => ({
+        email: student.email,
+        registrationNumber: student.registrationNumber,
+        error: "System error during bulk processing"
+      }))
+    });
+  }
+},
 
   // Update a student
   updateStudent: async (req: Request, res: Response): Promise<any> => {

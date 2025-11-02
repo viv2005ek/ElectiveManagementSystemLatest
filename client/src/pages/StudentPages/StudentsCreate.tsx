@@ -509,37 +509,36 @@ export default function StudentsCreate() {
 
           {/* Bulk Upload Section */}
           {activeTab === "bulk" && (
-            <div className="space-y-6">
-              {/* Upload Section */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Bulk Upload Students</h3>
-                
-                {/* Download Template */}
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-blue-800">Download Template</h4>
-                      <p className="text-sm text-blue-600 mt-1">
-                        Use our CSV template with program names, batch years, and semester numbers (no IDs needed).
-                      </p>
-                    </div>
-                    <button
-                      onClick={downloadTemplate}
-                      disabled={programsLoading || batchesLoading || semestersLoading}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                      <DocumentTextIcon className="w-4 h-4 mr-2" />
-                      {programsLoading || batchesLoading || semestersLoading ? "Loading..." : "Download Template"}
-                    </button>
-                  </div>
-                  {(programsLoading || batchesLoading || semestersLoading) && (
-                    <p className="mt-2 text-sm text-blue-600">
-                      Loading available programs, batches, and semesters for template...
-                    </p>
-                  )}
-                </div>
-
-                {/* Progress Indicator */}
+    <div className="space-y-6">
+      {/* Upload Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Bulk Upload Students</h3>
+        
+        {/* Download Template */}
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-blue-800">Download Template</h4>
+              <p className="text-sm text-blue-600 mt-1">
+                Use our CSV template with program names, batch years, and semester numbers (no IDs needed).
+                <strong className="block mt-1">Note: Gender will be automatically set to "Male" for all students.</strong>
+              </p>
+            </div>
+            <button
+              onClick={downloadTemplate}
+              disabled={programsLoading || batchesLoading || semestersLoading}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              <DocumentTextIcon className="w-4 h-4 mr-2" />
+              {programsLoading || batchesLoading || semestersLoading ? "Loading..." : "Download Template"}
+            </button>
+          </div>
+          {(programsLoading || batchesLoading || semestersLoading) && (
+            <p className="mt-2 text-sm text-blue-600">
+              Loading available programs, batches, and semesters for template...
+            </p>
+          )}
+        </div>
                {/* Progress Indicator */}
 {uploadProgress && (
   <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

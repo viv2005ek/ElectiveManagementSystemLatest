@@ -405,7 +405,7 @@ export default function ProfessorsCreate() {
                   <div className="text-sm text-gray-600 max-h-32 overflow-y-auto">
                     {departments.map(dept => (
                       <div key={dept.id} className="py-1">
-                        {dept.name} ({dept.school.name})
+                        {dept.name} 
                       </div>
                     ))}
                   </div>
@@ -415,7 +415,7 @@ export default function ProfessorsCreate() {
                   <div className="text-sm text-gray-600 max-h-32 overflow-y-auto">
                     {professorRanks.map(rank => (
                       <div key={rank.id} className="py-1">
-                        {rank.name} (Priority: {rank.priority})
+                        {rank.name} 
                       </div>
                     ))}
                   </div>

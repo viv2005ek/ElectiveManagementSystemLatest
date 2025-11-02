@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // hooks/studentHooks/useBulkAddStudents.ts
 import { useState, useRef } from "react";
 import axiosInstance from "../../axiosInstance.ts";
@@ -11,7 +12,6 @@ interface BulkStudentData {
   email: string;
   registrationNumber: string;
   contactNumber?: string;
-  gender: string;
   semester: number;
   program: string;
   batch: string;
@@ -40,6 +40,7 @@ export default function useBulkAddStudents() {
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { programs } = useFetchPrograms();
   const { batches } = useFetchBatches();
   const { semesters } = useFetchSemesters();
@@ -54,45 +55,57 @@ export default function useBulkAddStudents() {
     return `${firstNamePart}${lastNamePart}${regPart}${emailPart}`;
   };
 
-  // Main bulk upload function
-  const bulkAddStudents = async (studentsData: any[]) => {
+  // Process students in batches of 5 with no timeout
+  const processStudentsInBatches = async (studentsData: any[]) => {
     setBulkLoading(true);
     setBulkError(null);
-    
+    abortControllerRef.current = new AbortController();
+
+    const results = {
+      successful: [] as any[],
+      failed: [] as any[]
+    };
+
+    const BATCH_SIZE = 10;
+    const totalBatches = Math.ceil(studentsData.length / BATCH_SIZE);
+
     try {
-      // Show processing state
       setUploadProgress({ 
         processed: 0, 
         total: studentsData.length,
-        currentRecord: { firstName: 'Starting API upload...' }
+        currentRecord: { firstName: 'Starting batch processing...' }
       });
 
-      // Process in smaller batches to avoid transaction timeout
-      const BATCH_SIZE = 5;
-      const results = {
-        successful: [] as any[],
-        failed: [] as any[]
-      };
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        // Check if upload was cancelled
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new Error('Upload cancelled by user');
+        }
 
-      for (let i = 0; i < studentsData.length; i += BATCH_SIZE) {
-        const batch = studentsData.slice(i, i + BATCH_SIZE);
-        
+        const startIdx = batchIndex * BATCH_SIZE;
+        const endIdx = Math.min(startIdx + BATCH_SIZE, studentsData.length);
+        const batch = studentsData.slice(startIdx, endIdx);
+
         // Update progress for current batch
         setUploadProgress({ 
-          processed: i, 
+          processed: startIdx, 
           total: studentsData.length,
           currentRecord: {
-            firstName: batch[0]?.firstName || 'Processing...',
-            lastName: batch[0]?.lastName || '',
-            email: batch[0]?.email || ''
+            firstName: `Processing batch ${batchIndex + 1}/${totalBatches}`,
+            lastName: `${batch.length} students`,
+            email: ''
           }
         });
 
+        console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
+
         try {
+          // Send batch of 5 students with NO timeout
           const response = await axiosInstance.post('/students/bulk-add', {
             students: batch
           }, {
-            timeout: 30000,
+            timeout: 0, // NO TIMEOUT - let it take as long as needed
+            signal: abortControllerRef.current?.signal,
             headers: {
               'Content-Type': 'application/json',
             }
@@ -105,21 +118,23 @@ export default function useBulkAddStudents() {
             results.failed.push(...response.data.failed);
           }
 
-          // Small delay between batches to prevent overwhelming the server
-          if (i + BATCH_SIZE < studentsData.length) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+          console.log(`Batch ${batchIndex + 1} completed: ${response.data.successful?.length || 0} successful, ${response.data.failed?.length || 0} failed`);
 
         } catch (error: any) {
-          console.error('Batch upload failed:', error);
+          console.error(`Batch ${batchIndex + 1} failed:`, error);
           
-          // Add all students in this batch to failed with specific error
+          // Mark all students in this batch as failed
           batch.forEach(student => {
             results.failed.push({
               ...student,
-              error: error.response?.data?.message || error.message || 'Batch upload failed - transaction timeout'
+              error: error.response?.data?.message || error.message || 'Batch upload failed'
             });
           });
+        }
+
+        // Small delay between batches to prevent overwhelming the server
+        if (batchIndex < totalBatches - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
 
@@ -127,11 +142,8 @@ export default function useBulkAddStudents() {
       setUploadProgress({ 
         processed: studentsData.length, 
         total: studentsData.length,
-        currentRecord: { firstName: 'Finalizing...' }
+        currentRecord: { firstName: 'Processing completed!' }
       });
-
-      // Small delay to show completion
-      await new Promise(resolve => setTimeout(resolve, 500));
 
       setBulkLoading(false);
       return {
@@ -145,12 +157,14 @@ export default function useBulkAddStudents() {
       };
 
     } catch (err: any) {
-      console.error('Bulk upload error:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to upload students';
+      console.error('Batch processing error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to process students';
       setBulkError(errorMessage);
       setBulkLoading(false);
       setUploadProgress(null);
       throw err;
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
@@ -161,7 +175,6 @@ export default function useBulkAddStudents() {
       'email',
       'registrationNumber',
       'contactNumber',
-      'gender',
       'semester',
       'program',
       'batch'
@@ -174,7 +187,6 @@ export default function useBulkAddStudents() {
         email: 'john.doe@university.edu',
         registrationNumber: '20240001',
         contactNumber: '+1234567890',
-        gender: 'Male',
         semester: '1',
         program: 'B.Tech Computer Science (Computer Science and Engineering)',
         batch: '2024'
@@ -204,7 +216,6 @@ export default function useBulkAddStudents() {
     setBulkLoading(true);
     setBulkError(null);
 
-    // Define variables at the function scope to avoid reference errors
     let processedStudents: any[] = [];
     let failedStudents: any[] = [];
     let totalRows = 0;
@@ -218,14 +229,16 @@ export default function useBulkAddStudents() {
       }
 
       totalRows = lines.length - 1;
-      setUploadProgress({ processed: 0, total: totalRows });
+      setUploadProgress({ 
+        processed: 0, 
+        total: totalRows,
+        currentRecord: { firstName: 'Validating CSV file...' }
+      });
 
-      // Small delay to show initial progress
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const headers = lines[0].split(',').map(h => h.trim());
       
-      // Validate required headers
       const requiredHeaders = ['firstName', 'lastName', 'email', 'registrationNumber', 'semester', 'program', 'batch'];
       const missingHeaders = requiredHeaders.filter(header => !headers.includes(header));
       
@@ -233,24 +246,51 @@ export default function useBulkAddStudents() {
         throw new Error(`Missing required headers: ${missingHeaders.join(', ')}. Please use the provided template.`);
       }
 
-      // Reset arrays
       processedStudents = [];
       failedStudents = [];
 
+      // Create lookup maps for faster validation
+      const programMap = new Map();
+      programs.forEach(program => {
+        const programName = program.name.toLowerCase().trim();
+        programMap.set(programName, program);
+        
+        // Also add variations without department
+        const programNameWithoutDept = programName.replace(/\s*\([^)]*\)\s*$/, '').trim();
+        if (programNameWithoutDept !== programName) {
+          programMap.set(programNameWithoutDept, program);
+        }
+        
+        // Also add base name (before parentheses)
+        const baseProgramName = programName.split('(')[0].trim();
+        if (baseProgramName !== programName) {
+          programMap.set(baseProgramName, program);
+        }
+      });
+
+      const batchMap = new Map();
+      batches.forEach(batch => {
+        batchMap.set(batch.year.toString(), batch);
+      });
+
+      const semesterNumbers = new Set(semesters.map(s => s.number));
+
+      // Track duplicates within the CSV file itself
+      const seenEmails = new Set();
+      const seenRegNumbers = new Set();
+
       for (let i = 1; i < lines.length; i++) {
-        // Update progress for every row processed
         setUploadProgress({ 
           processed: i, 
           total: totalRows,
           currentRecord: {
-            firstName: lines[i].split(',')[0] || 'Processing...',
-            lastName: lines[i].split(',')[1] || '',
-            email: lines[i].split(',')[2] || ''
+            firstName: `Validating row ${i}/${totalRows}`,
+            lastName: '',
+            email: ''
           }
         });
 
-        // Add small delay to show progress animation
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 10));
 
         const values = lines[i].split(',').map(v => v.trim());
         
@@ -260,22 +300,25 @@ export default function useBulkAddStudents() {
             lastName: values[1] || 'Unknown',
             email: values[2] || 'Unknown',
             registrationNumber: values[3] || 'Unknown',
+            contactNumber: values[4] || '',
+            semester: values[5] || '',
+            program: values[6] || '',
+            batch: values[7] || '',
             error: 'Incomplete record - missing required fields'
           });
           continue;
         }
 
-        // Create student object from CSV values
         const csvStudent = {
           firstName: values[0] || '',
           lastName: values[1] || '',
           email: values[2] || '',
           registrationNumber: values[3] || '',
           contactNumber: values[4] || '',
-          gender: values[5] || 'Male',
-          semester: parseInt(values[6]) || 1,
-          program: values[7] || '',
-          batch: values[8] || ''
+          gender: "Male",
+          semester: parseInt(values[5]) || 1,
+          program: values[6] || '',
+          batch: values[7] || ''
         };
 
         // Validate required fields
@@ -287,114 +330,100 @@ export default function useBulkAddStudents() {
           continue;
         }
 
-        // DEBUG: Log what we're trying to match
-        console.log(`Looking for program: "${csvStudent.program}"`);
-
-        // FIXED: Map program name to programId with better matching
-        const program = programs.find(p => {
-          const programName = p.name.toLowerCase().trim();
-          const csvProgram = csvStudent.program.toLowerCase().trim();
-          
-          // Exact match first
-          if (programName === csvProgram) {
-            console.log(`✓ Exact match found: "${p.name}"`);
-            return true;
-          }
-          
-          // Remove department part in parentheses for matching
-          const programNameWithoutDept = programName.replace(/\s*\([^)]*\)\s*$/, '').trim();
-          const csvProgramWithoutDept = csvProgram.replace(/\s*\([^)]*\)\s*$/, '').trim();
-          
-          // Match without department
-          if (programNameWithoutDept === csvProgramWithoutDept) {
-            console.log(`✓ Match without department: "${p.name}" -> "${csvStudent.program}"`);
-            return true;
-          }
-          
-          // Also try matching the base name (before parentheses)
-          const baseProgramName = programName.split('(')[0].trim();
-          const baseCsvProgram = csvProgram.split('(')[0].trim();
-          
-          if (baseProgramName === baseCsvProgram) {
-            console.log(`✓ Base name match: "${p.name}" -> "${csvStudent.program}"`);
-            return true;
-          }
-          
-          return false;
-        });
-        
-        if (!program) {
-          console.log(`✗ Program not found: "${csvStudent.program}". Available:`, programs.map(p => p.name));
+        // Check for duplicates within CSV
+        if (seenEmails.has(csvStudent.email)) {
           failedStudents.push({
             ...csvStudent,
-            error: `Program not found: "${csvStudent.program}". Available: ${programs.map(p => p.name).join(', ')}`
+            error: 'Duplicate email within CSV file'
           });
           continue;
         }
 
-        // FIXED: Map batch year to batchId - remove "Batch " prefix if present
-        const batch = batches.find(b => {
-          const batchYear = b.year.toString();
-          let csvBatch = csvStudent.batch.toString().trim();
-          
-          // Remove "Batch " prefix if present
-          if (csvBatch.toLowerCase().startsWith('batch ')) {
-            csvBatch = csvBatch.substring(6).trim();
-          }
-          
-          return batchYear === csvBatch;
-        });
+        if (seenRegNumbers.has(csvStudent.registrationNumber)) {
+          failedStudents.push({
+            ...csvStudent,
+            error: 'Duplicate registration number within CSV file'
+          });
+          continue;
+        }
+
+        seenEmails.add(csvStudent.email);
+        seenRegNumbers.add(csvStudent.registrationNumber);
+
+        // Validate program using pre-built map
+        const programName = csvStudent.program.toLowerCase().trim();
+        let program = programMap.get(programName);
         
+        if (!program) {
+          // Try without department
+          const programNameWithoutDept = programName.replace(/\s*\([^)]*\)\s*$/, '').trim();
+          program = programMap.get(programNameWithoutDept);
+        }
+        
+        if (!program) {
+          // Try base name
+          const baseProgramName = programName.split('(')[0].trim();
+          program = programMap.get(baseProgramName);
+        }
+
+        if (!program) {
+          failedStudents.push({
+            ...csvStudent,
+            error: `Program not found: "${csvStudent.program}"`
+          });
+          continue;
+        }
+
+        // Validate batch using pre-built map
+        let batchYear = csvStudent.batch.toString().trim();
+        if (batchYear.toLowerCase().startsWith('batch ')) {
+          batchYear = batchYear.substring(6).trim();
+        }
+        
+        const batch = batchMap.get(batchYear);
         if (!batch) {
           failedStudents.push({
             ...csvStudent,
-            error: `Batch not found: "${csvStudent.batch}". Available: ${batches.map(b => b.year).join(', ')}`
+            error: `Batch not found: "${csvStudent.batch}"`
           });
           continue;
         }
 
-        // Validate semester exists
-        const semesterExists = semesters.find(s => s.number === csvStudent.semester);
-        if (!semesterExists) {
+        // Validate semester
+        if (!semesterNumbers.has(csvStudent.semester)) {
           failedStudents.push({
             ...csvStudent,
-            error: `Invalid semester: "${csvStudent.semester}". Available: ${semesters.map(s => s.number).join(', ')}`
+            error: `Invalid semester: "${csvStudent.semester}". Must be between 1-12`
           });
           continue;
         }
 
-        // Generate password for the student
         const generatedPassword = generatePassword(csvStudent);
 
-        // Create final student object with IDs and generated password
         const finalStudent = {
           firstName: csvStudent.firstName,
           lastName: csvStudent.lastName,
           email: csvStudent.email,
           registrationNumber: csvStudent.registrationNumber,
           contactNumber: csvStudent.contactNumber,
-          gender: csvStudent.gender,
+          gender: "Male",
           semester: csvStudent.semester,
           programId: program.id,
           batchId: batch.id,
-          password: generatedPassword // Use generated password instead of hardcoded one
+          password: generatedPassword
         };
 
         processedStudents.push(finalStudent);
-        console.log(`✓ Successfully mapped: ${finalStudent.firstName} ${finalStudent.lastName} to Program: "${program.name}", Batch: ${batch.year}, Password: ${generatedPassword}`);
       }
 
-      // Final progress update before API call
       setUploadProgress({ 
         processed: totalRows, 
         total: totalRows,
-        currentRecord: { firstName: 'Sending to API...' }
+        currentRecord: { firstName: 'Sending validated data in batches of 5...' }
       });
 
-      // Small delay to show final progress state
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // If no valid students found
       if (processedStudents.length === 0) {
         setBulkResult({
           successful: [],
@@ -410,55 +439,26 @@ export default function useBulkAddStudents() {
         return;
       }
 
-      console.log(`Sending ${processedStudents.length} students to API`);
+      console.log(`Sending ${processedStudents.length} validated students in batches of 5`);
 
-      // Send to API with proper loading state management
-      try {
-        const result = await bulkAddStudents(processedStudents);
-        
-        // Combine API failures with our pre-validation failures
-        const allFailed = [
-          ...failedStudents,
-          ...(result.failed || [])
-        ];
+      // Send validated students in batches of 5 with no timeout
+      const result = await processStudentsInBatches(processedStudents);
+      
+      // Combine pre-validation failures with API failures
+      const allFailed = [
+        ...failedStudents,
+        ...(result.failed || [])
+      ];
 
-        // Set the final bulk result
-        setBulkResult({
-          successful: result.successful || [],
-          failed: allFailed,
-          summary: {
-            successCount: result.successful?.length || 0,
-            failedCount: allFailed.length,
-            totalProcessed: totalRows
-          }
-        });
-
-      } catch (error: any) {
-        console.error('API call failed:', error);
-        
-        // Define failedStudents in the catch scope to fix the ReferenceError
-        const allFailed = [
-          ...failedStudents,
-          ...processedStudents.map(student => ({
-            firstName: student.firstName,
-            lastName: student.lastName,
-            email: student.email,
-            registrationNumber: student.registrationNumber,
-            error: 'API request failed: ' + (error.message || 'Unknown error')
-          }))
-        ];
-
-        // Set the final bulk result
-        setBulkResult({
-          successful: [],
-          failed: allFailed,
-          summary: {
-            successCount: 0,
-            failedCount: allFailed.length,
-            totalProcessed: totalRows
-          }
-        });
-      }
+      setBulkResult({
+        successful: result.successful || [],
+        failed: allFailed,
+        summary: {
+          successCount: result.successful?.length || 0,
+          failedCount: allFailed.length,
+          totalProcessed: totalRows
+        }
+      });
 
     } catch (error: any) {
       console.error('File processing error:', error);
@@ -481,7 +481,6 @@ export default function useBulkAddStudents() {
       'Email', 
       'RegistrationNumber', 
       'ContactNumber',
-      'Gender',
       'Semester', 
       'Program', 
       'Batch',
@@ -496,11 +495,10 @@ export default function useBulkAddStudents() {
         student.email || '',
         student.registrationNumber || '',
         student.contactNumber || '',
-        student.gender || 'Male',
         student.semester || '',
         student.programName || student.program || '',
         student.batchYear || student.batch || '',
-        student.defaultPassword // This is the actual password used in API
+        student.defaultPassword || student.password
       ].join(','))
     ].join('\n');
 
@@ -516,7 +514,6 @@ export default function useBulkAddStudents() {
       'Email', 
       'RegistrationNumber', 
       'ContactNumber',
-      'Gender',
       'Semester', 
       'Program', 
       'Batch',
@@ -527,7 +524,6 @@ export default function useBulkAddStudents() {
     const csvContent = [
       headers.join(','),
       ...bulkResult.failed.map(failed => {
-        // Generate what the password would have been
         const wouldBePassword = generatePassword(failed);
         
         return [
@@ -536,7 +532,6 @@ export default function useBulkAddStudents() {
           failed.email || '',
           failed.registrationNumber || '',
           failed.contactNumber || '',
-          failed.gender || 'Male',
           failed.semester || '',
           failed.program || '',
           failed.batch || '',
@@ -567,13 +562,16 @@ export default function useBulkAddStudents() {
   };
 
   const cancelBulkUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setBulkLoading(false);
     setUploadProgress(null);
-    setBulkError('Upload cancelled');
+    setBulkError('Upload cancelled by user');
   };
 
   return {
-    bulkAddStudents,
+    bulkAddStudents: processStudentsInBatches,
     bulkLoading,
     bulkError,
     bulkResult,
