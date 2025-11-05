@@ -102,7 +102,7 @@ export default function UpcomingDeadlinesList({
             </div>
           </div>
           <div className="flex flex-none items-center gap-x-4">
-            {subject.isPreferenceWindowOpen && (
+            {/* {subject.isPreferenceWindowOpen && (
               <Link
                 to={`/subjects/${subject.id}/preferences-${subject.status === "Completed" ? "update" : "fill"}`}
                 className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
@@ -113,7 +113,16 @@ export default function UpcomingDeadlinesList({
                   "Fill Preferences"}
                 <span className="sr-only">, {subject.name}</span>
               </Link>
-            )}
+            )} */}
+            {subject.isPreferenceWindowOpen && subject.status === "Pending" && (
+  <Link
+    to={`/subjects/${subject.id}/preferences-fill`}
+    className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
+  >
+    Fill Preferences
+    <span className="sr-only">, {subject.name}</span>
+  </Link>
+)}
           </div>
         </li>
       ))}

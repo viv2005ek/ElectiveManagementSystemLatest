@@ -551,172 +551,192 @@ const SubjectController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
-  runAllotmentsForSubject: async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
-    const { subjectId } = req.params;
+ runAllotmentsForSubject: async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const { subjectId } = req.params;
 
-    try {
-      console.log(`Starting allotments for subject ID: ${subjectId}`);
+  try {
+    console.log(`Starting allotments for subject ID: ${subjectId}`);
 
-      const subject = await prisma.subject.findUnique({
-        where: { id: subjectId },
-        include: {
-          subjectType: true,
-          semester: true,
-          semesters: true,
-          standaloneSubjectPreferences: { where: { runAllotment: true } },
-          bucketSubjectPreferences: { where: { runAllotment: true } },
+    const subject = await prisma.subject.findUnique({
+      where: { id: subjectId },
+      include: {
+        subjectType: true,
+        semester: true, // Keep for standalone subjects
+        semesters: true, // Add for bucket subjects
+        standaloneSubjectPreferences: { 
+          where: { runAllotment: true }
         },
-      });
+        bucketSubjectPreferences: { 
+          where: { runAllotment: true }
+        },
+      },
+    });
 
-      if (!subject) {
-        console.log(`Subject not found: ${subjectId}`);
-        res.status(404).json({ error: "Subject not found" });
-        return;
-      }
+    if (!subject) {
+      res.status(404).json({ error: "Subject not found" });
+      return;
+    }
 
-      const semesterId = subject.semester?.id;
-      if (!semesterId) {
-        res
-          .status(400)
-          .json({ error: "No valid semester found for allotment" });
-        return;
-      }
+    const hasRunAllotment =
+      subject.standaloneSubjectPreferences.length > 0 ||
+      subject.bucketSubjectPreferences.length > 0;
 
-      const hasRunAllotment =
-        subject.standaloneSubjectPreferences.length > 0 ||
-        subject.bucketSubjectPreferences.length > 0;
+    if (!hasRunAllotment) {
+      res.status(400).json({ error: "No preferences to process for allotment" });
+      return;
+    }
 
-      if (!hasRunAllotment) {
-        console.log("No preferences with runAllotment set to true. Exiting.");
-        res.status(200).json({ message: "No allotments to process" });
-        return;
-      }
+    // Prepare write operations - KEEP EXISTING LOGIC FOR STANDALONE
+    const writeOps: any[] = [
+      prisma.standaloneAllotment.deleteMany({ where: { subjectId } }),
+      prisma.bucketAllotment.deleteMany({ where: { subjectId } }),
+    ];
 
-      // Prepare write operations
-      const writeOps: any[] = [
-        prisma.standaloneAllotment.deleteMany({ where: { subjectId } }),
-        prisma.bucketAllotment.deleteMany({ where: { subjectId } }),
-      ];
+    if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+      // KEEP ORIGINAL STANDALONE LOGIC UNCHANGED
+      const standaloneAllotments = [];
 
-      if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
-        const standaloneAllotments = [];
-
-        for (const preference of subject.standaloneSubjectPreferences) {
-          const course = await prisma.subjectCourseWithSeats.findUnique({
-            where: {
-              courseId_subjectId: {
-                courseId: preference.firstPreferenceCourseId!,
-                subjectId: subject.id,
-              },
+      for (const preference of subject.standaloneSubjectPreferences) {
+        const course = await prisma.subjectCourseWithSeats.findUnique({
+          where: {
+            courseId_subjectId: {
+              courseId: preference.firstPreferenceCourseId!,
+              subjectId: subject.id,
             },
+          },
+        });
+
+        if (
+          course &&
+          (course.availableSeats === null || course.availableSeats > 0)
+        ) {
+          standaloneAllotments.push({
+            subjectId: subject.id,
+            studentId: preference.studentId,
+            courseId: preference.firstPreferenceCourseId!,
+            allotmentStatus: AllotmentStatus.Pending,
           });
 
-          if (
-            course &&
-            (course.availableSeats === null || course.availableSeats > 0)
-          ) {
-            standaloneAllotments.push({
-              subjectId: subject.id,
-              studentId: preference.studentId,
-              courseId: preference.firstPreferenceCourseId!,
-              allotmentStatus: AllotmentStatus.Pending,
-            });
-
-            if (course.availableSeats !== null) {
-              writeOps.push(
-                prisma.subjectCourseWithSeats.update({
-                  where: { id: course.id },
-                  data: { availableSeats: course.availableSeats - 1 },
-                }),
-              );
-            }
+          if (course.availableSeats !== null) {
+            writeOps.push(
+              prisma.subjectCourseWithSeats.update({
+                where: { id: course.id },
+                data: { availableSeats: course.availableSeats - 1 },
+              }),
+            );
           }
-        }
-
-        if (standaloneAllotments.length > 0) {
-          writeOps.push(
-            prisma.standaloneAllotment.createMany({
-              data: standaloneAllotments,
-            }),
-          );
-        }
-      } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
-        const bucketAllotments = [];
-
-        for (const preference of subject.bucketSubjectPreferences) {
-          const courseBucketWithSeats =
-            await prisma.subjectCourseBucketWithSeats.findUnique({
-              where: {
-                courseBucketId_subjectId: {
-                  courseBucketId: preference.firstPreferenceCourseBucketId!,
-                  subjectId: subject.id,
-                },
-              },
-              include: {
-                courseBucket: {
-                  include: {
-                    courses: {
-                      include: { course: true },
-                      orderBy: { orderIndex: "asc" },
-                      take: 1,
-                    },
-                  },
-                },
-              },
-            });
-
-          if (
-            courseBucketWithSeats &&
-            (courseBucketWithSeats.availableSeats === null ||
-              courseBucketWithSeats.availableSeats > 0) &&
-            courseBucketWithSeats.courseBucket.courses.length > 0
-          ) {
-            const firstCourse = courseBucketWithSeats.courseBucket.courses[0];
-
-            bucketAllotments.push({
-              subjectId: subject.id,
-              studentId: preference.studentId,
-              courseBucketId: preference.firstPreferenceCourseBucketId!,
-              courseId: firstCourse.course.id,
-              semesterId,
-              allotmentStatus: AllotmentStatus.Pending,
-            });
-
-            if (courseBucketWithSeats.availableSeats !== null) {
-              writeOps.push(
-                prisma.subjectCourseBucketWithSeats.update({
-                  where: { id: courseBucketWithSeats.id },
-                  data: {
-                    availableSeats: courseBucketWithSeats.availableSeats - 1,
-                  },
-                }),
-              );
-            }
-          }
-        }
-
-        if (bucketAllotments.length > 0) {
-          writeOps.push(
-            prisma.bucketAllotment.createMany({
-              data: bucketAllotments,
-            }),
-          );
         }
       }
 
-      // Execute all write ops inside a single transaction
-      await prisma.$transaction(writeOps);
+      if (standaloneAllotments.length > 0) {
+        writeOps.push(
+          prisma.standaloneAllotment.createMany({
+            data: standaloneAllotments,
+          }),
+        );
+      }
 
-      res.status(200).json({ message: "Allotments created successfully" });
-    } catch (error) {
-      console.error("Error creating allotments:", error);
-      res.status(500).json({ error: "Internal server error" });
+    } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+      // ONLY MODIFY BUCKET LOGIC
+      console.log("Processing bucket allotments");
+      
+      // FIX: Proper semester determination for buckets
+      let semesterId: string | null = null;
+      
+      // Priority 1: Use semesters array (for bucket subjects)
+      if (subject.semesters && subject.semesters.length > 0) {
+        semesterId = subject.semesters[0].id;
+        console.log(`Using semester from semesters array: ${semesterId}`);
+      } 
+      // Priority 2: Fallback to single semester (backward compatibility)
+      else if (subject.semester) {
+        semesterId = subject.semester.id;
+        console.log(`Using single semester: ${semesterId}`);
+      }
+
+      if (!semesterId) {
+        res.status(400).json({ 
+          error: "No semester configured for bucket allotment" 
+        });
+        return;
+      }
+
+      const bucketAllotments = [];
+
+      for (const preference of subject.bucketSubjectPreferences) {
+        const courseBucketWithSeats = await prisma.subjectCourseBucketWithSeats.findUnique({
+          where: {
+            courseBucketId_subjectId: {
+              courseBucketId: preference.firstPreferenceCourseBucketId!,
+              subjectId: subject.id,
+            },
+          },
+          include: {
+            courseBucket: {
+              include: {
+                courses: {
+                  include: { 
+                    course: true 
+                  },
+                  orderBy: { orderIndex: "asc" },
+                  take: 1, // Keep original logic - take first course
+                },
+              },
+            },
+          },
+        });
+
+        if (
+          courseBucketWithSeats &&
+          (courseBucketWithSeats.availableSeats === null ||
+            courseBucketWithSeats.availableSeats > 0) &&
+          courseBucketWithSeats.courseBucket.courses.length > 0
+        ) {
+          const firstCourse = courseBucketWithSeats.courseBucket.courses[0];
+
+          bucketAllotments.push({
+            subjectId: subject.id,
+            studentId: preference.studentId,
+            courseBucketId: preference.firstPreferenceCourseBucketId!,
+            courseId: firstCourse.course.id,
+            semesterId, // Use the properly determined semesterId
+            allotmentStatus: AllotmentStatus.Pending,
+          });
+
+          if (courseBucketWithSeats.availableSeats !== null) {
+            writeOps.push(
+              prisma.subjectCourseBucketWithSeats.update({
+                where: { id: courseBucketWithSeats.id },
+                data: {
+                  availableSeats: courseBucketWithSeats.availableSeats - 1,
+                },
+              }),
+            );
+          }
+        }
+      }
+
+      if (bucketAllotments.length > 0) {
+        writeOps.push(
+          prisma.bucketAllotment.createMany({
+            data: bucketAllotments,
+          }),
+        );
+      }
     }
-  },
 
+    // Execute all write ops inside a single transaction
+    await prisma.$transaction(writeOps);
+
+    res.status(200).json({ message: "Allotments created successfully" });
+  } catch (error) {
+    console.error("Error creating allotments:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+},
   getSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
     const { search, page = 1, pageSize = 6 } = req.query;
