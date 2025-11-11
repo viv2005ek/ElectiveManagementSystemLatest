@@ -183,52 +183,52 @@ export default function SubjectPreferencesPage() {
 
   const renderSubjectHeader = () =>
     infoLoading ? (
-      <div className="bg-white rounded-lg shadow-md p-6 my-6 border-l-4 border-blue-500">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 my-4 sm:my-6 border-l-4 border-blue-500">
         <Skeleton height={28} width={240} />
-        <div className="mt-3 flex gap-3">
+        <div className="mt-3 flex flex-wrap gap-3">
           <Skeleton height={24} width={100} />
           <Skeleton height={24} width={100} />
           <Skeleton height={24} width={100} />
         </div>
       </div>
     ) : (
-      <div className="bg-white rounded-lg shadow-md p-6 my-6 border-l-4 border-blue-500">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 my-4 sm:my-6 border-l-4 border-blue-500">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
               <button
                 onClick={() => navigate("/subjects")}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1"
                 aria-label="Go back to subjects"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
                 {subjectInfo?.name}
               </h2>
             </div>
-            <div className="flex flex-wrap mt-3 gap-3">
-              <div className="flex items-center bg-blue-50 px-3 py-1.5 rounded-md">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <div className="flex items-center bg-blue-50 px-2 sm:px-3 py-1.5 rounded-md text-sm">
                 <Users className="h-4 w-4 text-blue-600 mr-2" />
                 <span className="font-medium text-blue-700">
                   {subjectInfo?.batch.year}
                 </span>
               </div>
               {subjectInfo?.dueDate && (
-                <div className="flex items-center bg-yellow-50 px-3 py-1.5 rounded-md">
+                <div className="flex items-center bg-yellow-50 px-2 sm:px-3 py-1.5 rounded-md text-sm">
                   <Calendar className="h-4 w-4 text-yellow-600 mr-2" />
                   <span className="font-medium text-yellow-700">
-                    {dayjs(subjectInfo.dueDate).format("D MMMM YYYY")}
+                    {dayjs(subjectInfo.dueDate).format("D MMM YYYY")}
                   </span>
                 </div>
               )}
-              <div className="flex items-center bg-purple-50 px-3 py-1.5 rounded-md">
+              <div className="flex items-center bg-purple-50 px-2 sm:px-3 py-1.5 rounded-md text-sm">
                 <BookOpen className="h-4 w-4 text-purple-600 mr-2" />
                 <span className="font-medium text-purple-700">
                   {subjectInfo?.subjectType.name}
                 </span>
               </div>
-              <div className="flex items-center bg-green-50 px-3 py-1.5 rounded-md">
+              <div className="flex items-center bg-green-50 px-2 sm:px-3 py-1.5 rounded-md text-sm">
                 <ClipboardCheck className="h-4 w-4 text-green-600 mr-2" />
                 <span className="font-medium text-green-700">
                   {subjectInfo?.subjectType.allotmentType}
@@ -236,11 +236,11 @@ export default function SubjectPreferencesPage() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2 sm:gap-4">
             {subjectInfo?.dueDate &&
               dayjs(subjectInfo?.dueDate).isAfter(dayjs()) && (
-                <div className="text-sm flex items-center justify-end bg-green-50 px-3 py-1.5 rounded-md">
-                  <Clock className="w-4 h-4 mr-2 text-green-600" />
+                <div className="text-xs sm:text-sm flex items-center bg-green-50 px-2 sm:px-3 py-1.5 rounded-md">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-green-600" />
                   <span className="text-green-700 font-medium">
                     {dayjs(subjectInfo.dueDate).fromNow(true)} remaining
                   </span>
@@ -263,67 +263,70 @@ export default function SubjectPreferencesPage() {
         : 0;
 
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-medium text-gray-900">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">
             Preference Statistics
           </h3>
           <button
             onClick={() => setShowStats(!showStats)}
-            className="text-indigo-600 hover:text-indigo-900 transition-colors"
+            className="text-indigo-600 hover:text-indigo-900 transition-colors p-1"
+            aria-label={showStats ? "Hide statistics" : "Show statistics"}
           >
-            <Filter className="h-5 w-5" />
+            <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
 
         {showStats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-            <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-2">
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-blue-700">
+                <span className="text-xs sm:text-sm font-medium text-blue-700">
                   Total Students
                 </span>
-                <Users className="h-5 w-5 text-blue-600" />
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-blue-800 mt-1">
+              <p className="text-xl sm:text-2xl font-bold text-blue-800 mt-1">
                 {totalStudents}
               </p>
             </div>
 
-            <div className="bg-green-50 p-4 rounded-lg">
+            <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-green-700">
+                <span className="text-xs sm:text-sm font-medium text-green-700">
                   Completed
                 </span>
-                <ClipboardCheck className="h-5 w-5 text-green-600" />
+                <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
-              <p className="text-2xl font-bold text-green-800 mt-1">
+              <p className="text-xl sm:text-2xl font-bold text-green-800 mt-1">
                 {completedCount}
               </p>
-              <div className="w-full bg-green-200 rounded-full h-2 mt-2">
+              <div className="w-full bg-green-200 rounded-full h-1.5 sm:h-2 mt-2">
                 <div
-                  className="bg-green-600 h-2 rounded-full"
+                  className="bg-green-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${completionPercentage}%` }}
                 ></div>
               </div>
+              <p className="text-xs text-green-600 mt-1">{completionPercentage}%</p>
             </div>
 
-            <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-yellow-700">
+                <span className="text-xs sm:text-sm font-medium text-yellow-700">
                   Pending
                 </span>
-                <Clock className="h-5 w-5 text-yellow-600" />
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
               </div>
-              <p className="text-2xl font-bold text-yellow-800 mt-1">
+              <p className="text-xl sm:text-2xl font-bold text-yellow-800 mt-1">
                 {pendingCount}
               </p>
-              <div className="w-full bg-yellow-200 rounded-full h-2 mt-2">
+              <div className="w-full bg-yellow-200 rounded-full h-1.5 sm:h-2 mt-2">
                 <div
-                  className="bg-yellow-600 h-2 rounded-full"
+                  className="bg-yellow-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${100 - completionPercentage}%` }}
                 ></div>
               </div>
+              <p className="text-xs text-yellow-600 mt-1">{100 - completionPercentage}%</p>
             </div>
           </div>
         )}
@@ -333,7 +336,7 @@ export default function SubjectPreferencesPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-6xl">
         <PageHeader title="Subject Preferences" />
 
         {renderSubjectHeader()}
@@ -341,19 +344,19 @@ export default function SubjectPreferencesPage() {
         {renderStats()}
 
         {/* Search and Buttons */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <div className="w-full sm:w-96">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="w-full lg:w-96 order-2 lg:order-1">
             <SearchBarWithDebounce
               value={search}
               setValue={setSearch}
               placeholder="Search by student name or registration number..."
             />
           </div>
-          <div className="flex gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-2 sm:gap-3 w-full lg:w-auto order-1 lg:order-2">
             <button
               onClick={handleExportData}
               disabled={exportLoading || !data || data.students.length === 0}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base min-w-[120px] justify-center"
             >
               <Download className={`h-4 w-4 ${exportLoading ? "animate-spin" : ""}`} />
               <span>{exportLoading ? "Exporting..." : "Export"}</span>
@@ -361,14 +364,14 @@ export default function SubjectPreferencesPage() {
 
             <button
               onClick={() => navigate(`/subjects/${id}/allotments`)}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors text-sm sm:text-base min-w-[140px] justify-center"
             >
               <span>View Allotments</span>
             </button>
 
             <button
               onClick={fetchPreferences}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 text-sm sm:text-base min-w-[100px] justify-center"
               disabled={loading}
             >
               <RefreshCw
@@ -378,74 +381,74 @@ export default function SubjectPreferencesPage() {
             </button>
 
             <button
-              className={`px-4 py-2.5 rounded-lg ${
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg ${
                 allotmentLoading
                   ? "bg-orange-400 cursor-not-allowed"
                   : "bg-orange-600 hover:bg-orange-700"
-              } text-white flex items-center gap-2 transition-colors`}
+              } text-white flex items-center gap-2 transition-colors text-sm sm:text-base min-w-[140px] justify-center`}
               onClick={handleRunAllotment}
               disabled={loading || allotmentLoading}
             >
               {allotmentLoading ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Running...</span>
+                  <span className="whitespace-nowrap">Running...</span>
                 </>
               ) : (
                 <>
                   <AlertCircle className="h-4 w-4" />
-                  <span>Run Allotment</span>
+                  <span className="whitespace-nowrap">Run Allotment</span>
                 </>
               )}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
           <Tabs tabs={tabs} setActiveTab={setActiveTab} activeTab={activeTab} />
         </div>
 
         {/* Loading fallback with skeletons */}
         {loading ? (
-          <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
-            {Array.from({ length: 12 }).map((_, idx) => (
-              <div key={idx} className="flex items-center space-x-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-3 sm:space-y-4">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="flex items-center space-x-3 sm:space-x-4">
                 <Skeleton circle height={32} width={32} />
                 <div className="flex-1">
-                  <Skeleton height={14} width="60%" />
+                  <Skeleton height={14} width="60%" className="mb-2" />
                   <Skeleton height={12} width="40%" />
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="p-8 bg-red-50 rounded-lg border border-red-200 text-center">
-            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-red-500" />
-            <p className="text-red-600 font-medium text-lg mb-1">{error}</p>
-            <p className="text-red-500 text-sm mb-4">
+          <div className="p-6 sm:p-8 bg-red-50 rounded-lg border border-red-200 text-center">
+            <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-3 text-red-500" />
+            <p className="text-red-600 font-medium text-base sm:text-lg mb-1">{error}</p>
+            <p className="text-red-500 text-xs sm:text-sm mb-4">
               Please check your connection and try again
             </p>
             <button
               onClick={fetchPreferences}
-              className="px-4 py-2 bg-white border border-red-300 rounded-md text-red-600 hover:bg-red-50 text-sm font-medium transition-colors"
+              className="px-3 sm:px-4 py-2 bg-white border border-red-300 rounded-md text-red-600 hover:bg-red-50 text-sm font-medium transition-colors"
             >
               Try Again
             </button>
           </div>
         ) : data ? (
-          <div className="space-y-4 mb-4">
+          <div className="space-y-3 sm:space-y-4 mb-4">
             {data.students.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-                <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">
+              <div className="text-center py-8 sm:py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+                <Users className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-gray-400 mb-3" />
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
                   No students found
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-gray-500 text-sm sm:text-base">
                   Try adjusting your search or filters
                 </p>
                 <button
                   onClick={() => setSearch("")}
-                  className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium"
+                  className="mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium"
                 >
                   Clear Search
                 </button>
@@ -464,7 +467,7 @@ export default function SubjectPreferencesPage() {
         ) : null}
 
         {data && data.totalPages > 1 && (
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <PaginationFooter
               totalPages={data.totalPages}
               currentPage={currentPage}
@@ -474,9 +477,9 @@ export default function SubjectPreferencesPage() {
         )}
 
         {data && data.students.length > 0 && (
-          <div className="mt-8 text-center text-sm text-gray-500">
+          <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-gray-500">
             <div className="flex items-center justify-center gap-1">
-              <Info className="h-4 w-4" />
+              <Info className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>
                 Showing {data.students.length} of {data.totalStudents} students
               </span>
