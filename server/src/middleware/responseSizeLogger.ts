@@ -17,8 +17,8 @@ const responseSizeLogger = (
   res.end = function (chunk?: any, encoding?: any, callback?: any): Response {
     if (chunk) responseSize += Buffer.byteLength(chunk);
     // console.log(
-      `${req.method} ${req.originalUrl} - ${res.statusCode} - ${responseSize} bytes`,
-    );
+    //   `${req.method} ${req.originalUrl} - ${res.statusCode} - ${responseSize} bytes`,
+    // );
     return oldEnd.call(res, chunk, encoding, callback);
   };
 
