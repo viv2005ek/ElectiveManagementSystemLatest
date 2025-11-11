@@ -333,7 +333,7 @@ ${availableSemesters}`;
 
           // Extract course data from response - handle different response structures
           const courseResponse = response.data;
-          console.log('Course creation response:', courseResponse); // Debug log
+          // // console.log('Course creation response:', courseResponse); // Debug log
 
           // Handle different possible response structures
           const successfulCourse = {

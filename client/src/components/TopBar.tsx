@@ -14,7 +14,7 @@ export default function TopBar() {
   const { user, loading } = useSelector((state: RootState) => state.auth);
 
   const handleProfileClick = () => {
-    console.log("User state from Redux:", user); // Logs the current user state
+    // console.log("User state from Redux:", user); // Logs the current user state
     navigate("/user-profile");
   };
 

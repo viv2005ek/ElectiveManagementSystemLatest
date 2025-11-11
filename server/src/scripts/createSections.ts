@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function createSections() {
   try {
-    console.log("Starting section creation...");
+    // console.log("Starting section creation...");
 
     // Get all programs
     const programs = await prisma.program.findMany({
@@ -25,14 +25,14 @@ async function createSections() {
       },
     });
 
-    console.log(
+    // console.log(
       `Found ${programs.length} programs and ${batches.length} batches`,
     );
 
     // Create sections for each program-batch combination
     for (const program of programs) {
       for (const batch of batches) {
-        console.log(`Creating sections for ${program.name} - ${batch.year}`);
+        // console.log(`Creating sections for ${program.name} - ${batch.year}`);
 
         // Create 5 sections for each combination
         const sectionLetters = ["A", "B", "C", "D", "E"];
@@ -51,7 +51,7 @@ async function createSections() {
             },
           });
           createdSections.push(section);
-          console.log(`Created section ${section.name}`);
+          // console.log(`Created section ${section.name}`);
         }
 
         // Get all students for this program and batch
@@ -69,7 +69,7 @@ async function createSections() {
           },
         });
 
-        console.log(
+        // console.log(
           `Found ${students.length} students to assign for ${program.name} - ${batch.year}`,
         );
 
@@ -85,14 +85,14 @@ async function createSections() {
               },
             },
           });
-          console.log(
+          // console.log(
             `Assigned ${student.registrationNumber} to section ${randomSection.name}`,
           );
         }
       }
     }
 
-    console.log(
+    // console.log(
       "Section creation and student assignment completed successfully!",
     );
   } catch (error) {
@@ -105,7 +105,7 @@ async function createSections() {
 // Run the script
 createSections()
   .then(() => {
-    console.log("Script completed successfully");
+    // console.log("Script completed successfully");
     process.exit(0);
   })
   .catch((error) => {

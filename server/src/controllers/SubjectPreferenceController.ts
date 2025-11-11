@@ -201,7 +201,7 @@ const SubjectPreferenceController = {
       }
     });
 
-    console.log(`Total students for preferences ${subjectId}:`, totalStudents);
+    // console.log(`Total students for preferences ${subjectId}:`, totalStudents);
 
     // Construct the where clause for filtering students
     const whereClause: any = {

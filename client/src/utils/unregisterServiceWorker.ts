@@ -6,7 +6,7 @@ export function unregisterServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then((registration) => {
       registration.unregister();
-      console.log('Service Worker unregistered successfully');
+      // // console.log('Service Worker unregistered successfully');
     }).catch((error) => {
       console.error('Error unregistering Service Worker:', error);
     });

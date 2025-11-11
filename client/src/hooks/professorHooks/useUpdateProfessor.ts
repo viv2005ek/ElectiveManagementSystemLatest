@@ -16,7 +16,7 @@ export default function useUpdateProfessor() {
 
   const updateProfessor = async (id: string, data: UpdateProfessorData) => {
     setLoading(true);
-    setError(null);
+    setError(null); 
     
     try {
       // Prepare the payload
@@ -29,18 +29,18 @@ export default function useUpdateProfessor() {
         professorRankId: data.professorRankId
       };
 
-      console.log("=== UPDATE PROFESSOR PAYLOAD ===");
-      console.log("Professor ID:", id);
-      console.log("Payload:", payload);
-      console.log("ProfessorRankId Type:", typeof payload.professorRankId);
-      console.log("ProfessorRankId Value:", payload.professorRankId);
-      console.log("=== END PAYLOAD ===");
+      // console.log("=== UPDATE PROFESSOR PAYLOAD ===");
+      // console.log("Professor ID:", id);
+      // console.log("Payload:", payload);
+      // console.log("ProfessorRankId Type:", typeof payload.professorRankId);
+      // console.log("ProfessorRankId Value:", payload.professorRankId);
+      // console.log("=== END PAYLOAD ===");
 
       const response = await axiosInstance.put(`/professors/${id}`, payload);
       
-      console.log("=== UPDATE RESPONSE ===");
-      console.log("Response:", response.data);
-      console.log("=== END RESPONSE ===");
+      // console.log("=== UPDATE RESPONSE ===");
+      // console.log("Response:", response.data);
+      // console.log("=== END RESPONSE ===");
 
       setLoading(false);
       return response.data;

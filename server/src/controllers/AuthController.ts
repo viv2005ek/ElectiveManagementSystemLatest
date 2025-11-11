@@ -15,14 +15,19 @@ const AuthController = {
 
     try {
       // Fetch credential and related user details in a single query
-      const credential = await prisma.credential.findUnique({
-        where: { email },
-        include: {
-          admin: true,
-          professor: true,
-          student: true,
-        },
-      });
+      const credential = await prisma.credential.findFirst({
+  where: {
+    email: {
+      equals: email,
+      mode: 'insensitive' // Case-insensitive matching
+    }
+  },
+  include: {
+    admin: true,
+    professor: true,
+    student: true,
+  },
+});
 
       if (!credential) {
         res.status(401).json({ message: "Invalid email or password" });
@@ -94,9 +99,14 @@ const AuthController = {
     }
 
     try {
-      const existingCredential = await prisma.credential.findUnique({
-        where: { email },
-      });
+      const existingCredential = await prisma.credential.findFirst({
+  where: {
+    email: {
+      equals: email,
+      mode: 'insensitive'
+    }
+  },
+});
       if (existingCredential) {
         return res
           .status(400)
@@ -107,23 +117,26 @@ const AuthController = {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await hash(password, salt);
 
-      const newCredential = await prisma.credential.create({
-        data: {
-          email,
-          passwordHash: hashedPassword,
-          role: UserRole.Admin, // Explicitly set role as ADMIN
-        },
-      });
+    // Normalize email to lowercase before storing
+const normalizedEmail = email.toLowerCase().trim();
 
-      await prisma.admin.create({
-        data: {
-          registrationNumber,
-          email,
-          firstName,
-          lastName,
-          credentialId: newCredential.id,
-        },
-      });
+const newCredential = await prisma.credential.create({
+  data: {
+    email: normalizedEmail, // Store normalized email
+    passwordHash: hashedPassword,
+    role: UserRole.Admin,
+  },
+});
+
+await prisma.admin.create({
+  data: {
+    registrationNumber,
+    email: normalizedEmail, // Store normalized email
+    firstName,
+    lastName,
+    credentialId: newCredential.id,
+  },
+});
 
       return res.status(201).json({ message: "Admin registered successfully" });
     } catch (error) {
@@ -161,8 +174,8 @@ const AuthController = {
       const token = req.cookies.jwt;
       
       // Debug logging
-      console.log('Cookies received:', req.cookies);
-      console.log('JWT token present:', !!token);
+      // console.log('Cookies received:', req.cookies);
+      // console.log('JWT token present:', !!token);
       
       if (!token) {
         return res.status(401).json({ message: "Unauthorized. Token not found" });

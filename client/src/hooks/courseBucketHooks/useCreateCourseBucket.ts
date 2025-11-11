@@ -22,7 +22,7 @@ const addCourseBucket = async (payload: CourseBucketPayload) => {
   setError(null);
 
   try {
-    console.log("Sending payload to server:", JSON.stringify(payload, null, 2));
+    // console.log("Sending payload to server:", JSON.stringify(payload, null, 2));
     
     const promise = axiosInstance.post("/course-buckets", payload);
     notify(
@@ -33,7 +33,7 @@ const addCourseBucket = async (payload: CourseBucketPayload) => {
     );
 
     const response = await promise;
-    console.log("Server response:", response.data);
+    // console.log("Server response:", response.data);
     return response.data;
   } catch (err: any) {
     console.error("Error details:", err.response?.data);

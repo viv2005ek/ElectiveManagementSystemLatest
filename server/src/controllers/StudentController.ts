@@ -435,7 +435,7 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
     });
   }
 
-  console.log(`Starting bulk upload for ${students.length} students`);
+  // console.log(`Starting bulk upload for ${students.length} students`);
 
   const results = {
     successful: [] as SuccessfulStudent[],
@@ -543,7 +543,7 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
       )
     );
 
-    console.log(`Processing ${studentsToProcess.length} valid students out of ${students.length} total`);
+    // console.log(`Processing ${studentsToProcess.length} valid students out of ${students.length} total`);
 
     if (studentsToProcess.length === 0) {
       return res.status(400).json({
@@ -567,7 +567,7 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
       const endIdx = Math.min(startIdx + BATCH_SIZE, studentsToProcess.length);
       const batch = studentsToProcess.slice(startIdx, endIdx);
 
-      console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
+      // console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
 
       try {
         // Process batch in a single transaction for better performance
@@ -737,7 +737,7 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
       finalMessage = `Bulk operation completed with ${successCount} successful and ${failedCount} failed`;
     }
 
-    console.log(`Bulk upload completed: ${successCount} successful, ${failedCount} failed`);
+    // console.log(`Bulk upload completed: ${successCount} successful, ${failedCount} failed`);
 
     res.status(201).json({
       message: finalMessage,

@@ -14,5 +14,5 @@ var formatName = function (name) {
   return { firstName: firstName, lastName: lastName };
 };
 exports.formatName = formatName;
-console.log((0, exports.formatName)("SHRESHTH MIDDLENAME PUROHIT"));
+// console.log((0, exports.formatName)("SHRESHTH MIDDLENAME PUROHIT"));
 // Output: { firstName: 'Shreshth', lastName: 'Middlename P

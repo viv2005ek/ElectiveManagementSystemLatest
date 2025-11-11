@@ -84,7 +84,7 @@ createUser(
   },
 )
   .then((user) => {
-    console.log("User created:", user);
+    // console.log("User created:", user);
   })
   .catch((error) => {
     console.error("Error creating user:", error);

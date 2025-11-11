@@ -13,7 +13,7 @@ const renameBranch = async () => {
       },
     });
 
-    console.log(`Department renamed to: ${updatedBranch.name}`);
+    // console.log(`Department renamed to: ${updatedBranch.name}`);
 
     await prisma.$disconnect();
   } catch (error) {

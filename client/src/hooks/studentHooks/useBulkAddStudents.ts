@@ -47,12 +47,12 @@ export default function useBulkAddStudents() {
 
   // Password generator function
   const generatePassword = (student: any) => {
-    const firstNamePart = student.firstName ? student.firstName.substring(0, 3).toLowerCase() : 'usr';
-    const lastNamePart = student.lastName ? student.lastName.substring(0, 3).toLowerCase() : 'std';
-    const regPart = student.registrationNumber ? student.registrationNumber.slice(-4) : '0000';
-    const emailPart = student.email ? student.email.split('@')[0].substring(0, 3).toLowerCase() : 'eml';
-    
-    return `${firstNamePart}${lastNamePart}${regPart}${emailPart}`;
+    // const firstNamePart = student.firstName ? student.firstName.substring(0, 3).toLowerCase() : 'usr';
+    // const lastNamePart = student.lastName ? student.lastName.substring(0, 3).toLowerCase() : 'std';
+    // const regPart = student.registrationNumber ? student.registrationNumber.slice(-4) : '0000';
+    // const emailPart = student.email ? student.email.split('@')[0].substring(0, 3).toLowerCase() : 'eml';
+
+    return `${student.registrationNumber.toUpperCase()}`;
   };
 
   // Process students in batches of 5 with no timeout
@@ -97,7 +97,7 @@ export default function useBulkAddStudents() {
           }
         });
 
-        console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
+        // console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
 
         try {
           // Send batch of 5 students with NO timeout
@@ -118,7 +118,7 @@ export default function useBulkAddStudents() {
             results.failed.push(...response.data.failed);
           }
 
-          console.log(`Batch ${batchIndex + 1} completed: ${response.data.successful?.length || 0} successful, ${response.data.failed?.length || 0} failed`);
+          // console.log(`Batch ${batchIndex + 1} completed: ${response.data.successful?.length || 0} successful, ${response.data.failed?.length || 0} failed`);
 
         } catch (error: any) {
           console.error(`Batch ${batchIndex + 1} failed:`, error);
@@ -439,7 +439,7 @@ export default function useBulkAddStudents() {
         return;
       }
 
-      console.log(`Sending ${processedStudents.length} validated students in batches of 5`);
+      // console.log(`Sending ${processedStudents.length} validated students in batches of 5`);
 
       // Send validated students in batches of 5 with no timeout
       const result = await processStudentsInBatches(processedStudents);

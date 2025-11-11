@@ -39,7 +39,7 @@ export default function useCreateStudent() {
     setError(null);
     
     try {
-      console.log("Creating student with data:", data);
+      // console.log("Creating student with data:", data);
       
       const response = await axiosInstance.post<CreateStudentResponse>("/students", {
         ...data,
@@ -47,7 +47,7 @@ export default function useCreateStudent() {
       });
       
       setLoading(false);
-      console.log("Student creation response:", response.data);
+      // console.log("Student creation response:", response.data);
       
       // Check if the operation was successful based on the response structure
       if (response.data.summary && response.data.summary.failedCount > 0) {

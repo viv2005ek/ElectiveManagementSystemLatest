@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function clearDatabase() {
   try {
-    console.log("Deleting all records...");
+    // console.log("Deleting all records...");
 
     // Disable foreign key constraints temporarily
     await prisma.$executeRawUnsafe(`
@@ -16,7 +16,7 @@ async function clearDatabase() {
       RESTART IDENTITY CASCADE;
     `);
 
-    console.log("All records deleted successfully ✅");
+    // console.log("All records deleted successfully ✅");
   } catch (error) {
     console.error("Error clearing database:", error);
   } finally {

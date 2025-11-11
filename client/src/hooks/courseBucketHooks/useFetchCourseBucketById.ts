@@ -14,16 +14,16 @@ const useFetchCourseBucketById = (id: string) => {
       setLoading(true);
       setError(null);
       try {
-        console.log("Fetching course bucket with ID:", id);
+        // console.log("Fetching course bucket with ID:", id);
         const response = await axiosInstance.get(`/course-buckets/${id}`);
-        console.log("Full API response:", response.data);
-        console.log("Courses in response:", response.data.courses);
+        // console.log("Full API response:", response.data);
+        // console.log("Courses in response:", response.data.courses);
         
         // Check if courses exist and have course data
         if (response.data.courses) {
           response.data.courses.forEach((item: any, index: number) => {
-            console.log(`Course item ${index}:`, item);
-            console.log(`Course data at ${index}:`, item.course);
+            // console.log(`Course item ${index}:`, item);
+            // console.log(`Course data at ${index}:`, item.course);
           });
         }
         

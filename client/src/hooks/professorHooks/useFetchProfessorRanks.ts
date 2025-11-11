@@ -21,7 +21,7 @@ const useFetchProfessorRanks = () => {
         const response = await axiosInstance.get("/professor-ranks");
         
         // Check the actual response structure
-        console.log("Professor ranks API response:", response.data);
+        // console.log("Professor ranks API response:", response.data);
         
         // Handle different response structures
         if (response.data.data) {

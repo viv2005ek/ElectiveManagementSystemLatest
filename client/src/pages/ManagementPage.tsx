@@ -86,21 +86,21 @@ export default function ManagementPage() {
       switch (activeTab) {
         case 'semesters':
           const semestersResponse = await axiosInstance.get('/semesters');
-          console.log('Semesters API response:', semestersResponse.data);
+          // // console.log('Semesters API response:', semestersResponse.data);
           // Sort semesters in descending order by number
           const sortedSemesters = semestersResponse.data.sort((a: Semester, b: Semester) => b.number - a.number);
           setSemesters(sortedSemesters);
           break;
         case 'batches':
           const batchesResponse = await axiosInstance.get('/batches');
-          console.log('Batches API response:', batchesResponse.data);
+          // // console.log('Batches API response:', batchesResponse.data);
           // Sort batches in descending order by year
           const sortedBatches = batchesResponse.data.sort((a: Batch, b: Batch) => b.year - a.year);
           setBatches(sortedBatches);
           break;
         case 'professorRanks':
           const ranksResponse = await axiosInstance.get('/professor-ranks');
-          console.log('Professor Ranks API response:', ranksResponse.data);
+          // // console.log('Professor Ranks API response:', ranksResponse.data);
           // Professor ranks are already sorted by priority in ascending order from the API
           setProfessorRanks(ranksResponse.data.data || ranksResponse.data);
           break;

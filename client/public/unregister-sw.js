@@ -7,20 +7,20 @@
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
       for (let registration of registrations) {
         registration.unregister();
-        console.log('Service Worker unregistered:', registration);
+        // console.log('Service Worker unregistered:', registration);
       }
     });
     
     // Also try to unregister the active service worker
     navigator.serviceWorker.ready.then(function(registration) {
       registration.unregister();
-      console.log('Active Service Worker unregistered');
+      // console.log('Active Service Worker unregistered');
     }).catch(function(error) {
       console.error('Error unregistering Service Worker:', error);
     });
     
-    console.log('Service Worker unregistration process completed');
+    // console.log('Service Worker unregistration process completed');
   } else {
-    console.log('Service Workers are not supported in this browser');
+    // console.log('Service Workers are not supported in this browser');
   }
 })(); 

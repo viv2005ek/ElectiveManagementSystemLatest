@@ -176,6 +176,31 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+// Function to get user's first letter and background color
+const getUserInitials = (firstName?: string, lastName?: string) => {
+  if (!firstName && !lastName) return 'U';
+  
+  const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+  const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+  
+  return firstInitial ;
+};
+
+// Function to generate consistent background color based on user's name
+const getAvatarColor = (firstName?: string, lastName?: string) => {
+  const name = (firstName || '') + (lastName || '');
+  if (!name) return 'bg-gray-500';
+  
+  const colors = [
+    'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 
+    'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500',
+    'bg-cyan-500', 'bg-amber-500'
+  ];
+  
+  const index = name.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
 const SidebarDisclosure = ({
   item,
   isOpen,
@@ -341,6 +366,10 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     return requiredRoles.some((role) => user?.role === role);
   };
 
+  // Get user initials and avatar color
+  const userInitials = getUserInitials(user?.firstName, user?.lastName);
+  const avatarColor = getAvatarColor(user?.firstName, user?.lastName);
+
   // Close mobile sidebar when route changes
   useEffect(() => {
     setSidebarOpen(false);
@@ -401,11 +430,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                 {/* User Info in Mobile Sidebar */}
                 <div className="px-6 pb-4 border-b border-white/20">
                   <div className="flex items-center gap-3">
-                    <img
-                      alt="Profile"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      className="size-10 rounded-full bg-gray-50"
-                    />
+                    <div className={`size-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-semibold text-lg`}>
+                      {userInitials}
+                    </div>
                     <div className="text-white">
                       <div className="font-semibold">
                         {user ? `${user.firstName} ${user.lastName}` : <Skeleton width={120} />}
@@ -585,11 +612,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                   <Menu as="div" className="relative">
                     <MenuButton className="-m-1.5 flex items-center p-1.5">
                       <span className="sr-only">Open user menu</span>
-                      <img
-                        alt=""
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                        className="size-8 rounded-full bg-gray-50"
-                      />
+                      <div className={`size-8 rounded-full ${avatarColor} flex items-center justify-center text-white font-semibold text-sm`}>
+                        {userInitials}
+                      </div>
                       <span className="hidden lg:flex lg:items-center">
                         <span
                           aria-hidden="true"

@@ -82,7 +82,7 @@ export default function CreateCoursePage() {
       semesterId: semester?.id,
     };
 
-    console.log("Creating course with data:", courseData);
+    // // console.log("Creating course with data:", courseData);
 
     try {
       const result = await createCourse(courseData);

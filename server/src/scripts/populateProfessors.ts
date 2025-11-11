@@ -106,7 +106,7 @@ async function main() {
       },
     ];
 
-    console.log("Creating professors...");
+    // console.log("Creating professors...");
 
     for (const professor of professors) {
       const randomDepartment =
@@ -141,12 +141,12 @@ async function main() {
         },
       });
 
-      console.log(
+      // console.log(
         `Created professor: ${professor.firstName} ${professor.lastName}`,
       );
     }
 
-    console.log("Successfully populated professors table!");
+    // console.log("Successfully populated professors table!");
   } catch (error) {
     console.error("Error populating professors:", error);
     throw error;

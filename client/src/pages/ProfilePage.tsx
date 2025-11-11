@@ -81,17 +81,17 @@ export default function ProfilePage() {
     setError(null);
     
     try {
-      console.log('Fetching profile for role:', userRole);
+      // console.log('Fetching profile for role:', userRole);
       
       if (userRole === UserRole.ADMIN) {
-        console.log('Calling API: /profiles/admin');
+        // console.log('Calling API: /profiles/admin');
         const response = await axiosInstance.get('/profile/admin');
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         setAdminProfile(response.data.data);
       } else if (userRole === UserRole.STUDENT) {
-        console.log('Calling API: /profiles/student');
+        // console.log('Calling API: /profiles/student');
         const response = await axiosInstance.get('/profile/student');
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         setStudentProfile(response.data.data);
       } else {
         setError(`Profile access not available for ${userRole} role`);
