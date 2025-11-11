@@ -27,6 +27,7 @@ import PaginationFooter from "../../components/PaginationFooter.tsx";
 import StudentPreferenceCard from "../../components/StudentPreferenceCard.tsx";
 import axiosInstance from "../../axiosInstance.ts";
 import { toast } from "sonner";
+import { AllotmentType } from "../../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
 
 dayjs.extend(relativeTime);
 
@@ -112,10 +113,10 @@ export default function SubjectPreferencesPage() {
         "Preferences Count"
       ];
 
-      // Add preference columns based on allotment type
-      if (subjectInfo.subjectType.allotmentType === "STANDALONE") {
+      // Add preference columns based on allotment type - FIXED: Use enum values
+      if (subjectInfo.subjectType.allotmentType === AllotmentType.STANDALONE) {
         headers.push("Priority 1 Course", "Priority 2 Course", "Priority 3 Course");
-      } else if (subjectInfo.subjectType.allotmentType === "BUCKET") {
+      } else if (subjectInfo.subjectType.allotmentType === AllotmentType.BUCKET) {
         headers.push("Priority 1 Bucket", "Priority 2 Bucket", "Priority 3 Bucket");
       }
 
@@ -136,13 +137,13 @@ export default function SubjectPreferencesPage() {
           let preferenceRow = baseRow;
           
           if (student.preferences) {
-            if (subjectInfo.subjectType.allotmentType === "STANDALONE") {
+            if (subjectInfo.subjectType.allotmentType === AllotmentType.STANDALONE) {
               preferenceRow.push(
                 `"${student.preferences.firstPreferenceCourse?.name || 'Not selected'}"`,
                 `"${student.preferences.secondPreferenceCourse?.name || 'Not selected'}"`,
                 `"${student.preferences.thirdPreferenceCourse?.name || 'Not selected'}"`
               );
-            } else if (subjectInfo.subjectType.allotmentType === "BUCKET") {
+            } else if (subjectInfo.subjectType.allotmentType === AllotmentType.BUCKET) {
               preferenceRow.push(
                 `"${student.preferences.firstPreferenceCourseBucket?.name || 'Not selected'}"`,
                 `"${student.preferences.secondPreferenceCourseBucket?.name || 'Not selected'}"`,

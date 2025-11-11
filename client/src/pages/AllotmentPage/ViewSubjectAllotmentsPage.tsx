@@ -283,38 +283,43 @@ const handleRunPendingAllotments = async () => {
     </div>
   );
 
-  const renderAllotmentStats = () => {
-    if (statsLoading) {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg p-4 border border-gray-200"
-            >
-              <Skeleton height={20} width="60%" className="mb-2" />
-              <Skeleton height={30} width="40%" />
-            </div>
-          ))}
-        </div>
-      );
-    }
+ const renderAllotmentStats = () => {
+  if (statsLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg p-4 border border-gray-200"
+          >
+            <Skeleton height={20} width="60%" className="mb-2" />
+            <Skeleton height={30} width="40%" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-    if (statsError) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-          <AlertCircle className="h-5 w-5 text-red-500 mx-auto mb-2" />
-          <p className="text-red-600">Error loading statistics.</p>
-        </div>
-      );
-    }
+  if (statsError) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+        <AlertCircle className="h-5 w-5 text-red-500 mx-auto mb-2" />
+        <p className="text-red-600">Error loading statistics.</p>
+      </div>
+    );
+  }
 
-    if (!stats) return null;
+  if (!stats) return null;
 
-  // Use the correct totalStudents from the API
-  const totalStudents = stats.totalStudents || 0;
-  const totalAllottedStudents = stats.totalAllottedStudents || 0;
+  // ALTERNATIVE: Calculate all values if the backend doesn't provide them
+  const totalAllottedStudents = 
+    (stats.courses?.reduce((acc, course) => acc + course.studentCount, 0) || 0) + 
+    (stats.courseBuckets?.reduce((acc, bucket) => acc + bucket.studentCount, 0) || 0);
+  
   const unallottedStudents = stats.unallottedStudents || 0;
+  
+  // Calculate total students by summing allotted and unallotted
+  const totalStudents = totalAllottedStudents + unallottedStudents;
   
   const completionRate =
     totalStudents > 0
@@ -348,8 +353,8 @@ const handleRunPendingAllotments = async () => {
         color: "indigo",
       })}
     </div>
-    );
-  };
+  );
+};
 
   const renderSectionsTable = () => {
     const handleDeleteSection = async (sectionId: string) => {

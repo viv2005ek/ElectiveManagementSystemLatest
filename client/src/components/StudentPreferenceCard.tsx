@@ -1,6 +1,6 @@
 import { Student } from "../hooks/subjectPreferenceHooks/useSubjectPreferences.ts";
 import { useState } from "react";
-import { AllotmentType } from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts";
+import { AllotmentType } from "../hooks/subjectTypeHooks/useFetchSubjectTypes.ts"; // Import the enum
 import { ChevronDown, Clock, User } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -12,6 +12,12 @@ interface StudentPreferenceCardProps {
   index: number;
   allotmentType?: AllotmentType;
 }
+
+// REMOVE the local enum definition - use the imported one instead
+// enum AllotmentType {
+//   STANDALONE = "STANDALONE",
+//   BUCKET = "BUCKET"
+// }
 
 export default function StudentPreferenceCard({
   student,
@@ -47,8 +53,8 @@ export default function StudentPreferenceCard({
 
     const preferences = [];
     
-    // Check for STANDALONE preferences
-    if (allotmentType === "STANDALONE" || allotmentType === "Standalone") {
+    // Check for STANDALONE preferences - FIXED: Use imported enum
+    if (allotmentType === AllotmentType.STANDALONE) {
       // Check each preference course individually
       if (student.preferences.firstPreferenceCourse && student.preferences.firstPreferenceCourse.id) {
         preferences.push({
@@ -72,8 +78,8 @@ export default function StudentPreferenceCard({
         });
       }
     } 
-    // Check for BUCKET preferences
-    else if (allotmentType === "BUCKET" || allotmentType === "Bucket") {
+    // Check for BUCKET preferences - FIXED: Use imported enum
+    else if (allotmentType === AllotmentType.BUCKET) {
       // Check each preference course bucket individually
       if (student.preferences.firstPreferenceCourseBucket && student.preferences.firstPreferenceCourseBucket.id) {
         preferences.push({
