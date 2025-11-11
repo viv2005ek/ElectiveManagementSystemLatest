@@ -66,8 +66,8 @@ const AuthController = {
       );
 
       // Auto-detect environment for cookie settings
-      const isProduction = req.headers.origin?.includes('vercel.app') || 
-                          req.headers.host?.includes('onrender.com');
+     const isProduction = !req.headers.host?.includes('localhost') && 
+                    !req.headers.host?.includes('127.0.0.1');
       
       // Set cookie with auto-detected settings
       res.cookie("jwt", token, {
