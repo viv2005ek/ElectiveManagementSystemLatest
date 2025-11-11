@@ -5,11 +5,12 @@ import useFetchActiveSubjects from "../../hooks/subjectHooks/useFetchActiveSubje
 
 export default function ActiveSubjectsPage() {
   const { subjects, loading, error } = useFetchActiveSubjects();
+  
   return (
     <MainLayout>
-      <div className={"py-8"}>
+      <div className="py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-8">
         <PageHeader title={"Active subject allotments"} />
-        <div className={"mt-8"}>
+        <div className="mt-4 sm:mt-6 lg:mt-8">
           <UpcomingDeadlinesList subjects={subjects} loading={loading} />
         </div>
       </div>
