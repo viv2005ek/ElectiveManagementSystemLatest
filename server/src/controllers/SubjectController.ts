@@ -2,6 +2,226 @@ import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import { AllotmentStatus, AllotmentType, Status } from "@prisma/client";
 
+// Helper function for standalone pending allotments
+async function processStandalonePendingAllotments(
+  subject: any,
+  unallottedStudents: any[],
+  writeOps: any[]
+) {
+  // Get courses with available seats, sorted by current student count (ascending)
+  const coursesWithStats = await Promise.all(
+    subject.coursesWithSeats.map(async (courseWithSeats: any) => {
+      const studentCount = await prisma.standaloneAllotment.count({
+        where: {
+          subjectId: subject.id,
+          courseId: courseWithSeats.courseId
+        }
+      });
+
+      const availableSeats = courseWithSeats.availableSeats !== null 
+        ? courseWithSeats.availableSeats
+        : Infinity;
+
+      return {
+        ...courseWithSeats,
+        currentStudentCount: studentCount,
+        availableSeats,
+        effectiveAvailableSeats: availableSeats === Infinity 
+          ? unallottedStudents.length 
+          : Math.max(0, availableSeats)
+      };
+    })
+  );
+
+  // Sort courses by current student count (courses with least students first)
+  const sortedCourses = coursesWithStats
+    .filter(course => course.effectiveAvailableSeats > 0)
+    .sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+
+  console.log('Sorted courses for distribution:', sortedCourses.map(c => ({
+    name: c.course.name,
+    currentCount: c.currentStudentCount,
+    available: c.effectiveAvailableSeats
+  })));
+
+  if (sortedCourses.length === 0) {
+    throw new Error("No courses with available seats for pending allotments");
+  }
+
+  const allotments = [];
+  let studentIndex = 0;
+
+  // Distribute students to courses with least students first
+  while (studentIndex < unallottedStudents.length && sortedCourses.length > 0) {
+    for (let i = 0; i < sortedCourses.length && studentIndex < unallottedStudents.length; i++) {
+      const currentCourse = sortedCourses[i];
+      
+      if (currentCourse.effectiveAvailableSeats > 0) {
+        const student = unallottedStudents[studentIndex];
+        
+        allotments.push({
+          subjectId: subject.id,
+          studentId: student.id,
+          courseId: currentCourse.courseId,
+          allotmentStatus: AllotmentStatus.Pending,
+        });
+
+        // Update available seats
+        if (currentCourse.availableSeats !== Infinity) {
+          currentCourse.availableSeats--;
+          currentCourse.effectiveAvailableSeats--;
+        }
+
+        studentIndex++;
+      }
+    }
+
+    // Re-sort courses after each full pass to maintain least-filled-first order
+    sortedCourses.sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+  }
+
+  if (allotments.length > 0) {
+    writeOps.push(
+      prisma.standaloneAllotment.createMany({
+        data: allotments,
+      })
+    );
+
+    // Update seat counts for courses with limited seats
+    const seatUpdates = coursesWithStats
+      .filter(course => course.availableSeats !== Infinity)
+      .map(course =>
+        prisma.subjectCourseWithSeats.update({
+          where: { id: course.id },
+          data: { availableSeats: course.availableSeats },
+        })
+      );
+
+    writeOps.push(...seatUpdates);
+  }
+}
+
+// Helper function for bucket pending allotments
+async function processBucketPendingAllotments(
+  subject: any,
+  unallottedStudents: any[],
+  writeOps: any[]
+) {
+  // Determine semester ID for bucket allotments
+  let semesterId: string | null = null;
+  
+  if (subject.semesters && subject.semesters.length > 0) {
+    semesterId = subject.semesters[0].id;
+  } else if (subject.semester) {
+    semesterId = subject.semester.id;
+  }
+
+  if (!semesterId) {
+    throw new Error("No semester configured for bucket allotment");
+  }
+
+  // Get course buckets with available seats, sorted by current student count
+  const bucketsWithStats = await Promise.all(
+    subject.courseBucketsWithSeats.map(async (bucketWithSeats: any) => {
+      const studentCount = await prisma.bucketAllotment.count({
+        where: {
+          subjectId: subject.id,
+          courseBucketId: bucketWithSeats.courseBucketId
+        }
+      });
+
+      const availableSeats = bucketWithSeats.availableSeats !== null 
+        ? bucketWithSeats.availableSeats
+        : Infinity;
+
+      return {
+        ...bucketWithSeats,
+        currentStudentCount: studentCount,
+        availableSeats,
+        effectiveAvailableSeats: availableSeats === Infinity 
+          ? unallottedStudents.length 
+          : Math.max(0, availableSeats)
+      };
+    })
+  );
+
+  // Sort buckets by current student count (buckets with least students first)
+  const sortedBuckets = bucketsWithStats
+    .filter(bucket => bucket.effectiveAvailableSeats > 0)
+    .sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+
+  console.log('Sorted buckets for distribution:', sortedBuckets.map(b => ({
+    name: b.courseBucket.name,
+    currentCount: b.currentStudentCount,
+    available: b.effectiveAvailableSeats
+  })));
+
+  if (sortedBuckets.length === 0) {
+    throw new Error("No course buckets with available seats for pending allotments");
+  }
+
+  const allotments = [];
+  let studentIndex = 0;
+
+  // Distribute students to buckets with least students first
+  while (studentIndex < unallottedStudents.length && sortedBuckets.length > 0) {
+    for (let i = 0; i < sortedBuckets.length && studentIndex < unallottedStudents.length; i++) {
+      const currentBucket = sortedBuckets[i];
+      
+      if (currentBucket.effectiveAvailableSeats > 0) {
+        const student = unallottedStudents[studentIndex];
+        
+        // Get the first course in the bucket
+        const firstCourse = currentBucket.courseBucket.courses[0];
+        if (!firstCourse) {
+          throw new Error(`No courses found in bucket ${currentBucket.courseBucket.name}`);
+        }
+
+        allotments.push({
+          subjectId: subject.id,
+          studentId: student.id,
+          courseBucketId: currentBucket.courseBucketId,
+          courseId: firstCourse.course.id,
+          semesterId,
+          allotmentStatus: AllotmentStatus.Pending,
+        });
+
+        // Update available seats
+        if (currentBucket.availableSeats !== Infinity) {
+          currentBucket.availableSeats--;
+          currentBucket.effectiveAvailableSeats--;
+        }
+
+        studentIndex++;
+      }
+    }
+
+    // Re-sort buckets after each full pass to maintain least-filled-first order
+    sortedBuckets.sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+  }
+
+  if (allotments.length > 0) {
+    writeOps.push(
+      prisma.bucketAllotment.createMany({
+        data: allotments,
+      })
+    );
+
+    // Update seat counts for buckets with limited seats
+    const seatUpdates = bucketsWithStats
+      .filter(bucket => bucket.availableSeats !== Infinity)
+      .map(bucket =>
+        prisma.subjectCourseBucketWithSeats.update({
+          where: { id: bucket.id },
+          data: { availableSeats: bucket.availableSeats },
+        })
+      );
+
+    writeOps.push(...seatUpdates);
+  }
+}
+
+
 const SubjectController = {
   getAllSubjects: async (req: Request, res: Response): Promise<void> => {
     const {
@@ -551,6 +771,7 @@ const SubjectController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+  
  runAllotmentsForSubject: async (
   req: Request,
   res: Response,
@@ -737,6 +958,161 @@ const SubjectController = {
     res.status(500).json({ error: "Internal server error" });
   }
 },
+ runPendingAllotments: async (req: Request, res: Response): Promise<void> => {
+    const { subjectId } = req.params;
+
+    try {
+      console.log(`Starting pending allotments for subject ID: ${subjectId}`);
+
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        include: {
+          subjectType: true,
+          semester: true,
+          semesters: true,
+          programs: {
+            select: { id: true }
+          },
+          batch: {
+            select: { id: true }
+          },
+          coursesWithSeats: {
+            include: {
+              course: true,
+            },
+          },
+          courseBucketsWithSeats: {
+            include: {
+              courseBucket: {
+                include: {
+                  courses: {
+                    include: {
+                      course: true,
+                    },
+                    orderBy: { orderIndex: "asc" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      // Get all students who should be allotted but haven't been
+      const totalStudents = await prisma.student.count({
+        where: {
+          batchId: subject.batch.id,
+          programId: {
+            in: subject.programs.map(program => program.id)
+          },
+          isDeleted: false
+        }
+      });
+
+      // Get already allotted students
+      const allottedStudents = await prisma.student.findMany({
+        where: {
+          OR: [
+            {
+              standaloneAllotments: {
+                some: { subjectId }
+              }
+            },
+            {
+              bucketAllotments: {
+                some: { subjectId }
+              }
+            }
+          ]
+        },
+        select: { id: true }
+      });
+
+      const allottedStudentIds = new Set(allottedStudents.map(s => s.id));
+
+      // Get unallotted students (students with no preferences filled)
+      const unallottedStudents = await prisma.student.findMany({
+        where: {
+          batchId: subject.batch.id,
+          programId: {
+            in: subject.programs.map(program => program.id)
+          },
+          isDeleted: false,
+          id: {
+            notIn: Array.from(allottedStudentIds)
+          },
+          // Students who didn't fill preferences for this subject
+          AND: [
+            {
+              standaloneSubjectPreferences: {
+                none: {
+                  subjectId: subjectId
+                }
+              }
+            },
+            {
+              bucketSubjectPreferences: {
+                none: {
+                  subjectId: subjectId
+                }
+              }
+            }
+          ]
+        },
+        select: {
+          id: true,
+          registrationNumber: true,
+          firstName: true,
+          lastName: true,
+        }
+      });
+
+      console.log(`Found ${unallottedStudents.length} unallotted students`);
+
+      if (unallottedStudents.length === 0) {
+        res.status(400).json({ error: "No pending students to allot" });
+        return;
+      }
+
+      const writeOps: any[] = [];
+
+      if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+        await processStandalonePendingAllotments(
+          subject,
+          unallottedStudents,
+          writeOps
+        );
+      } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+        await processBucketPendingAllotments(
+          subject,
+          unallottedStudents,
+          writeOps
+        );
+      }
+
+      // Execute all write operations in a transaction
+      if (writeOps.length > 0) {
+        await prisma.$transaction(writeOps);
+        console.log(`Successfully allotted ${unallottedStudents.length} pending students`);
+      }
+
+      res.status(200).json({ 
+        message: `Pending allotments completed successfully. Allotted ${unallottedStudents.length} students.`,
+        allottedCount: unallottedStudents.length
+      });
+
+    } catch (error) {
+      console.error("Error running pending allotments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+
   getSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
     const { subjectId } = req.params;
     const { search, page = 1, pageSize = 6 } = req.query;
@@ -909,103 +1285,116 @@ const SubjectController = {
     }
   },
 
-  getAllotmentStats: async (req: Request, res: Response): Promise<void> => {
-    const { subjectId } = req.params;
+ // In SubjectController.ts - update getAllotmentStats function
+getAllotmentStats: async (req: Request, res: Response): Promise<void> => {
+  const { subjectId } = req.params;
 
-    try {
-      // Fetch all courses associated with the subject
-      const allCourses = await prisma.subjectCourseWithSeats.findMany({
-        where: { subjectId },
-        select: {
-          course: {
-            select: { id: true, name: true, code: true },
-          },
+  try {
+    // First, get the subject to find its batch and programs
+    const subject = await prisma.subject.findUnique({
+      where: { id: subjectId },
+      include: {
+        programs: {
+          select: { id: true }
         },
-      });
+        batch: {
+          select: { id: true }
+        }
+      }
+    });
 
-      // Fetch all course buckets associated with the subject
-      const allCourseBuckets =
-        await prisma.subjectCourseBucketWithSeats.findMany({
-          where: { subjectId },
-          select: {
-            courseBucket: {
-              select: { id: true, name: true },
-            },
-          },
-        });
-
-      // Count students allotted to each course
-      const courseStats = await prisma.standaloneAllotment.groupBy({
-        by: ["courseId"],
-        where: { subjectId },
-        _count: { courseId: true },
-      });
-
-      // Count students allotted to each course bucket
-      const courseBucketStats = await prisma.bucketAllotment.groupBy({
-        by: ["courseBucketId"],
-        where: { subjectId },
-        _count: { courseBucketId: true },
-      });
-
-      // Map allotment counts to courses
-      const courses = allCourses.map(({ course }) => {
-        const stat = courseStats.find((s) => s.courseId === course.id);
-        return {
-          id: course.id,
-          name: course.name,
-          code: course.code,
-          studentCount: stat ? stat._count.courseId : 0,
-        };
-      });
-
-      // Map allotment counts to course buckets
-      const courseBuckets = allCourseBuckets.map(({ courseBucket }) => {
-        const stat = courseBucketStats.find(
-          (s) => s.courseBucketId === courseBucket.id,
-        );
-        return {
-          id: courseBucket.id,
-          name: courseBucket.name,
-          studentCount: stat ? stat._count.courseBucketId : 0,
-        };
-      });
-
-      // Calculate total students in the subject's programs
-      const totalStudents = await prisma.student.count({
-        where: {
-          program: {
-            subjects: {
-              some: { id: subjectId },
-            },
-          },
-        },
-      });
-
-      // Calculate total allotted students
-      const totalAllottedStudents =
-        courseStats.reduce((acc, stat) => acc + stat._count.courseId, 0) +
-        courseBucketStats.reduce(
-          (acc, stat) => acc + stat._count.courseBucketId,
-          0,
-        );
-
-      // Calculate unallotted students
-      const unallottedStudents = totalStudents - totalAllottedStudents;
-
-      // Combine results
-      const result = {
-        courses: [...courses],
-        courseBuckets: [...courseBuckets],
-        unallottedStudents,
-      };
-
-      res.status(200).json(result);
-    } catch (error) {
-      console.error("Error fetching allotment stats:", error);
-      res.status(500).json({ error: "Internal server error" });
+    if (!subject) {
+      res.status(404).json({ error: "Subject not found" });
+      return;
     }
-  },
+
+    // Use the EXACT SAME logic as getSubjectPreferences
+    const totalStudents = await prisma.student.count({
+      where: {
+        batchId: subject.batch.id,
+        programId: {
+          in: subject.programs.map(program => program.id)
+        },
+        isDeleted: false
+      }
+    });
+
+    console.log(`Total students for subject ${subjectId}:`, totalStudents);
+    console.log('Batch ID:', subject.batch.id);
+    console.log('Program IDs:', subject.programs.map(p => p.id));
+
+    // Rest of your existing code for courses and buckets...
+    const allCourses = await prisma.subjectCourseWithSeats.findMany({
+      where: { subjectId },
+      select: {
+        course: {
+          select: { id: true, name: true, code: true },
+        },
+      },
+    });
+
+    const allCourseBuckets = await prisma.subjectCourseBucketWithSeats.findMany({
+      where: { subjectId },
+      select: {
+        courseBucket: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    const courseStats = await prisma.standaloneAllotment.groupBy({
+      by: ["courseId"],
+      where: { subjectId },
+      _count: { courseId: true },
+    });
+
+    const courseBucketStats = await prisma.bucketAllotment.groupBy({
+      by: ["courseBucketId"],
+      where: { subjectId },
+      _count: { courseBucketId: true },
+    });
+
+    const courses = allCourses.map(({ course }) => {
+      const stat = courseStats.find((s) => s.courseId === course.id);
+      return {
+        id: course.id,
+        name: course.name,
+        code: course.code,
+        studentCount: stat ? stat._count.courseId : 0,
+      };
+    });
+
+    const courseBuckets = allCourseBuckets.map(({ courseBucket }) => {
+      const stat = courseBucketStats.find(
+        (s) => s.courseBucketId === courseBucket.id,
+      );
+      return {
+        id: courseBucket.id,
+        name: courseBucket.name,
+        studentCount: stat ? stat._count.courseBucketId : 0,
+      };
+    });
+
+    const totalAllottedStudents =
+      courseStats.reduce((acc, stat) => acc + stat._count.courseId, 0) +
+      courseBucketStats.reduce((acc, stat) => acc + stat._count.courseBucketId, 0);
+
+    const unallottedStudents = totalStudents - totalAllottedStudents;
+
+    const result = {
+      courses: [...courses],
+      courseBuckets: [...courseBuckets],
+      totalStudents,
+      totalAllottedStudents,
+      unallottedStudents,
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching allotment stats:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+},
 
   updateSubject: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;

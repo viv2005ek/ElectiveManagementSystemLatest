@@ -459,13 +459,14 @@ export default function AdminRegister() {
                       type="password"
                       id="password"
                       name="password"
+                       minLength={4}
                       required
                       value={formData.password}
                       onChange={handleChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      Password must be at least 8 characters long
+                      Password must be at least 4 characters long
                     </p>
                   </div>
                 </div>
@@ -634,6 +635,7 @@ export default function AdminRegister() {
                       type="password"
                       id="editPassword"
                       name="password"
+                       minLength={4}
                       value={formData.password}
                       onChange={handleChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"

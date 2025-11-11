@@ -21,16 +21,43 @@ export default function ViewStudentsAllotmentsPage() {
     }
 
     // For standalone allotments, check subject's semester or semesters
-    if (allotment.subject.semester) {
+    if (allotment.subject?.semester) {
       return allotment.subject.semester.number;
     }
 
-    if (allotment.subject.semesters && allotment.subject.semesters.length > 0) {
+    if (allotment.subject?.semesters && allotment.subject.semesters.length > 0) {
       // If multiple semesters, show the first one
       return allotment.subject.semesters[0].number;
     }
 
     return "N/A";
+  };
+
+  // Safe course display function
+  const getCourseDisplay = (allotment: any) => {
+    if (!allotment.course) {
+      return "Course information not available";
+    }
+    
+    const code = allotment.course.code || "N/A";
+    const name = allotment.course.name || "Unnamed Course";
+    return `${code} - ${name}`;
+  };
+
+  // Safe department display function
+  const getDepartmentDisplay = (allotment: any) => {
+    if (!allotment.course?.department) {
+      return "Department not assigned";
+    }
+    return allotment.course.department.name || "Unnamed Department";
+  };
+
+  // Safe credits display function
+  const getCreditsDisplay = (allotment: any) => {
+    if (!allotment.course) {
+      return "N/A";
+    }
+    return allotment.course.credits ?? "N/A";
   };
 
   return (
@@ -117,16 +144,16 @@ export default function ViewStudentsAllotmentsPage() {
                         {allotments.standaloneAllotments.map((allotment) => (
                           <tr key={allotment.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {allotment.subject.name}
+                              {allotment.subject?.name || "Subject not available"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.code} - {allotment.course.name}
+                              {getCourseDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.department.name}
+                              {getDepartmentDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.credits}
+                              {getCreditsDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {getSemesterInfo(allotment)}
@@ -140,7 +167,7 @@ export default function ViewStudentsAllotmentsPage() {
                                     : "bg-yellow-100 text-yellow-800"
                                 }`}
                               >
-                                {allotment.allotmentStatus}
+                                {allotment.allotmentStatus || "Unknown"}
                               </span>
                             </td>
                           </tr>
@@ -219,19 +246,19 @@ export default function ViewStudentsAllotmentsPage() {
                         {allotments.bucketAllotments.map((allotment) => (
                           <tr key={allotment.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {allotment.subject.name}
+                              {allotment.subject?.name || "Subject not available"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.courseBucket.name}
+                              {allotment.courseBucket?.name || "Bucket not available"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.code} - {allotment.course.name}
+                              {getCourseDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.department.name}
+                              {getDepartmentDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {allotment.course.credits}
+                              {getCreditsDisplay(allotment)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {getSemesterInfo(allotment)}
@@ -245,7 +272,7 @@ export default function ViewStudentsAllotmentsPage() {
                                     : "bg-yellow-100 text-yellow-800"
                                 }`}
                               >
-                                {allotment.allotmentStatus}
+                                {allotment.allotmentStatus || "Unknown"}
                               </span>
                             </td>
                           </tr>

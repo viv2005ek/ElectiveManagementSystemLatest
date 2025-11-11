@@ -320,7 +320,7 @@ export default function StudentsCreate() {
                       />
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
                         Gender *
                       </label>
@@ -336,7 +336,7 @@ export default function StudentsCreate() {
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
-                    </div>
+                    </div> */}
 
                     <div>
                       <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700">
@@ -517,13 +517,13 @@ export default function StudentsCreate() {
         {/* Download Template */}
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <div className="flex items-center justify-between">
-            <div>
+            {/* <div>
               <h4 className="text-sm font-medium text-blue-800">Download Template</h4>
               <p className="text-sm text-blue-600 mt-1">
                 Use our CSV template with program names, batch years, and semester numbers (no IDs needed).
                 <strong className="block mt-1">Note: Gender will be automatically set to "Male" for all students.</strong>
               </p>
-            </div>
+            </div> */}
             <button
               onClick={downloadTemplate}
               disabled={programsLoading || batchesLoading || semestersLoading}

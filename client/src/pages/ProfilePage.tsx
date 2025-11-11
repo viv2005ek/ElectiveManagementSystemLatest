@@ -250,7 +250,7 @@ export default function ProfilePage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-600">Registration Number</label>
+                      <label className="block text-sm font-medium text-gray-600">Employee ID</label>
                       <p className="mt-1 text-sm text-gray-900">{adminProfile.registrationNumber}</p>
                     </div>
                   </div>

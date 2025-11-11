@@ -38,7 +38,7 @@ export default function ProfessorsTable({
                 scope="col"
                 className="py-3.5 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
               >
-                Registration no.
+                Employee ID
               </th>
               <th
                 scope="col"

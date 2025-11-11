@@ -311,7 +311,12 @@ router.get(
   authorizeRoles([UserRole.Admin, UserRole.Student]),
   SubjectController.getSubjectOfferings,
 );
-
+// Add this route to your subject routes
+router.post(
+  "/:subjectId/allotments/pending",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.runPendingAllotments
+);
 /**
  * @swagger
  * /subjects/{id}:

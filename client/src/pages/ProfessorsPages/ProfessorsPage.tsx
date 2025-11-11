@@ -141,7 +141,7 @@ export default function ProfessorsPage() {
             <SearchBarWithDebounce
               value={searchQuery}
               setValue={setSearchQuery}
-              placeholder="Search by name or registration number"
+              placeholder="Search by name or Employee ID"
             />
             <div className="flex space-x-3">
               <button

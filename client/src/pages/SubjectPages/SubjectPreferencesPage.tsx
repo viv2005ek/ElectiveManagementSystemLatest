@@ -25,6 +25,8 @@ import Tabs, { Tab } from "../../components/Tabs.tsx";
 import useFetchSubjectInfo from "../../hooks/subjectHooks/useFetchSubjectInfo.ts";
 import PaginationFooter from "../../components/PaginationFooter.tsx";
 import StudentPreferenceCard from "../../components/StudentPreferenceCard.tsx";
+import axiosInstance from "../../axiosInstance.ts";
+import { toast } from "sonner";
 
 dayjs.extend(relativeTime);
 
@@ -34,14 +36,6 @@ const tabs: Tab[] = [
   { name: "Pending", current: false, value: "not-filled" },
 ];
 
-interface Student {
-  id: string;
-  name: string;
-  registrationNumber: string;
-  isPreferenceFilled: boolean;
-  // ... other properties
-}
-
 export default function SubjectPreferencesPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,6 +43,7 @@ export default function SubjectPreferencesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState(tabs[0].name);
   const [showStats, setShowStats] = useState(true);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const { data, loading, error, fetchPreferences } = useSubjectPreferences(
     id,
@@ -87,9 +82,102 @@ export default function SubjectPreferencesPage() {
     }
   };
 
-  const handleExportData = () => {
-    // This would be implemented with actual export functionality
-    alert("Export functionality would be implemented here");
+  // Export functionality
+  const handleExportData = async () => {
+    if (!id || !subjectInfo) return;
+
+    setExportLoading(true);
+    try {
+      // Fetch all preferences for export (without pagination)
+      const response = await axiosInstance.get(
+        `/subject-preferences/${id}`,
+        {
+          params: { 
+            preferenceStatus: tabs.find((tab) => tab.name === activeTab)?.value || "",
+            search: search || undefined,
+            page: 1,
+            limit: 10000 // Large limit to get all records
+          },
+        },
+      );
+
+      const exportData = response.data;
+      let csvContent = "";
+      
+      // Define headers based on allotment type
+      const headers = [
+        "Registration Number",
+        "Student Name",
+        "Preference Status",
+        "Preferences Count"
+      ];
+
+      // Add preference columns based on allotment type
+      if (subjectInfo.subjectType.allotmentType === "STANDALONE") {
+        headers.push("Priority 1 Course", "Priority 2 Course", "Priority 3 Course");
+      } else if (subjectInfo.subjectType.allotmentType === "BUCKET") {
+        headers.push("Priority 1 Bucket", "Priority 2 Bucket", "Priority 3 Bucket");
+      }
+
+      // Add headers
+      csvContent += headers.join(",") + "\n";
+
+      // Process students data
+      if (exportData.students && exportData.students.length > 0) {
+        exportData.students.forEach((student: any) => {
+          const baseRow = [
+            `"${student.registrationNumber}"`,
+            `"${student.firstName} ${student.lastName}"`,
+            `"${student.isPreferenceFilled ? 'Completed' : 'Pending'}"`,
+            `"${student.preferences ? 'Has Preferences' : 'No Preferences'}"`
+          ];
+
+          // Add preferences based on allotment type
+          let preferenceRow = baseRow;
+          
+          if (student.preferences) {
+            if (subjectInfo.subjectType.allotmentType === "STANDALONE") {
+              preferenceRow.push(
+                `"${student.preferences.firstPreferenceCourse?.name || 'Not selected'}"`,
+                `"${student.preferences.secondPreferenceCourse?.name || 'Not selected'}"`,
+                `"${student.preferences.thirdPreferenceCourse?.name || 'Not selected'}"`
+              );
+            } else if (subjectInfo.subjectType.allotmentType === "BUCKET") {
+              preferenceRow.push(
+                `"${student.preferences.firstPreferenceCourseBucket?.name || 'Not selected'}"`,
+                `"${student.preferences.secondPreferenceCourseBucket?.name || 'Not selected'}"`,
+                `"${student.preferences.thirdPreferenceCourseBucket?.name || 'Not selected'}"`
+              );
+            }
+          } else {
+            // Add empty columns for no preferences
+            for (let i = 1; i <= 3; i++) {
+              preferenceRow.push('"Not selected"');
+            }
+          }
+
+          csvContent += preferenceRow.join(",") + "\n";
+        });
+      }
+
+      // Create and download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `preferences_${subjectInfo.name.replace(/\s+/g, '_')}_${subjectInfo.batch.year}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Preferences exported successfully");
+    } catch (error) {
+      console.error("Error exporting preferences:", error);
+      toast.error("Failed to export preferences");
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const renderSubjectHeader = () =>
@@ -139,6 +227,12 @@ export default function SubjectPreferencesPage() {
                   {subjectInfo?.subjectType.name}
                 </span>
               </div>
+              <div className="flex items-center bg-green-50 px-3 py-1.5 rounded-md">
+                <ClipboardCheck className="h-4 w-4 text-green-600 mr-2" />
+                <span className="font-medium text-green-700">
+                  {subjectInfo?.subjectType.allotmentType}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex flex-col gap-4">
@@ -160,10 +254,8 @@ export default function SubjectPreferencesPage() {
     if (!data) return null;
 
     const totalStudents = data.totalStudents || 0;
-    const completedCount = data.students.filter(
-      (s) => s.isPreferenceFilled,
-    ).length;
-    const pendingCount = totalStudents - completedCount;
+    const completedCount = data.filledPreferencesCount || 0;
+    const pendingCount = data.pendingStudentsCount || totalStudents - completedCount;
     const completionPercentage =
       totalStudents > 0
         ? Math.round((completedCount / totalStudents) * 100)
@@ -259,10 +351,11 @@ export default function SubjectPreferencesPage() {
           <div className="flex gap-3 w-full sm:w-auto">
             <button
               onClick={handleExportData}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              disabled={exportLoading || !data || data.students.length === 0}
+              className="px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download className="h-4 w-4" />
-              <span>Export</span>
+              <Download className={`h-4 w-4 ${exportLoading ? "animate-spin" : ""}`} />
+              <span>{exportLoading ? "Exporting..." : "Export"}</span>
             </button>
 
             <button

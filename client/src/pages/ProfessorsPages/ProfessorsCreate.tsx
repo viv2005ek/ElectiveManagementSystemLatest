@@ -248,7 +248,7 @@ export default function ProfessorsCreate() {
 
                   <div>
                     <label htmlFor="registrationNumber" className="block text-sm font-medium text-gray-700">
-                      Registration Number *
+                      Employee ID *
                     </label>
                     <input
                       type="text"

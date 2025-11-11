@@ -169,7 +169,7 @@ const navigation: NavigationItem[] = [
 
 const userNavigation = [
   { name: "Your profile", href: "/profile" },
-  { name: "Settings", href: "/settings" },
+  { name: " Password", href: "/settings" },
   { name: "Sign out", href: "/login" },
 ];
 
@@ -372,7 +372,7 @@ console.log("Current pathname:", location.pathname);
                         className="group -mx-2 flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
                       >
                         <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />
-                        Settings
+                        Change Password
                       </Link>
                     </li>
                   </ul>
@@ -442,7 +442,7 @@ console.log("Current pathname:", location.pathname);
                 className="group flex gap-x-3 rounded-lg p-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200"
               >
                 <Cog6ToothIcon className="h-5 w-5 transition-colors duration-200 text-white/70 group-hover:text-white" />
-                Settings
+                Change Password
               </Link>
             </div>
           </div>

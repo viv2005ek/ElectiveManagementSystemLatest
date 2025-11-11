@@ -415,7 +415,7 @@ export default function ViewProfessorPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-500">
-                      Registration Number
+                      Employee ID
                     </label>
                     <p className="mt-1 text-sm text-gray-900">
                       {professor.registrationNumber}

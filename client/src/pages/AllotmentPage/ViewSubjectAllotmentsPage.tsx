@@ -22,9 +22,11 @@ import {
   CheckCircle,
   ChevronDown,
   Clock,
+  Download,
   RefreshCw,
   Trash2,
   Users,
+   AlertTriangle, Play
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -48,12 +50,40 @@ interface StatsCardProps {
   color: string;
 }
 
-export default function ViewSubjectAllotmentsPage() {
+export default function ViewSubjectAllotmentsPage() {const [isRunningPendingAllotments, setIsRunningPendingAllotments] = useState(false);
+
+// Function to handle running pending allotments
+const handleRunPendingAllotments = async () => {
+  if (!id) return;
+  
+  if (!window.confirm(
+    `Are you sure you want to run pending allotments for ${stats?.unallottedStudents} students? ` +
+    `This will automatically assign students who didn't fill preferences to available courses.`
+  )) {
+    return;
+  }
+
+  setIsRunningPendingAllotments(true);
+  try {
+    const response = await axiosInstance.post(`/subjects/${id}/allotments/pending`);
+    toast.success(response.data.message);
+    
+    // Refresh all data
+    await refetch();
+    // Refresh stats if you have a separate function for it
+  } catch (error: any) {
+    console.error("Error running pending allotments:", error);
+    toast.error(error.response?.data?.error || "Failed to run pending allotments");
+  } finally {
+    setIsRunningPendingAllotments(false);
+  }
+};
   const { id } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const {
     data: subjectAllotments,
@@ -77,6 +107,91 @@ export default function ViewSubjectAllotmentsPage() {
     error: sectionsError,
     refetch: refetchSections,
   } = useSubjectSections(id);
+
+  // Function to export allotments to CSV
+  const exportAllotmentsToCSV = async () => {
+    if (!id || !subjectInfo) return;
+
+    setExportLoading(true);
+    try {
+      // Fetch all allotments without pagination for export
+      const response = await axiosInstance.get(
+        `/subjects/${id}/allotments`,
+        {
+          params: { 
+            search: search || undefined,
+            page: 1,
+            limit: 10000 // Large limit to get all records
+          },
+        },
+      );
+
+      const data = response.data;
+      let csvContent = "";
+      const headers = [
+        "Registration Number",
+        "Student Name",
+        "Course/Bucket",
+        "Allotment Type",
+        "Subject",
+        "Batch Year",
+        "Subject Type"
+      ];
+
+      // Add headers
+      csvContent += headers.join(",") + "\n";
+
+      // Process standalone allotments
+      if (data.standaloneAllotments && data.standaloneAllotments.length > 0) {
+        data.standaloneAllotments.forEach((allotment: any) => {
+          const row = [
+            `"${allotment.student.registrationNumber}"`,
+            `"${allotment.student.firstName} ${allotment.student.lastName}"`,
+            `"${allotment.course.name}"`,
+            `"Standalone"`,
+            `"${subjectInfo.name}"`,
+            `"${subjectInfo.batch.year}"`,
+            `"${subjectInfo.subjectType.name}"`
+          ];
+          csvContent += row.join(",") + "\n";
+        });
+      }
+
+      // Process bucket allotments
+      if (data.bucketAllotments && data.bucketAllotments.length > 0) {
+        data.bucketAllotments.forEach((allotment: any) => {
+          const row = [
+            `"${allotment.student.registrationNumber}"`,
+            `"${allotment.student.firstName} ${allotment.student.lastName}"`,
+            `"${allotment.courseBucket.name}"`,
+            `"Bucket"`,
+            `"${subjectInfo.name}"`,
+            `"${subjectInfo.batch.year}"`,
+            `"${subjectInfo.subjectType.name}"`
+          ];
+          csvContent += row.join(",") + "\n";
+        });
+      }
+
+      // Create and download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `allotments_${subjectInfo.name.replace(/\s+/g, '_')}_${subjectInfo.batch.year}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Allotments exported successfully");
+    } catch (error) {
+      console.error("Error exporting allotments:", error);
+      toast.error("Failed to export allotments");
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const renderSubjectHeader = () => {
     if (infoLoading) {
@@ -135,6 +250,14 @@ export default function ViewSubjectAllotmentsPage() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={exportAllotmentsToCSV}
+              disabled={exportLoading || !subjectAllotments || (subjectAllotments.standaloneAllotments.length === 0 && subjectAllotments.bucketAllotments.length === 0)}
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className={`h-4 w-4 ${exportLoading ? "animate-spin" : ""}`} />
+              <span>{exportLoading ? "Exporting..." : "Export CSV"}</span>
+            </button>
+            <button
               onClick={refetch}
               className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
               disabled={allotmentsLoading}
@@ -188,42 +311,43 @@ export default function ViewSubjectAllotmentsPage() {
 
     if (!stats) return null;
 
-    const totalAllottedStudents =
-      stats.courses.reduce((acc, course) => acc + course.studentCount, 0) +
-      stats.courseBuckets.reduce((acc, bucket) => acc + bucket.studentCount, 0);
-    const totalStudents = totalAllottedStudents + stats.unallottedStudents;
-    const completionRate =
-      totalStudents > 0
-        ? Math.round((totalAllottedStudents / totalStudents) * 100)
-        : 0;
+  // Use the correct totalStudents from the API
+  const totalStudents = stats.totalStudents || 0;
+  const totalAllottedStudents = stats.totalAllottedStudents || 0;
+  const unallottedStudents = stats.unallottedStudents || 0;
+  
+  const completionRate =
+    totalStudents > 0
+      ? Math.round((totalAllottedStudents / totalStudents) * 100)
+      : 0;
 
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {renderStatsCard({
-          title: "Total Students",
-          value: totalStudents,
-          icon: <Users className="h-5 w-5" />,
-          color: "blue",
-        })}
-        {renderStatsCard({
-          title: "Allotted Students",
-          value: totalAllottedStudents,
-          icon: <CheckCircle className="h-5 w-5" />,
-          color: "green",
-        })}
-        {renderStatsCard({
-          title: "Pending Allotments",
-          value: stats.unallottedStudents,
-          icon: <Clock className="h-5 w-5" />,
-          color: "yellow",
-        })}
-        {renderStatsCard({
-          title: "Completion Rate",
-          value: `${completionRate}%`,
-          icon: <BarChart3 className="h-5 w-5" />,
-          color: "indigo",
-        })}
-      </div>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {renderStatsCard({
+        title: "Total Students",
+        value: totalStudents,
+        icon: <Users className="h-5 w-5" />,
+        color: "blue",
+      })}
+      {renderStatsCard({
+        title: "Allotted Students",
+        value: totalAllottedStudents,
+        icon: <CheckCircle className="h-5 w-5" />,
+        color: "green",
+      })}
+      {renderStatsCard({
+        title: "Pending Allotments",
+        value: unallottedStudents,
+        icon: <Clock className="h-5 w-5" />,
+        color: "yellow",
+      })}
+      {renderStatsCard({
+        title: "Completion Rate",
+        value: `${completionRate}%`,
+        icon: <BarChart3 className="h-5 w-5" />,
+        color: "indigo",
+      })}
+    </div>
     );
   };
 
@@ -478,15 +602,18 @@ export default function ViewSubjectAllotmentsPage() {
         </div>
 
         {/* Course Statistics Section */}
-        {stats && (
-          <CourseStatsSection
-            courses={stats.courses}
-            courseBuckets={stats.courseBuckets}
-            unallottedStudents={stats.unallottedStudents}
-            loading={statsLoading}
-            error={statsError}
-          />
-        )}
+     {stats && (
+  <CourseStatsSection
+    courses={stats.courses}
+    courseBuckets={stats.courseBuckets}
+    unallottedStudents={stats.unallottedStudents}
+    loading={statsLoading}
+    error={statsError}
+    onRunPendingAllotments={handleRunPendingAllotments}
+    isRunningPendingAllotments={isRunningPendingAllotments}
+    subjectId={id}
+  />
+)}
 
         {/* Sections Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 my-6">
@@ -495,17 +622,6 @@ export default function ViewSubjectAllotmentsPage() {
               Subject Sections
             </h3>
             <div className={"flex flex-row gap-4"}>
-              {/*<button*/}
-              {/*  className={*/}
-              {/*    "bg-green-500 text-white p-2 rounded-lg flex flex-row items-center gap-2"*/}
-              {/*  }*/}
-              {/*  onClick={handleSectionAllotments}*/}
-              {/*>*/}
-              {/*  <RefreshCw*/}
-              {/*    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}*/}
-              {/*  />*/}
-              {/*  <div>Allot sections</div>*/}
-              {/*</button>*/}
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="flex flex-row items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-sm px-3 py-2 text-white rounded-lg transition-colors"
@@ -534,12 +650,22 @@ export default function ViewSubjectAllotmentsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-lg font-medium text-gray-900">Allotments</h3>
-            <div className="w-full sm:w-96">
-              <SearchBarWithDebounce
-                value={search}
-                setValue={setSearch}
-                placeholder="Search by student name or registration number..."
-              />
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <div className="w-full sm:w-96">
+                <SearchBarWithDebounce
+                  value={search}
+                  setValue={setSearch}
+                  placeholder="Search by student name or registration number..."
+                />
+              </div>
+              <button
+                onClick={exportAllotmentsToCSV}
+                disabled={exportLoading || !subjectAllotments || (subjectAllotments.standaloneAllotments.length === 0 && subjectAllotments.bucketAllotments.length === 0)}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                <Download className={`h-4 w-4 ${exportLoading ? "animate-spin" : ""}`} />
+                <span>{exportLoading ? "Exporting..." : "Export CSV"}</span>
+              </button>
             </div>
           </div>
 

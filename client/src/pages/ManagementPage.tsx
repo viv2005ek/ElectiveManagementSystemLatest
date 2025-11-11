@@ -365,8 +365,11 @@ export default function ManagementPage() {
               {activeTab === 'professorRanks' && 'Professor Ranks Management'}
             </h3>
             <button
-              onClick={() => openCreateModal(activeTab.slice(0, -1) as any)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+onClick={() => openCreateModal(
+  activeTab === 'semesters' ? 'semester' : 
+  activeTab === 'batches' ? 'batch' : 
+  'professorRank'
+)}              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               Add New
@@ -575,26 +578,26 @@ export default function ManagementPage() {
                   )}
 
                   {/* Batch Form */}
-                  {modal.type === 'batch' && (
-                    <div>
-                      <label htmlFor="year" className="block text-sm font-medium text-gray-700">
-                        Batch Year *
-                      </label>
-                      <input
-                        type="number"
-                        id="year"
-                        name="year"
-                        required
-                        min="2000"
-                        max="2100"
-                        value={formData.year}
-                        onChange={handleFormChange}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <p className="mt-1 text-sm text-gray-500">Must be unique across all batches</p>
-                    </div>
-                  )}
-
+            {/* Batch Form */}
+{modal.type === 'batch' && (
+  <div>
+    <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+      Batch Year *
+    </label>
+    <input
+      type="number"
+      id="year"
+      name="year"
+      required
+      min="2000"
+      max="2100"
+      value={formData.year}
+      onChange={handleFormChange}
+      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+    />
+    <p className="mt-1 text-sm text-gray-500">Must be unique across all batches</p>
+  </div>
+)}
                   {/* Professor Rank Form */}
                   {modal.type === 'professorRank' && (
                     <>
