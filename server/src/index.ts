@@ -109,7 +109,7 @@ const swaggerSpec = swaggerJsdoc({
     },
      servers: [
       {
-        url: "https://ems.sdcmuj.com/api", // base path for all APIs
+        url: "http://localhost:8080/api", // base path for all APIs
       },],
   },
   apis: ["./src/routes/*.ts","./src/routes/*.js"], // adjust if your routes live somewhere else
