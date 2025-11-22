@@ -13,7 +13,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen">
       <div className="flex w-full flex-col justify-center px-8 py-8 lg:w-1/2 lg:px-20 xl:px-24">
         {/* Demo Notice */}
-        <div className="mb-6 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border border-blue-200 shadow-sm">
+        <div className="relative top-10 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border border-blue-200 shadow-sm">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -37,8 +37,13 @@ export default function LoginPage() {
                   </a>
                 </p>
                 <p className="mt-1">
-                  <span className="font-medium">Demo Credentials:</span>{" "}
-                  <span className="font-mono bg-blue-100 px-1 rounded">admin@1234</span> /{" "}
+                  <span className="font-medium">Demo Admin Credentials:</span>{" "}
+                  <span className="font-mono bg-blue-100 px-1 rounded">admin@gmail.com</span> /{" "}
+                  <span className="font-mono bg-blue-100 px-1 rounded">1234</span>
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium">Demo Student Credentials:</span>{" "}
+                  <span className="font-mono bg-blue-100 px-1 rounded">student@gmail.com</span> /{" "}
                   <span className="font-mono bg-blue-100 px-1 rounded">1234</span>
                 </p>
                 <p className="mt-1 text-xs">
@@ -59,12 +64,12 @@ export default function LoginPage() {
               />
             </div>
 
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 relative bottom-16">
               Sign in to your account
             </h2>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 relative bottom-16">
             <div className="space-y-6">
               <div>
                 <label
