@@ -12,6 +12,43 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       <div className="flex w-full flex-col justify-center px-8 py-8 lg:w-1/2 lg:px-20 xl:px-24">
+        {/* Demo Notice */}
+        <div className="mb-6 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border border-blue-200 shadow-sm">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-semibold text-blue-800">
+                Demo Version
+              </h3>
+              <div className="mt-1 text-sm text-blue-700">
+                <p>
+                  This is a demo clone. The actual project is deployed at{" "}
+                  <a 
+                    href="https://ems.sdcmuj.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-semibold underline hover:text-blue-800"
+                  >
+                    ems.sdcmuj.com
+                  </a>
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium">Demo Credentials:</span>{" "}
+                  <span className="font-mono bg-blue-100 px-1 rounded">admin@1234</span> /{" "}
+                  <span className="font-mono bg-blue-100 px-1 rounded">1234</span>
+                </p>
+                <p className="mt-1 text-xs">
+                  Frontend deployed on Vercel • Backend deployed on Render
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mx-auto w-full max-w-md lg:w-96">
           <div className="text-center">
             <div className="flex items-center justify-center">
