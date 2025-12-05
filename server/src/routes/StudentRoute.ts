@@ -183,9 +183,14 @@ router.get(
  *                 type: string
  *               batchId:
  *                 type: string
+ *               password:
+ *                 type: string
+ *                 description: Optional. New password for the student. Leave empty to keep current password.
  *     responses:
  *       200:
  *         description: Student updated successfully
+ *       400:
+ *         description: Invalid input or validation error
  *       404:
  *         description: Student not found
  *       500:
@@ -196,6 +201,7 @@ router.put(
   // authorizeRoles([UserRole.Admin]),
   studentController.updateStudent
 );
+
 /**
  * @swagger
  * /students/{id}:
@@ -222,6 +228,7 @@ router.delete(
   // authorizeRoles([UserRole.Admin]),
   studentController.deleteStudent,
 );
+
 /**
  * @swagger
  * /students:
@@ -275,12 +282,12 @@ router.delete(
  *       500:
  *         description: Unable to create student
  */
-// ADD THIS MISSING ROUTE
 router.post(
   "/",
   // authorizeRoles([UserRole.Admin]),
   studentController.createStudent
 );
+
 /**
  * @swagger
  * /students/bulk-add:

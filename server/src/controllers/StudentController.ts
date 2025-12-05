@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import { hash } from "bcrypt";
 import { UserRole, Gender } from "@prisma/client";
-
+import bcrypt from "bcrypt";
 interface BulkStudentData {
   firstName: string;
   lastName: string;
@@ -773,245 +773,30 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
 
   // Update a student
   updateStudent: async (req: Request, res: Response): Promise<any> => {
-    const { id } = req.params;
-    const {
-      firstName,
-      lastName,
-      email,
-      contactNumber,
-      gender,
-      semester,
-      programId,
-      batchId
-    } = req.body;
+  const { id } = req.params;
+  const {
+    firstName,
+    lastName,
+    email,
+    contactNumber,
+    gender,
+    semester,
+    programId,
+    batchId,
+    password // Add this
+  } = req.body;
 
-    try {
-      // Check if student exists and is not deleted
-      const existingStudent = await prisma.student.findUnique({ 
-        where: { id },
-        include: {
-          credential: true
-        }
-      });
-
-      if (!existingStudent || existingStudent.isDeleted) {
-        return res.status(404).json({
-          message: "Student update failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email: 'Unknown',
-            registrationNumber: 'Unknown',
-            error: "Student not found"
-          }]
-        });
+  try {
+    // Check if student exists and is not deleted
+    const existingStudent = await prisma.student.findUnique({ 
+      where: { id },
+      include: {
+        credential: true
       }
+    });
 
-      // Validation
-      const validationErrors: Array<{ field: string; message: string }> = [];
-
-      if (!firstName) validationErrors.push({ field: "firstName", message: "First name is required" });
-      if (!lastName) validationErrors.push({ field: "lastName", message: "Last name is required" });
-      if (!email) validationErrors.push({ field: "email", message: "Email is required" });
-      if (!gender) validationErrors.push({ field: "gender", message: "Gender is required" });
-      if (!semester) validationErrors.push({ field: "semester", message: "Semester is required" });
-      if (!programId) validationErrors.push({ field: "programId", message: "Program ID is required" });
-      if (!batchId) validationErrors.push({ field: "batchId", message: "Batch ID is required" });
-
-      if (validationErrors.length > 0) {
-        return res.status(400).json({
-          message: "Validation failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email: email || existingStudent.email,
-            registrationNumber: existingStudent.registrationNumber,
-            error: `Validation errors: ${validationErrors.map(e => e.message).join(', ')}`
-          }]
-        });
-      }
-
-      // Check if email is being changed and if new email already exists
-      if (email !== existingStudent.email) {
-        const emailExists = await prisma.student.findFirst({
-          where: {
-            email: email,
-            id: { not: id }
-          }
-        });
-
-        if (emailExists) {
-          return res.status(400).json({
-            message: "Student update failed",
-            summary: {
-              totalProcessed: 1,
-              successCount: 0,
-              failedCount: 1
-            },
-            successful: [],
-            failed: [{
-              email: email,
-              registrationNumber: existingStudent.registrationNumber,
-              error: "Email already exists in system"
-            }]
-          });
-        }
-      }
-
-      // Check if program exists
-      const program = await prisma.program.findUnique({
-        where: { id: programId }
-      });
-
-      if (!program) {
-        return res.status(400).json({
-          message: "Student update failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email: email,
-            registrationNumber: existingStudent.registrationNumber,
-            error: `Program with ID ${programId} not found`
-          }]
-        });
-      }
-
-      // Check if batch exists
-      const batch = await prisma.batch.findUnique({
-        where: { id: batchId }
-      });
-
-      if (!batch) {
-        return res.status(400).json({
-          message: "Student update failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email: email,
-            registrationNumber: existingStudent.registrationNumber,
-            error: `Batch with ID ${batchId} not found`
-          }]
-        });
-      }
-
-      // Update student and credential (if email changed) in transaction
-      const updatedStudent = await prisma.$transaction(async (tx) => {
-        // Update credential if email changed
-        if (email !== existingStudent.email) {
-          await tx.credential.update({
-            where: { id: existingStudent.credentialId },
-            data: { email: email }
-          });
-        }
-
-        return await tx.student.update({
-          where: { id },
-          data: {
-            firstName,
-            lastName,
-            email,
-            contactNumber: contactNumber || undefined,
-            gender: gender as Gender,
-            semester: parseInt(semester),
-            programId,
-            batchId,
-          },
-          include: {
-            program: {
-              select: {
-                id: true,
-                name: true,
-                department: {
-                  select: {
-                    id: true,
-                    name: true,
-                    school: { select: { id: true, name: true } },
-                  },
-                },
-              },
-            },
-            batch: {
-              select: {
-                id: true,
-                year: true,
-              },
-            },
-          },
-        });
-      });
-
-      // Success response matching bulk format
-      res.status(200).json({
-        message: "Student updated successfully",
-        summary: {
-          totalProcessed: 1,
-          successCount: 1,
-          failedCount: 0
-        },
-        successful: [{
-          id: updatedStudent.id,
-          email: updatedStudent.email,
-          registrationNumber: updatedStudent.registrationNumber,
-          firstName: updatedStudent.firstName,
-          lastName: updatedStudent.lastName || '',
-          contactNumber: updatedStudent.contactNumber || undefined,
-          gender: updatedStudent.gender,
-          semester: updatedStudent.semester,
-          programId: updatedStudent.programId,
-          batchId: updatedStudent.batchId,
-          message: "Student updated successfully"
-        }],
-        failed: []
-      });
-
-    } catch (error) {
-      console.error("Error updating student:", error);
-      
-      let errorMessage = "Failed to update student due to system error";
-      if (error instanceof Error) {
-        if (error.message.includes('Unique constraint')) {
-          errorMessage = "Student with this email already exists";
-        } else if (error.message.includes('Record to update not found')) {
-          errorMessage = "Student not found";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      // Get student details for error response
-      let studentEmail = 'Unknown';
-      let studentRegNumber = 'Unknown';
-      
-      try {
-        const student = await prisma.student.findUnique({
-          where: { id },
-          select: { email: true, registrationNumber: true }
-        });
-        if (student) {
-          studentEmail = student.email;
-          studentRegNumber = student.registrationNumber;
-        }
-      } catch (e) {
-        // Ignore error in error handling
-      }
-
-      res.status(500).json({
+    if (!existingStudent || existingStudent.isDeleted) {
+      return res.status(404).json({
         message: "Student update failed",
         summary: {
           totalProcessed: 1,
@@ -1020,13 +805,247 @@ bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
         },
         successful: [],
         failed: [{
-          email: studentEmail,
-          registrationNumber: studentRegNumber,
-          error: errorMessage
+          email: 'Unknown',
+          registrationNumber: 'Unknown',
+          error: "Student not found"
         }]
       });
     }
-  },
+
+    // Validation
+    const validationErrors: Array<{ field: string; message: string }> = [];
+
+    if (!firstName) validationErrors.push({ field: "firstName", message: "First name is required" });
+    if (!lastName) validationErrors.push({ field: "lastName", message: "Last name is required" });
+    if (!email) validationErrors.push({ field: "email", message: "Email is required" });
+    if (!gender) validationErrors.push({ field: "gender", message: "Gender is required" });
+    if (!semester) validationErrors.push({ field: "semester", message: "Semester is required" });
+    if (!programId) validationErrors.push({ field: "programId", message: "Program ID is required" });
+    if (!batchId) validationErrors.push({ field: "batchId", message: "Batch ID is required" });
+    
+    // Add password validation if password is provided
+    if (password && password.length < 6) {
+      validationErrors.push({ field: "password", message: "Password must be at least 6 characters long" });
+    }
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        message: "Validation failed",
+        summary: {
+          totalProcessed: 1,
+          successCount: 0,
+          failedCount: 1
+        },
+        successful: [],
+        failed: [{
+          email: email || existingStudent.email,
+          registrationNumber: existingStudent.registrationNumber,
+          error: `Validation errors: ${validationErrors.map(e => e.message).join(', ')}`
+        }]
+      });
+    }
+
+    // Check if email is being changed and if new email already exists
+    if (email !== existingStudent.email) {
+      const emailExists = await prisma.student.findFirst({
+        where: {
+          email: email,
+          id: { not: id }
+        }
+      });
+
+      if (emailExists) {
+        return res.status(400).json({
+          message: "Student update failed",
+          summary: {
+            totalProcessed: 1,
+            successCount: 0,
+            failedCount: 1
+          },
+          successful: [],
+          failed: [{
+            email: email,
+            registrationNumber: existingStudent.registrationNumber,
+            error: "Email already exists in system"
+          }]
+        });
+      }
+    }
+
+    // Check if program exists
+    const program = await prisma.program.findUnique({
+      where: { id: programId }
+    });
+
+    if (!program) {
+      return res.status(400).json({
+        message: "Student update failed",
+        summary: {
+          totalProcessed: 1,
+          successCount: 0,
+          failedCount: 1
+        },
+        successful: [],
+        failed: [{
+          email: email,
+          registrationNumber: existingStudent.registrationNumber,
+          error: `Program with ID ${programId} not found`
+        }]
+      });
+    }
+
+    // Check if batch exists
+    const batch = await prisma.batch.findUnique({
+      where: { id: batchId }
+    });
+
+    if (!batch) {
+      return res.status(400).json({
+        message: "Student update failed",
+        summary: {
+          totalProcessed: 1,
+          successCount: 0,
+          failedCount: 1
+        },
+        successful: [],
+        failed: [{
+          email: email,
+          registrationNumber: existingStudent.registrationNumber,
+          error: `Batch with ID ${batchId} not found`
+        }]
+      });
+    }
+
+    // Update student and credential in transaction
+    const updatedStudent = await prisma.$transaction(async (tx) => {
+      // Prepare credential update data
+      const credentialUpdateData: any = {};
+      
+      if (email !== existingStudent.email) {
+        credentialUpdateData.email = email;
+      }
+      
+      // Hash password if provided
+      if (password && password.trim() !== "") {
+        const salt = await bcrypt.genSalt(10);
+        credentialUpdateData.passwordHash = await bcrypt.hash(password, salt);
+      }
+
+      // Update credential if there are changes
+      if (Object.keys(credentialUpdateData).length > 0) {
+        await tx.credential.update({
+          where: { id: existingStudent.credentialId },
+          data: credentialUpdateData
+        });
+      }
+
+      return await tx.student.update({
+        where: { id },
+        data: {
+          firstName,
+          lastName,
+          email,
+          contactNumber: contactNumber || undefined,
+          gender: gender as Gender,
+          semester: parseInt(semester),
+          programId,
+          batchId,
+        },
+        include: {
+          program: {
+            select: {
+              id: true,
+              name: true,
+              department: {
+                select: {
+                  id: true,
+                  name: true,
+                  school: { select: { id: true, name: true } },
+                },
+              },
+            },
+          },
+          batch: {
+            select: {
+              id: true,
+              year: true,
+            },
+          },
+        },
+      });
+    });
+
+    // Success response matching bulk format
+    res.status(200).json({
+      message: "Student updated successfully",
+      summary: {
+        totalProcessed: 1,
+        successCount: 1,
+        failedCount: 0
+      },
+      successful: [{
+        id: updatedStudent.id,
+        email: updatedStudent.email,
+        registrationNumber: updatedStudent.registrationNumber,
+        firstName: updatedStudent.firstName,
+        lastName: updatedStudent.lastName || '',
+        contactNumber: updatedStudent.contactNumber || undefined,
+        gender: updatedStudent.gender,
+        semester: updatedStudent.semester,
+        programId: updatedStudent.programId,
+        batchId: updatedStudent.batchId,
+        message: "Student updated successfully" + (password ? " with password change" : "")
+      }],
+      failed: []
+    });
+
+  } catch (error) {
+    console.error("Error updating student:", error);
+    
+    let errorMessage = "Failed to update student due to system error";
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        errorMessage = "Student with this email already exists";
+      } else if (error.message.includes('Record to update not found')) {
+        errorMessage = "Student not found";
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
+    // Get student details for error response
+    let studentEmail = 'Unknown';
+    let studentRegNumber = 'Unknown';
+    
+    try {
+      const student = await prisma.student.findUnique({
+        where: { id },
+        select: { email: true, registrationNumber: true }
+      });
+      if (student) {
+        studentEmail = student.email;
+        studentRegNumber = student.registrationNumber;
+      }
+    } catch (e) {
+      // Ignore error in error handling
+    }
+
+    res.status(500).json({
+      message: "Student update failed",
+      summary: {
+        totalProcessed: 1,
+        successCount: 0,
+        failedCount: 1
+      },
+      successful: [],
+      failed: [{
+        email: studentEmail,
+        registrationNumber: studentRegNumber,
+        error: errorMessage
+      }]
+    });
+  }
+},
 
   // Soft delete a student
   deleteStudent: async (req: Request, res: Response): Promise<any> => {

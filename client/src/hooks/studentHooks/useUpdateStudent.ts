@@ -12,6 +12,7 @@ export interface UpdateStudentData {
   semester: number;
   programId: string;
   batchId: string;
+  password?: string; // Add this
 }
 
 interface UpdateStudentResponse {

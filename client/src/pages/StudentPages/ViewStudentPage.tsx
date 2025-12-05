@@ -47,7 +47,9 @@ interface EditFormData {
   semester: string;
   programId: string;
   batchId: string;
+  password?: string; // Add this
 }
+
 
 export default function ViewStudentPage() {
   const { id } = useParams<{ id: string }>();
@@ -99,7 +101,8 @@ export default function ViewStudentPage() {
         gender: student.gender,
         semester: student.semester.toString(),
         programId: student.programId,
-        batchId: student.batchId
+        batchId: student.batchId,
+         password: "" // Add this
       });
     }
   }, [student]);
@@ -188,74 +191,96 @@ export default function ViewStudentPage() {
   };
 
   const handleSave = async () => {
-    if (!student) return;
-    
-    try {
-      // Validate required fields
-      const validationErrors = validateEditForm(editForm);
-      if (validationErrors.length > 0) {
-        showResultModal(
-          'error', 
-          'Validation Error', 
-          'Please fix the following errors:',
-          null,
-          validationErrors.map(error => ({
-            email: editForm.email || student.email,
-            registrationNumber: student.registrationNumber,
-            error: error
-          }))
-        );
-        return;
-      }
-
-      const result = await updateStudent(student.id, {
-        ...editForm,
-        semester: parseInt(editForm.semester)
-      });
-      
+  if (!student) return;
+  
+  try {
+    // Validate required fields
+    const validationErrors = validateEditForm(editForm);
+    if (validationErrors.length > 0) {
       showResultModal(
-        'success', 
-        'Update Successful', 
-        `Student ${editForm.firstName} ${editForm.lastName} has been updated successfully.`,
-        result
+        'error', 
+        'Validation Error', 
+        'Please fix the following errors:',
+        null,
+        validationErrors.map(error => ({
+          email: editForm.email || student.email,
+          registrationNumber: student.registrationNumber,
+          error: error
+        }))
       );
-      setIsEditing(false);
-      
-      // Refresh the page after a short delay to show updated data
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-      
-    } catch (error: any) {
-      // Error is handled by the useEffect above
-      console.error("Update error caught in handleSave:", error);
+      return;
     }
-  };
 
-  const validateEditForm = (formData: EditFormData): string[] => {
-    const errors: string[] = [];
+    // Prepare update data
+    const updateData: any = {
+      ...editForm,
+      semester: parseInt(editForm.semester)
+    };
     
-    if (!formData.firstName.trim()) errors.push("First name is required");
-    if (!formData.lastName.trim()) errors.push("Last name is required");
-    if (!formData.email.trim()) errors.push("Email is required");
-    if (!formData.semester) errors.push("Semester is required");
-    if (!formData.programId) errors.push("Program is required");
-    if (!formData.batchId) errors.push("Batch is required");
-    
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      errors.push("Please enter a valid email address");
+    // Only include password if provided
+    if (editForm.password && editForm.password.trim() !== "") {
+      updateData.password = editForm.password;
+    } else {
+      // Remove password field if empty
+      delete updateData.password;
     }
+
+    const result = await updateStudent(student.id, updateData);
     
-    // Semester validation
-    const semesterNum = parseInt(formData.semester);
-    if (isNaN(semesterNum) || semesterNum < 1 || semesterNum > 12) {
-      errors.push("Semester must be a number between 1 and 12");
-    }
+    showResultModal(
+      'success', 
+      'Update Successful', 
+      `Student ${editForm.firstName} ${editForm.lastName} has been updated successfully.`,
+      result
+    );
+    setIsEditing(false);
     
-    return errors;
-  };
+    // Clear password field after successful save
+    setEditForm(prev => ({
+      ...prev,
+      password: ""
+    }));
+    
+    // Refresh the page after a short delay to show updated data
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+    
+  } catch (error: any) {
+    // Error is handled by the useEffect above
+    console.error("Update error caught in handleSave:", error);
+  }
+};
+
+ const validateEditForm = (formData: EditFormData): string[] => {
+  const errors: string[] = [];
+  
+  if (!formData.firstName.trim()) errors.push("First name is required");
+  if (!formData.lastName.trim()) errors.push("Last name is required");
+  if (!formData.email.trim()) errors.push("Email is required");
+  if (!formData.semester) errors.push("Semester is required");
+  if (!formData.programId) errors.push("Program is required");
+  if (!formData.batchId) errors.push("Batch is required");
+  
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (formData.email && !emailRegex.test(formData.email)) {
+    errors.push("Please enter a valid email address");
+  }
+  
+  // Semester validation
+  const semesterNum = parseInt(formData.semester);
+  if (isNaN(semesterNum) || semesterNum < 1 || semesterNum > 12) {
+    errors.push("Semester must be a number between 1 and 12");
+  }
+  
+  // Password validation (only if password is provided)
+  if (formData.password && formData.password.length < 6) {
+    errors.push("Password must be at least 6 characters long");
+  }
+  
+  return errors;
+};
 
   const handleCancel = () => {
     if (student) {
@@ -268,7 +293,8 @@ export default function ViewStudentPage() {
         gender: student.gender,
         semester: student.semester.toString(),
         programId: student.programId,
-        batchId: student.batchId
+        batchId: student.batchId,
+          password: "" // Clear password field on cancel
       });
     }
     setIsEditing(false);
@@ -433,6 +459,32 @@ export default function ViewStudentPage() {
                   Personal Information
                 </h3>
                 <div className="space-y-3">
+                {/* In the Personal Information section, add this field */}
+{isEditing && (
+  <div className="mt-6 pt-6 border-t border-gray-200">
+    <h4 className="text-md font-medium text-gray-900 mb-4">Change Password (Optional)</h4>
+    <div className="space-y-3">
+      <div>
+        <label className="block text-sm font-medium text-gray-500">
+          New Password
+          <span className="text-xs text-gray-400 ml-1">(leave blank to keep current)</span>
+        </label>
+        <input
+          type="password"
+          name="password"
+          value={editForm.password || ""}
+          onChange={handleEditChange}
+          placeholder="Enter new password"
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          minLength={6}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Must be at least 6 characters long. Leave empty to keep current password.
+        </p>
+      </div>
+    </div>
+  </div>
+)}
                   {/*for gender */}
                   {/* <div>
                     <label className="block text-sm font-medium text-gray-500">
