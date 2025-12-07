@@ -228,16 +228,21 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
 
     // compute program ids safely
     const programIds: string[] = Array.isArray(subject.programs)
-      ? subject.programs.map((p: any) => p.id)
+      ? subject.programs.map((p: any) => p.id).filter(Boolean)
       : [];
 
     // base where
     const baseWhere: any = {
       batchId: subject.batch.id,
-      programId: { in: programIds },
       isDeleted: false,
     };
 
+    // only include programId filter if we have program ids
+    if (programIds.length > 0) {
+      baseWhere.programId = { in: programIds };
+    }
+
+    // Apply search filter
     if (search) {
       baseWhere.OR = [
         { firstName: { contains: search, mode: "insensitive" } },
@@ -246,6 +251,7 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
       ];
     }
 
+    // Preference status filters
     if (preferenceStatus === "filled") {
       baseWhere.OR = [
         ...(baseWhere.OR || []),
@@ -259,7 +265,10 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
       ];
     }
 
-    // stream in batches
+    // Optional debug: enable by setting DEBUG_EXPORT env var (or just uncomment)
+    const debug = Boolean(process.env.DEBUG_EXPORT);
+
+    // Stream students in batches using cursor pagination
     while (true) {
       const studentsBatch: any[] = await prisma.student.findMany({
         where: baseWhere,
@@ -285,6 +294,8 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
           },
         },
       });
+
+      if (debug) console.debug(`export: fetched batch size=${studentsBatch.length}`);
 
       if (!studentsBatch || studentsBatch.length === 0) break;
 
@@ -320,6 +331,7 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
 
         const row = rowParts.join(",") + "\n";
         if (!res.write(row)) {
+          // backpressure handling
           await new Promise((resolve) => res.once("drain", resolve));
         }
       }
@@ -338,6 +350,7 @@ exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => 
     }
   }
 },
+
 
 
   getSubjectPreferences: async (req: Request, res: Response): Promise<void> => {
