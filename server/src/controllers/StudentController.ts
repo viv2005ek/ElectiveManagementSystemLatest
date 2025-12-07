@@ -1,1073 +1,1944 @@
 import { Request, Response } from "express";
 import { prisma } from "../prismaClient";
-import { hash } from "bcrypt";
-import { UserRole, Gender } from "@prisma/client";
-import bcrypt from "bcrypt";
-interface BulkStudentData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  registrationNumber: string;
-  contactNumber?: string;
-  gender: Gender;
-  semester: number;
-  programId: string;
-  batchId: string;
-  password: string;
+import { AllotmentStatus, AllotmentType, Status } from "@prisma/client";
+
+// Helper function for standalone pending allotments
+async function processStandalonePendingAllotments(
+  subject: any,
+  unallottedStudents: any[],
+  writeOps: any[]
+) {
+  // Get courses with available seats, sorted by current student count (ascending)
+  const coursesWithStats = await Promise.all(
+    subject.coursesWithSeats.map(async (courseWithSeats: any) => {
+      const studentCount = await prisma.standaloneAllotment.count({
+        where: {
+          subjectId: subject.id,
+          courseId: courseWithSeats.courseId
+        }
+      });
+
+      const availableSeats = courseWithSeats.availableSeats !== null 
+        ? courseWithSeats.availableSeats
+        : Infinity;
+
+      return {
+        ...courseWithSeats,
+        currentStudentCount: studentCount,
+        availableSeats,
+        effectiveAvailableSeats: availableSeats === Infinity 
+          ? unallottedStudents.length 
+          : Math.max(0, availableSeats)
+      };
+    })
+  );
+
+  // Sort courses by current student count (courses with least students first)
+  const sortedCourses = coursesWithStats
+    .filter(course => course.effectiveAvailableSeats > 0)
+    .sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+
+  console.log('Sorted courses for distribution:', sortedCourses.map(c => ({
+    name: c.course.name,
+    currentCount: c.currentStudentCount,
+    available: c.effectiveAvailableSeats
+  })));
+
+  if (sortedCourses.length === 0) {
+    throw new Error("No courses with available seats for pending allotments");
+  }
+
+  const allotments = [];
+  let studentIndex = 0;
+
+  // Distribute students to courses with least students first
+  while (studentIndex < unallottedStudents.length && sortedCourses.length > 0) {
+    for (let i = 0; i < sortedCourses.length && studentIndex < unallottedStudents.length; i++) {
+      const currentCourse = sortedCourses[i];
+      
+      if (currentCourse.effectiveAvailableSeats > 0) {
+        const student = unallottedStudents[studentIndex];
+        
+        allotments.push({
+          subjectId: subject.id,
+          studentId: student.id,
+          courseId: currentCourse.courseId,
+          allotmentStatus: AllotmentStatus.Pending,
+        });
+
+        // Update available seats
+        if (currentCourse.availableSeats !== Infinity) {
+          currentCourse.availableSeats--;
+          currentCourse.effectiveAvailableSeats--;
+        }
+
+        studentIndex++;
+      }
+    }
+
+    // Re-sort courses after each full pass to maintain least-filled-first order
+    sortedCourses.sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+  }
+
+  if (allotments.length > 0) {
+    writeOps.push(
+      prisma.standaloneAllotment.createMany({
+        data: allotments,
+      })
+    );
+
+    // Update seat counts for courses with limited seats
+    const seatUpdates = coursesWithStats
+      .filter(course => course.availableSeats !== Infinity)
+      .map(course =>
+        prisma.subjectCourseWithSeats.update({
+          where: { id: course.id },
+          data: { availableSeats: course.availableSeats },
+        })
+      );
+
+    writeOps.push(...seatUpdates);
+  }
 }
 
-interface SuccessfulStudent {
-  id: string;
-  email: string;
-  registrationNumber: string;
-  firstName: string;
-  lastName: string;
-  contactNumber?: string;
-  gender: Gender;
-  semester: number;
-  programId: string;
-  batchId: string;
-  programName: string;
-  batchYear: string;
-  defaultPassword: string;
-  message: string;
+// Helper function for bucket pending allotments
+async function processBucketPendingAllotments(
+  subject: any,
+  unallottedStudents: any[],
+  writeOps: any[]
+) {
+  // Determine semester ID for bucket allotments
+  let semesterId: string | null = null;
+  
+  if (subject.semesters && subject.semesters.length > 0) {
+    semesterId = subject.semesters[0].id;
+  } else if (subject.semester) {
+    semesterId = subject.semester.id;
+  }
+
+  if (!semesterId) {
+    throw new Error("No semester configured for bucket allotment");
+  }
+
+  // Get course buckets with available seats, sorted by current student count
+  const bucketsWithStats = await Promise.all(
+    subject.courseBucketsWithSeats.map(async (bucketWithSeats: any) => {
+      const studentCount = await prisma.bucketAllotment.count({
+        where: {
+          subjectId: subject.id,
+          courseBucketId: bucketWithSeats.courseBucketId
+        }
+      });
+
+      const availableSeats = bucketWithSeats.availableSeats !== null 
+        ? bucketWithSeats.availableSeats
+        : Infinity;
+
+      return {
+        ...bucketWithSeats,
+        currentStudentCount: studentCount,
+        availableSeats,
+        effectiveAvailableSeats: availableSeats === Infinity 
+          ? unallottedStudents.length 
+          : Math.max(0, availableSeats)
+      };
+    })
+  );
+
+  // Sort buckets by current student count (buckets with least students first)
+  const sortedBuckets = bucketsWithStats
+    .filter(bucket => bucket.effectiveAvailableSeats > 0)
+    .sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+
+  console.log('Sorted buckets for distribution:', sortedBuckets.map(b => ({
+    name: b.courseBucket.name,
+    currentCount: b.currentStudentCount,
+    available: b.effectiveAvailableSeats
+  })));
+
+  if (sortedBuckets.length === 0) {
+    throw new Error("No course buckets with available seats for pending allotments");
+  }
+
+  const allotments = [];
+  let studentIndex = 0;
+
+  // Distribute students to buckets with least students first
+  while (studentIndex < unallottedStudents.length && sortedBuckets.length > 0) {
+    for (let i = 0; i < sortedBuckets.length && studentIndex < unallottedStudents.length; i++) {
+      const currentBucket = sortedBuckets[i];
+      
+      if (currentBucket.effectiveAvailableSeats > 0) {
+        const student = unallottedStudents[studentIndex];
+        
+        // Get the first course in the bucket
+        const firstCourse = currentBucket.courseBucket.courses[0];
+        if (!firstCourse) {
+          throw new Error(`No courses found in bucket ${currentBucket.courseBucket.name}`);
+        }
+
+        allotments.push({
+          subjectId: subject.id,
+          studentId: student.id,
+          courseBucketId: currentBucket.courseBucketId,
+          courseId: firstCourse.course.id,
+          semesterId,
+          allotmentStatus: AllotmentStatus.Pending,
+        });
+
+        // Update available seats
+        if (currentBucket.availableSeats !== Infinity) {
+          currentBucket.availableSeats--;
+          currentBucket.effectiveAvailableSeats--;
+        }
+
+        studentIndex++;
+      }
+    }
+
+    // Re-sort buckets after each full pass to maintain least-filled-first order
+    sortedBuckets.sort((a, b) => a.currentStudentCount - b.currentStudentCount);
+  }
+
+  if (allotments.length > 0) {
+    writeOps.push(
+      prisma.bucketAllotment.createMany({
+        data: allotments,
+      })
+    );
+
+    // Update seat counts for buckets with limited seats
+    const seatUpdates = bucketsWithStats
+      .filter(bucket => bucket.availableSeats !== Infinity)
+      .map(bucket =>
+        prisma.subjectCourseBucketWithSeats.update({
+          where: { id: bucket.id },
+          data: { availableSeats: bucket.availableSeats },
+        })
+      );
+
+    writeOps.push(...seatUpdates);
+  }
 }
 
-interface FailedStudent {
-  email: string;
-  registrationNumber: string;
-  error: string;
-  index?: number;
-}
 
-const studentController = {
-  // Get all students (excluding deleted ones)
-  getAllStudents: async (req: Request, res: Response): Promise<any> => {
-    try {
-      const {
-        programId,
-        batchId,
-        semester,
-        departmentId,
-        schoolId,
-        search,
-        page = 1,
-        pageSize = 10,
-      } = req.query;
+const SubjectController = {
+  getAllSubjects: async (req: Request, res: Response): Promise<void> => {
+    const {
+      page = 1,
+      pageSize = 10,
+      search = "",
+      batchId,
+      semesterId,
+      subjectTypeId,
+      isPreferenceWindowOpen,
+      isAllotmentFinalized,
+      programIds,
+    } = req.query;
 
-      // Build the where condition dynamically
-      const where: any = { isDeleted: false };
-
-      if (programId) {
-        where.programId = String(programId);
-      }
-      if (batchId) {
-        where.batchId = String(batchId);
-      }
-      if (semester) {
-        where.semester = Number(semester);
-      }
-      if (departmentId) {
-        where.program = { departmentId: String(departmentId) };
-      }
-      if (schoolId) {
-        where.program = { department: { schoolId: String(schoolId) } };
-      }
-
-      // Ensure search is a string before using split()
-      if (typeof search === "string" && search.trim() !== "") {
-        const searchTerms = search
-          .trim()
-          .split(" ")
-          .map((term) => ({
-            contains: term,
-            mode: "insensitive",
-          }));
-
-        where.OR = [
-          {
-            AND: [
-              { firstName: searchTerms[0] },
-              searchTerms[1] ? { middleName: searchTerms[1] } : {},
-              searchTerms[2] ? { lastName: searchTerms[2] } : {},
-            ],
-          },
-          {
-            AND: [
-              { firstName: searchTerms[0] },
-              searchTerms[1] ? { lastName: searchTerms[1] } : {},
-            ],
-          },
-          { registrationNumber: { contains: search, mode: "insensitive" } },
-        ];
-      }
-
-      // Get total count of filtered students
-      const totalStudents = await prisma.student.count({ where });
-      const totalPages = Math.ceil(totalStudents / Number(pageSize));
-
-      // Apply pagination AFTER filtering
-      const students = await prisma.student.findMany({
-        where,
-        include: {
-          program: {
-            select: {
-              id: true,
-              name: true,
-              department: {
-                select: {
-                  id: true,
-                  name: true,
-                  school: { select: { id: true, name: true } },
-                },
+    const filters: any = {
+      AND: [
+        batchId ? { batchId: batchId as string } : {},
+        semesterId ? { semesterId: semesterId as string } : {},
+        subjectTypeId ? { subjectTypeId: subjectTypeId as string } : {},
+        isPreferenceWindowOpen !== undefined
+          ? { isPreferenceWindowOpen: isPreferenceWindowOpen === "true" }
+          : {},
+        isAllotmentFinalized !== undefined
+          ? { isAllotmentFinalized: isAllotmentFinalized === "true" }
+          : {},
+        programIds
+          ? {
+              programs: {
+                some: { id: { in: (programIds as string).split(",") } },
               },
+            }
+          : {},
+        search
+          ? { name: { contains: search as string, mode: "insensitive" } }
+          : {},
+      ],
+    };
+
+    try {
+      const totalSubjects = await prisma.subject.count({ where: filters });
+      const totalPages = Math.ceil(totalSubjects / Number(pageSize));
+
+      const subjects = await prisma.subject.findMany({
+        where: filters,
+        select: {
+          id: true,
+          name: true,
+          batch: true,
+          dueDate: true,
+          isPreferenceWindowOpen: true,
+          isAllotmentFinalized: true,
+          programs: {
+            include: {
+              students: true,
             },
           },
-          batch: {
-            select: {
-              id: true,
-              year: true,
-            },
-          },
+          standaloneSubjectPreferences: true,
+          bucketSubjectPreferences: true,
         },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
-        orderBy: { registrationNumber: "asc" },
+      });
+
+      const subjectsWithDetails = subjects.map((subject) => {
+        const totalStudents = subject.programs.reduce(
+          (acc, program) => acc + program.students.length,
+          0,
+        );
+        const preferencesFilled =
+          subject.standaloneSubjectPreferences.length +
+          subject.bucketSubjectPreferences.length;
+        const remainingStudents = totalStudents - preferencesFilled;
+
+        return {
+          id: subject.id,
+          name: subject.name,
+          batch: subject.batch,
+          dueDate: subject.dueDate,
+          totalStudents,
+          preferencesFilled,
+          remainingStudents,
+          isPreferenceWindowOpen: subject.isPreferenceWindowOpen,
+          isAllotmentFinalized: subject.isAllotmentFinalized,
+        };
       });
 
       res.status(200).json({
-        students,
+        subjects: subjectsWithDetails,
         totalPages,
         currentPage: Number(page),
-        pageSize: Number(pageSize),
       });
     } catch (error) {
-      console.error("Error fetching students:", error);
-      res.status(500).json({ message: "Unable to fetch students" });
+      console.error("Error fetching subjects:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
-
-  // Get a student by ID
-  getStudentById: async (req: Request, res: Response): Promise<any> => {
-    const { id } = req.params;
+  createSubject: async (req: Request, res: Response): Promise<void> => {
+    console.dir(req.body, { depth: null });
     try {
-      const student = await prisma.student.findUnique({
+      const {
+        name,
+        batchId,
+        subjectTypeId,
+        departmentId,
+        facultyId,
+        schoolId,
+        programIds,
+        semesterId,
+        semesterIds,
+        coursesWithSeats = [],
+        courseBucketsWithSeats = [],
+      } = req.body;
+
+      // Validate required fields
+      if (!name || !batchId || !subjectTypeId || !programIds?.length) {
+        res.status(400).json({ error: "Missing required fields" });
+        return;
+      }
+
+      const subject = await prisma.subject.create({
+        data: {
+          name,
+          batch: { connect: { id: batchId } },
+          subjectType: { connect: { id: subjectTypeId } },
+          semester: semesterId ? { connect: { id: semesterId } } : undefined,
+          semesters: {
+            connect: semesterIds.map((id: string) => ({ id })) || [],
+          },
+          school: schoolId ? { connect: { id: schoolId } } : undefined,
+          department: departmentId
+            ? { connect: { id: departmentId } }
+            : undefined,
+          faculty: facultyId ? { connect: { id: facultyId } } : undefined,
+          programs: {
+            connect: programIds.map((id: string) => ({ id })),
+          },
+          isPreferenceWindowOpen: false,
+          isAllotmentFinalized: false,
+        },
+      });
+
+      // Create SubjectCourseWithSeats entries
+      await prisma.subjectCourseWithSeats.createMany({
+        data: coursesWithSeats.map(
+          ({ id, seats }: { id: string; seats: number }) => ({
+            courseId: id,
+            subjectId: subject.id,
+            totalSeats: seats && seats !== 0 ? seats : null,
+            availableSeats: seats && seats !== 0 ? seats : null,
+          }),
+        ),
+      });
+
+      // Create SubjectCourseBucketWithSeats entries
+      await prisma.subjectCourseBucketWithSeats.createMany({
+        data: courseBucketsWithSeats.map(
+          ({ id, seats }: { id: string; seats: number }) => ({
+            courseBucketId: id,
+            subjectId: subject.id,
+            totalSeats: seats !== 0 ? seats : null,
+            availableSeats: seats !== 0 ? seats : null,
+          }),
+        ),
+      });
+
+      res.status(201).json(subject);
+    } catch (error) {
+      console.error("Error creating subject:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  getSubjectById: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      const subject = await prisma.subject.findUnique({
         where: { id },
-        include: {
-          program: {
+        select: {
+          name: true,
+          semester: true,
+          batch: true,
+          department: true,
+          faculty: true,
+          school: true,
+          isPreferenceWindowOpen: true,
+          isAllotmentFinalized: true,
+          dueDate: true,
+          subjectType: true,
+          numberOfCoursesInBucket: true,
+          semesters: true,
+          programs: {
+            include: {
+              department: true,
+            },
+          },
+          coursesWithSeats: {
             select: {
               id: true,
-              name: true,
-              department: {
+              course: {
                 select: {
                   id: true,
+                  code: true,
                   name: true,
-                  school: { select: { id: true, name: true } },
+                  credits: true,
+                  department: true,
+                },
+              },
+              totalSeats: true,
+            },
+          },
+          courseBucketsWithSeats: {
+            select: {
+              courseBucket: {
+                include: {
+                  department: true,
+                  courses: {
+                    select: {
+                      course: {
+                        select: {
+                          id: true,
+                          code: true,
+                          credits: true,
+                          name: true,
+                        },
+                      },
+                      orderIndex: true,
+                    },
+                  },
+                },
+              },
+              totalSeats: true,
+            },
+          },
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      res.status(200).json(subject);
+    } catch (error) {
+      console.error("Error fetching subject details:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  updateSubjectStatus: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { isPreferenceWindowOpen, isAllotmentFinalized, dueDate } = req.body;
+
+    if (
+      typeof isPreferenceWindowOpen !== "boolean" ||
+      typeof isAllotmentFinalized !== "boolean"
+    ) {
+      res.status(400).json({ error: "Invalid input data" });
+      return;
+    }
+
+    // Ensure only one of the fields can be true at once
+    if (isPreferenceWindowOpen && isAllotmentFinalized) {
+      res.status(400).json({
+        error:
+          "Only one of isPreferenceWindowOpen or isAllotmentFinalized can be true at once",
+      });
+      return;
+    }
+
+    // Ensure dueDate is provided when setting isPreferenceWindowOpen from false to true
+    const subject = await prisma.subject.findUnique({ where: { id } });
+    if (
+      subject &&
+      !subject.isPreferenceWindowOpen &&
+      isPreferenceWindowOpen &&
+      !dueDate
+    ) {
+      res.status(400).json({
+        error: "Due date must be provided when opening the preference window",
+      });
+      return;
+    }
+
+    try {
+      // First, delete preferences if the subject is being finalized
+      if (isAllotmentFinalized) {
+        console.log(
+          `Deleting preferences for subject ${id} as it is being finalized`,
+        );
+
+        // Delete standalone preferences
+        const deletedStandalone =
+          await prisma.standaloneSubjectPreference.deleteMany({
+            where: {
+              subjectId: id,
+            },
+          });
+        console.log(
+          `Deleted ${deletedStandalone.count} standalone preferences`,
+        );
+
+        // Delete bucket preferences
+        const deletedBucket = await prisma.bucketSubjectPreference.deleteMany({
+          where: {
+            subjectId: id,
+          },
+        });
+        console.log(`Deleted ${deletedBucket.count} bucket preferences`);
+      }
+
+      // Then update the subject status
+      const updatedSubject = await prisma.subject.update({
+        where: { id },
+        data: {
+          isPreferenceWindowOpen,
+          isAllotmentFinalized,
+          dueDate: isPreferenceWindowOpen ? dueDate : null,
+        },
+      });
+
+      res.status(200).json(updatedSubject);
+    } catch (error) {
+      console.error("Error updating subject status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  getSubjectsForStudent: async (req: Request, res: Response): Promise<void> => {
+    console.log(req.user.id);
+    try {
+      const student = await prisma.student.findUnique({
+        where: { id: req.user.id },
+        include: {
+          program: true,
+        },
+      });
+      console.log(student);
+
+      if (!student) {
+        res.status(404).json({ error: "Student not found" });
+        return;
+      }
+
+      const programId = student.program.id;
+
+      const subjects = await prisma.subject.findMany({
+        where: {
+          isPreferenceWindowOpen: true,
+          programs: {
+            some: {
+              id: programId,
+            },
+          },
+          batch: {
+            id: student.batchId,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          subjectType: true,
+          dueDate: true,
+          isPreferenceWindowOpen: true,
+          semester: true,
+          semesters: true,
+          standaloneSubjectPreferences: {
+            where: {
+              studentId: student.id,
+            },
+          },
+          bucketSubjectPreferences: {
+            where: {
+              studentId: student.id,
+            },
+          },
+        },
+      });
+
+      const subjectsWithStatus = subjects.map((subject) => {
+        const hasPreferences =
+          subject.standaloneSubjectPreferences.length > 0 ||
+          subject.bucketSubjectPreferences.length > 0;
+        return {
+          id: subject.id,
+          name: subject.name,
+          subjectType: subject.subjectType,
+          dueDate: subject.dueDate,
+          isPreferenceWindowOpen: subject.isPreferenceWindowOpen,
+          semester: subject.semester,
+          semesters: subject.semesters,
+          status: hasPreferences ? Status.Completed : Status.Pending,
+        };
+      });
+
+      res.status(200).json(subjectsWithStatus);
+    } catch (error) {
+      console.error("Error fetching subjects for student:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  getSubjectOfferings: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { page = 1, search = "" } = req.query;
+    const pageSize = 10;
+
+    if (!id) {
+      res.status(400).json({ error: "Subject ID is required" });
+      return;
+    }
+
+    try {
+      const subject = await prisma.subject.findUnique({
+        where: { id: id, isPreferenceWindowOpen: true },
+        include: {
+          coursesWithSeats: {
+            include: {
+              course: true,
+            },
+            where: {
+              course: {
+                name: {
+                  contains: search as string,
+                  mode: "insensitive",
+                },
+              },
+            },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
+          },
+          courseBucketsWithSeats: {
+            include: {
+              courseBucket: {
+                include: {
+                  courses: {
+                    include: {
+                      course: true,
+                    },
+                  },
+                },
+              },
+            },
+            where: {
+              courseBucket: {
+                name: {
+                  contains: search as string,
+                  mode: "insensitive",
+                },
+              },
+            },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
+          },
+          subjectType: true,
+          semesters: true,
+          semester: true,
+          batch: true,
+        },
+      });
+
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
+      }
+
+      const totalCourses = await prisma.subjectCourseWithSeats.count({
+        where: {
+          subjectId: id,
+          course: {
+            name: {
+              contains: search as string,
+              mode: "insensitive",
+            },
+          },
+        },
+      });
+
+      const totalCourseBuckets =
+        await prisma.subjectCourseBucketWithSeats.count({
+          where: {
+            subjectId: id,
+            courseBucket: {
+              name: {
+                contains: search as string,
+                mode: "insensitive",
+              },
+            },
+          },
+        });
+
+      const totalItems = totalCourses + totalCourseBuckets;
+      const totalPages = Math.ceil(totalItems / Number(pageSize));
+
+      const offerings = {
+        subjectName: subject.name,
+        subjectType: subject.subjectType,
+        batchName: subject.batch.year,
+        semesters: subject.semesters,
+        semester: subject.semester,
+        courses: subject.coursesWithSeats.map((courseWithSeats) => ({
+          id: courseWithSeats.course.id,
+          name: courseWithSeats.course.name,
+          code: courseWithSeats.course.code,
+          totalSeats: courseWithSeats.totalSeats,
+          availableSeats: courseWithSeats.availableSeats,
+        })),
+        courseBuckets: subject.courseBucketsWithSeats.map(
+          (bucketWithSeats) => ({
+            id: bucketWithSeats.courseBucket.id,
+            name: bucketWithSeats.courseBucket.name,
+            totalSeats: bucketWithSeats.totalSeats,
+            availableSeats: bucketWithSeats.availableSeats,
+            courses: bucketWithSeats.courseBucket.courses.map(
+              (courseBucketCourse) => ({
+                id: courseBucketCourse.course.id,
+                name: courseBucketCourse.course.name,
+                code: courseBucketCourse.course.code,
+                credits: courseBucketCourse.course.credits,
+                departmentId: courseBucketCourse.course.departmentId,
+              }),
+            ),
+          }),
+        ),
+        totalPages,
+      };
+
+      res.status(200).json(offerings);
+    } catch (error) {
+      console.error("Error fetching subject offerings:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  deleteSubject: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    try {
+      const deletedSubject = await prisma.subject.delete({
+        where: { id },
+      });
+
+      if (!deletedSubject) {
+        res.status(404).json({ message: "Subject with given ID not found" });
+      }
+
+      res
+        .status(200)
+        .json({ message: "Subject deleted successfully", deletedSubject });
+    } catch (error) {
+      console.error("Error deleting subject:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  
+ runAllotmentsForSubject: async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const { subjectId } = req.params;
+
+  try {
+    console.log(`Starting allotments for subject ID: ${subjectId}`);
+
+    const subject = await prisma.subject.findUnique({
+      where: { id: subjectId },
+      include: {
+        subjectType: true,
+        semester: true, // Keep for standalone subjects
+        semesters: true, // Add for bucket subjects
+        standaloneSubjectPreferences: { 
+          where: { runAllotment: true }
+        },
+        bucketSubjectPreferences: { 
+          where: { runAllotment: true }
+        },
+      },
+    });
+
+    if (!subject) {
+      res.status(404).json({ error: "Subject not found" });
+      return;
+    }
+
+    const hasRunAllotment =
+      subject.standaloneSubjectPreferences.length > 0 ||
+      subject.bucketSubjectPreferences.length > 0;
+
+    if (!hasRunAllotment) {
+      res.status(400).json({ error: "No preferences to process for allotment" });
+      return;
+    }
+
+    // Prepare write operations - KEEP EXISTING LOGIC FOR STANDALONE
+    const writeOps: any[] = [
+      prisma.standaloneAllotment.deleteMany({ where: { subjectId } }),
+      prisma.bucketAllotment.deleteMany({ where: { subjectId } }),
+    ];
+
+    if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+      // KEEP ORIGINAL STANDALONE LOGIC UNCHANGED
+      const standaloneAllotments = [];
+
+      for (const preference of subject.standaloneSubjectPreferences) {
+        const course = await prisma.subjectCourseWithSeats.findUnique({
+          where: {
+            courseId_subjectId: {
+              courseId: preference.firstPreferenceCourseId!,
+              subjectId: subject.id,
+            },
+          },
+        });
+
+        if (
+          course &&
+          (course.availableSeats === null || course.availableSeats > 0)
+        ) {
+          standaloneAllotments.push({
+            subjectId: subject.id,
+            studentId: preference.studentId,
+            courseId: preference.firstPreferenceCourseId!,
+            allotmentStatus: AllotmentStatus.Pending,
+          });
+
+          if (course.availableSeats !== null) {
+            writeOps.push(
+              prisma.subjectCourseWithSeats.update({
+                where: { id: course.id },
+                data: { availableSeats: course.availableSeats - 1 },
+              }),
+            );
+          }
+        }
+      }
+
+      if (standaloneAllotments.length > 0) {
+        writeOps.push(
+          prisma.standaloneAllotment.createMany({
+            data: standaloneAllotments,
+          }),
+        );
+      }
+
+    } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+      // ONLY MODIFY BUCKET LOGIC
+      console.log("Processing bucket allotments");
+      
+      // FIX: Proper semester determination for buckets
+      let semesterId: string | null = null;
+      
+      // Priority 1: Use semesters array (for bucket subjects)
+      if (subject.semesters && subject.semesters.length > 0) {
+        semesterId = subject.semesters[0].id;
+        console.log(`Using semester from semesters array: ${semesterId}`);
+      } 
+      // Priority 2: Fallback to single semester (backward compatibility)
+      else if (subject.semester) {
+        semesterId = subject.semester.id;
+        console.log(`Using single semester: ${semesterId}`);
+      }
+
+      if (!semesterId) {
+        res.status(400).json({ 
+          error: "No semester configured for bucket allotment" 
+        });
+        return;
+      }
+
+      const bucketAllotments = [];
+
+      for (const preference of subject.bucketSubjectPreferences) {
+        const courseBucketWithSeats = await prisma.subjectCourseBucketWithSeats.findUnique({
+          where: {
+            courseBucketId_subjectId: {
+              courseBucketId: preference.firstPreferenceCourseBucketId!,
+              subjectId: subject.id,
+            },
+          },
+          include: {
+            courseBucket: {
+              include: {
+                courses: {
+                  include: { 
+                    course: true 
+                  },
+                  orderBy: { orderIndex: "asc" },
+                  take: 1, // Keep original logic - take first course
                 },
               },
             },
           },
+        });
+
+        if (
+          courseBucketWithSeats &&
+          (courseBucketWithSeats.availableSeats === null ||
+            courseBucketWithSeats.availableSeats > 0) &&
+          courseBucketWithSeats.courseBucket.courses.length > 0
+        ) {
+          const firstCourse = courseBucketWithSeats.courseBucket.courses[0];
+
+          bucketAllotments.push({
+            subjectId: subject.id,
+            studentId: preference.studentId,
+            courseBucketId: preference.firstPreferenceCourseBucketId!,
+            courseId: firstCourse.course.id,
+            semesterId, // Use the properly determined semesterId
+            allotmentStatus: AllotmentStatus.Pending,
+          });
+
+          if (courseBucketWithSeats.availableSeats !== null) {
+            writeOps.push(
+              prisma.subjectCourseBucketWithSeats.update({
+                where: { id: courseBucketWithSeats.id },
+                data: {
+                  availableSeats: courseBucketWithSeats.availableSeats - 1,
+                },
+              }),
+            );
+          }
+        }
+      }
+
+      if (bucketAllotments.length > 0) {
+        writeOps.push(
+          prisma.bucketAllotment.createMany({
+            data: bucketAllotments,
+          }),
+        );
+      }
+    }
+
+    // Execute all write ops inside a single transaction
+    await prisma.$transaction(writeOps);
+
+    res.status(200).json({ message: "Allotments created successfully" });
+  } catch (error) {
+    console.error("Error creating allotments:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+},
+ runPendingAllotments: async (req: Request, res: Response): Promise<void> => {
+    const { subjectId } = req.params;
+
+    try {
+      console.log(`Starting pending allotments for subject ID: ${subjectId}`);
+
+      const subject = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        include: {
+          subjectType: true,
+          semester: true,
+          semesters: true,
+          programs: {
+            select: { id: true }
+          },
           batch: {
-            select: {
-              id: true,
-              year: true,
+            select: { id: true }
+          },
+          coursesWithSeats: {
+            include: {
+              course: true,
+            },
+          },
+          courseBucketsWithSeats: {
+            include: {
+              courseBucket: {
+                include: {
+                  courses: {
+                    include: {
+                      course: true,
+                    },
+                    orderBy: { orderIndex: "asc" },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      if (!student || student.isDeleted) {
-        return res.status(404).json({ message: "Student not found" });
+      if (!subject) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
       }
 
-      res.status(200).json(student);
+      // Get all students who should be allotted but haven't been
+      const totalStudents = await prisma.student.count({
+        where: {
+          batchId: subject.batch.id,
+          programId: {
+            in: subject.programs.map(program => program.id)
+          },
+          isDeleted: false
+        }
+      });
+
+      // Get already allotted students
+      const allottedStudents = await prisma.student.findMany({
+        where: {
+          OR: [
+            {
+              standaloneAllotments: {
+                some: { subjectId }
+              }
+            },
+            {
+              bucketAllotments: {
+                some: { subjectId }
+              }
+            }
+          ]
+        },
+        select: { id: true }
+      });
+
+      const allottedStudentIds = new Set(allottedStudents.map(s => s.id));
+
+      // Get unallotted students (students with no preferences filled)
+      const unallottedStudents = await prisma.student.findMany({
+        where: {
+          batchId: subject.batch.id,
+          programId: {
+            in: subject.programs.map(program => program.id)
+          },
+          isDeleted: false,
+          id: {
+            notIn: Array.from(allottedStudentIds)
+          },
+          // Students who didn't fill preferences for this subject
+          AND: [
+            {
+              standaloneSubjectPreferences: {
+                none: {
+                  subjectId: subjectId
+                }
+              }
+            },
+            {
+              bucketSubjectPreferences: {
+                none: {
+                  subjectId: subjectId
+                }
+              }
+            }
+          ]
+        },
+        select: {
+          id: true,
+          registrationNumber: true,
+          firstName: true,
+          lastName: true,
+        }
+      });
+
+      console.log(`Found ${unallottedStudents.length} unallotted students`);
+
+      if (unallottedStudents.length === 0) {
+        res.status(400).json({ error: "No pending students to allot" });
+        return;
+      }
+
+      const writeOps: any[] = [];
+
+      if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+        await processStandalonePendingAllotments(
+          subject,
+          unallottedStudents,
+          writeOps
+        );
+      } else if (subject.subjectType.allotmentType === AllotmentType.Bucket) {
+        await processBucketPendingAllotments(
+          subject,
+          unallottedStudents,
+          writeOps
+        );
+      }
+
+      // Execute all write operations in a transaction
+      if (writeOps.length > 0) {
+        await prisma.$transaction(writeOps);
+        console.log(`Successfully allotted ${unallottedStudents.length} pending students`);
+      }
+
+      res.status(200).json({ 
+        message: `Pending allotments completed successfully. Allotted ${unallottedStudents.length} students.`,
+        allottedCount: unallottedStudents.length
+      });
+
     } catch (error) {
-      console.error("Error fetching student:", error);
-      res.status(500).json({ message: "Unable to fetch student" });
+      console.error("Error running pending allotments:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
 
-  // Create a single student
-  createStudent: async (req: Request, res: Response): Promise<any> => {
-    const {
-      firstName,
-      lastName,
-      email,
-      registrationNumber,
-      contactNumber,
-      gender,
-      semester,
-      programId,
-      batchId,
-      password,
-    } = req.body;
 
-    // Validation
-    const validationErrors: Array<{ field: string; message: string }> = [];
-
-    if (!firstName) validationErrors.push({ field: "firstName", message: "First name is required" });
-    if (!lastName) validationErrors.push({ field: "lastName", message: "Last name is required" });
-    if (!email) validationErrors.push({ field: "email", message: "Email is required" });
-    if (!registrationNumber) validationErrors.push({ field: "registrationNumber", message: "Registration number is required" });
-    if (!gender) validationErrors.push({ field: "gender", message: "Gender is required" });
-    if (!semester) validationErrors.push({ field: "semester", message: "Semester is required" });
-    if (!programId) validationErrors.push({ field: "programId", message: "Program ID is required" });
-    if (!batchId) validationErrors.push({ field: "batchId", message: "Batch ID is required" });
-    if (!password) validationErrors.push({ field: "password", message: "Password is required" });
-
-    if (validationErrors.length > 0) {
-      return res.status(400).json({
-        message: "Validation failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email: email || 'Unknown',
-          registrationNumber: registrationNumber || 'Unknown',
-          error: `Validation errors: ${validationErrors.map(e => e.message).join(', ')}`
-        }]
-      });
-    }
+  getSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
+    const { subjectId } = req.params;
+    const { search, page = 1, pageSize = 6 } = req.query;
 
     try {
-      // Check if student already exists
-      const existingStudent = await prisma.student.findFirst({
-        where: {
-          OR: [
-            { email },
-            { registrationNumber },
-          ],
+      const allotmentsInfo = await prisma.subject.findUnique({
+        where: { id: subjectId },
+        select: {
+          standaloneAllotments: {
+            where: search
+              ? {
+                  student: {
+                    OR: [
+                      {
+                        firstName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        registrationNumber: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                }
+              : undefined,
+            select: {
+              student: {
+                select: {
+                  registrationNumber: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              course: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
+          },
+          bucketAllotments: {
+            where: search
+              ? {
+                  student: {
+                    OR: [
+                      {
+                        firstName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        registrationNumber: {
+                          contains: search as string,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                }
+              : undefined,
+            select: {
+              student: {
+                select: {
+                  registrationNumber: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              courseBucket: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+            skip: (Number(page) - 1) * Number(pageSize),
+            take: Number(pageSize),
+          },
         },
       });
 
-      if (existingStudent) {
-        return res.status(400).json({
-          message: "Student creation failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email,
-            registrationNumber,
-            error: "Student with this email or registration number already exists"
-          }]
-        });
+      if (!allotmentsInfo) {
+        res.status(404).json({ error: "Subject not found" });
+        return;
       }
 
-      // Check if program exists
-      const program = await prisma.program.findUnique({
-        where: { id: programId }
+      const [totalStandaloneAllotments, totalBucketAllotments] =
+        await Promise.all([
+          prisma.standaloneAllotment.count({
+            where: {
+              subjectId,
+              ...(search
+                ? {
+                    student: {
+                      OR: [
+                        {
+                          firstName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                        {
+                          lastName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+            },
+          }),
+          prisma.bucketAllotment.count({
+            where: {
+              subjectId,
+              ...(search
+                ? {
+                    student: {
+                      OR: [
+                        {
+                          firstName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                        {
+                          lastName: {
+                            contains: search as string,
+                            mode: "insensitive" as const,
+                          },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+            },
+          }),
+        ]);
+
+      const totalAllotments = totalStandaloneAllotments + totalBucketAllotments;
+      const totalPages = Math.ceil(totalAllotments / Number(pageSize));
+
+      res.status(200).json({
+        ...allotmentsInfo,
+        totalPages,
+        currentPage: Number(page),
+      });
+    } catch (error) {
+      console.error("Error fetching allotments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+ // In SubjectController.ts - update getAllotmentStats function
+getAllotmentStats: async (req: Request, res: Response): Promise<void> => {
+  const { subjectId } = req.params;
+
+  try {
+    // First, get the subject to find its batch and programs
+    const subject = await prisma.subject.findUnique({
+      where: { id: subjectId },
+      include: {
+        programs: {
+          select: { id: true }
+        },
+        batch: {
+          select: { id: true }
+        }
+      }
+    });
+
+    if (!subject) {
+      res.status(404).json({ error: "Subject not found" });
+      return;
+    }
+
+    // Use the EXACT SAME logic as getSubjectPreferences
+    const totalStudents = await prisma.student.count({
+      where: {
+        batchId: subject.batch.id,
+        programId: {
+          in: subject.programs.map(program => program.id)
+        },
+        isDeleted: false
+      }
+    });
+
+    console.log(`Total students for subject ${subjectId}:`, totalStudents);
+    console.log('Batch ID:', subject.batch.id);
+    console.log('Program IDs:', subject.programs.map(p => p.id));
+
+    // Rest of your existing code for courses and buckets...
+    const allCourses = await prisma.subjectCourseWithSeats.findMany({
+      where: { subjectId },
+      select: {
+        course: {
+          select: { id: true, name: true, code: true },
+        },
+      },
+    });
+
+    const allCourseBuckets = await prisma.subjectCourseBucketWithSeats.findMany({
+      where: { subjectId },
+      select: {
+        courseBucket: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    const courseStats = await prisma.standaloneAllotment.groupBy({
+      by: ["courseId"],
+      where: { subjectId },
+      _count: { courseId: true },
+    });
+
+    const courseBucketStats = await prisma.bucketAllotment.groupBy({
+      by: ["courseBucketId"],
+      where: { subjectId },
+      _count: { courseBucketId: true },
+    });
+
+    const courses = allCourses.map(({ course }) => {
+      const stat = courseStats.find((s) => s.courseId === course.id);
+      return {
+        id: course.id,
+        name: course.name,
+        code: course.code,
+        studentCount: stat ? stat._count.courseId : 0,
+      };
+    });
+
+    const courseBuckets = allCourseBuckets.map(({ courseBucket }) => {
+      const stat = courseBucketStats.find(
+        (s) => s.courseBucketId === courseBucket.id,
+      );
+      return {
+        id: courseBucket.id,
+        name: courseBucket.name,
+        studentCount: stat ? stat._count.courseBucketId : 0,
+      };
+    });
+
+    const totalAllottedStudents =
+      courseStats.reduce((acc, stat) => acc + stat._count.courseId, 0) +
+      courseBucketStats.reduce((acc, stat) => acc + stat._count.courseBucketId, 0);
+
+    const unallottedStudents = totalStudents - totalAllottedStudents;
+
+    const result = {
+      courses: [...courses],
+      courseBuckets: [...courseBuckets],
+      totalStudents,
+      totalAllottedStudents,
+      unallottedStudents,
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching allotment stats:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+},
+// In SubjectController (new method)
+exportSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
+  const { subjectId } = req.params;
+  const { search } = req.query;
+  try {
+    if (!subjectId) {
+      res.status(400).json({ error: "subjectId required" });
+      return;
+    }
+
+    // Headers for CSV download
+    const filename = `allotments_${subjectId}.csv`;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    // Write CSV header row
+    const header = [
+      "Registration Number",
+      "Student Name",
+      "Course/Bucket",
+      "Allotment Type",
+      "SubjectId",
+      "BatchYear",
+      "SubjectType"
+    ].join(",") + "\n";
+    res.write(header);
+
+    // Helper to safely escape CSV values
+    const csvSafe = (v: any) => {
+      const s = v == null ? "" : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+
+    // Process standalone allotments in batches using cursor pagination
+    const batchSize = 500; // tuneable
+    let lastStandaloneId: string | undefined = undefined;
+    while (true) {
+      const standaloneRows = await prisma.standaloneAllotment.findMany({
+        where: {
+          subjectId,
+          ...(search
+            ? {
+                student: {
+                  OR: [
+                    { firstName: { contains: String(search), mode: "insensitive" } },
+                    { lastName: { contains: String(search), mode: "insensitive" } },
+                    { registrationNumber: { contains: String(search), mode: "insensitive" } },
+                  ],
+                },
+              }
+            : {}),
+        },
+        include: {
+          student: { select: { registrationNumber: true, firstName: true, lastName: true } },
+          course: { select: { name: true } },
+          subject: { select: { batch: { select: { year: true } }, subjectType: { select: { name: true } } } }
+        },
+        orderBy: { id: "asc" },
+        take: batchSize,
+        ...(lastStandaloneId ? { cursor: { id: lastStandaloneId }, skip: 1 } : {}),
       });
 
-      if (!program) {
-        return res.status(400).json({
-          message: "Student creation failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email,
-            registrationNumber,
-            error: `Program with ID ${programId} not found`
-          }]
-        });
+      if (!standaloneRows || standaloneRows.length === 0) break;
+
+      for (const r of standaloneRows) {
+        const row = [
+          csvSafe(r.student?.registrationNumber),
+          csvSafe(`${r.student?.firstName ?? ""} ${r.student?.lastName ?? ""}`.trim()),
+          csvSafe(r.course?.name),
+          csvSafe("Standalone"),
+          csvSafe(r.subject ? r.subject.id : subjectId),
+          csvSafe(r.subject?.batch?.year ?? ""),
+          csvSafe(r.subject?.subjectType?.name ?? "")
+        ].join(",") + "\n";
+        // write to response (streams)
+        if (!res.write(row)) {
+          // backpressure: wait for drain
+          await new Promise((resolve) => res.once("drain", resolve));
+        }
       }
 
-      // Check if batch exists
-      const batch = await prisma.batch.findUnique({
-        where: { id: batchId }
+      lastStandaloneId = standaloneRows[standaloneRows.length - 1].id;
+      if (standaloneRows.length < batchSize) break;
+    }
+
+    // Now bucket allotments (same pattern)
+    let lastBucketId: string | undefined = undefined;
+    while (true) {
+      const bucketRows = await prisma.bucketAllotment.findMany({
+        where: {
+          subjectId,
+          ...(search
+            ? {
+                student: {
+                  OR: [
+                    { firstName: { contains: String(search), mode: "insensitive" } },
+                    { lastName: { contains: String(search), mode: "insensitive" } },
+                    { registrationNumber: { contains: String(search), mode: "insensitive" } },
+                  ],
+                },
+              }
+            : {}),
+        },
+        include: {
+          student: { select: { registrationNumber: true, firstName: true, lastName: true } },
+          courseBucket: { select: { name: true } },
+          subject: { select: { batch: { select: { year: true } }, subjectType: { select: { name: true } } } }
+        },
+        orderBy: { id: "asc" },
+        take: batchSize,
+        ...(lastBucketId ? { cursor: { id: lastBucketId }, skip: 1 } : {}),
       });
 
-      if (!batch) {
-        return res.status(400).json({
-          message: "Student creation failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
-          },
-          successful: [],
-          failed: [{
-            email,
-            registrationNumber,
-            error: `Batch with ID ${batchId} not found`
-          }]
+      if (!bucketRows || bucketRows.length === 0) break;
+
+      for (const r of bucketRows) {
+        const row = [
+          csvSafe(r.student?.registrationNumber),
+          csvSafe(`${r.student?.firstName ?? ""} ${r.student?.lastName ?? ""}`.trim()),
+          csvSafe(r.courseBucket?.name),
+          csvSafe("Bucket"),
+          csvSafe(r.subject ? r.subject.id : subjectId),
+          csvSafe(r.subject?.batch?.year ?? ""),
+          csvSafe(r.subject?.subjectType?.name ?? "")
+        ].join(",") + "\n";
+
+        if (!res.write(row)) {
+          await new Promise((resolve) => res.once("drain", resolve));
+        }
+      }
+
+      lastBucketId = bucketRows[bucketRows.length - 1].id;
+      if (bucketRows.length < batchSize) break;
+    }
+
+    // End stream
+    res.end();
+  } catch (err) {
+    console.error("Error exporting allotments:", err);
+    // If headers already sent, end the stream with error
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      try { res.end(); } catch (_) {}
+    }
+  }
+},
+
+
+  updateSubject: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const {
+      name,
+      batchId,
+      subjectTypeId,
+      semesterId,
+      departmentId,
+      schoolId,
+      facultyId,
+      programIds,
+      coursesWithSeats,
+    } = req.body;
+
+    try {
+      // Build the update data object dynamically
+      const updateData: any = {};
+
+      if (name) updateData.name = name;
+      if (batchId) updateData.batch = { connect: { id: batchId } };
+      if (subjectTypeId)
+        updateData.subjectType = { connect: { id: subjectTypeId } };
+      if (semesterId) updateData.semester = { connect: { id: semesterId } };
+      if (departmentId)
+        updateData.department = { connect: { id: departmentId } };
+      if (schoolId) updateData.school = { connect: { id: schoolId } };
+      if (facultyId) updateData.faculty = { connect: { id: facultyId } };
+      if (programIds) {
+        updateData.programs = {
+          set: programIds.map((programId: string) => ({ id: programId })),
+        };
+      }
+
+      // Update the subject
+      const updatedSubject = await prisma.subject.update({
+        where: { id },
+        data: updateData,
+      });
+
+      // Update courses with seats if provided
+      if (coursesWithSeats && coursesWithSeats.length > 0) {
+        await prisma.subjectCourseWithSeats.deleteMany({
+          where: { subjectId: id },
+        });
+
+        await prisma.subjectCourseWithSeats.createMany({
+          data: coursesWithSeats.map(
+            ({ id: courseId, seats }: { id: string; seats: number }) => ({
+              courseId,
+              subjectId: id,
+              totalSeats: seats && seats !== 0 ? seats : null,
+              availableSeats: seats && seats !== 0 ? seats : null,
+            }),
+          ),
         });
       }
 
-      // Hash password
-      const hashedPassword = await hash(password, 10);
+      res.status(200).json({
+        message: "Subject updated successfully",
+        subject: updatedSubject,
+      });
+    } catch (error) {
+      console.error("Error updating subject:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 
-      // Create student with credential in transaction
-      const student = await prisma.$transaction(async (tx) => {
-        const credential = await tx.credential.create({
-          data: {
-            email,
-            passwordHash: hashedPassword,
-            role: UserRole.Student,
+  getStudentAllotments: async (req: Request, res: Response): Promise<void> => {
+    const { id: studentId } = req.user; // Assuming `req.user` contains the authenticated student's ID
+
+    try {
+      // Fetch standalone allotments
+      const standaloneAllotments = await prisma.standaloneAllotment.findMany({
+        where: { studentId },
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              credits: true,
+              department: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
           },
-        });
-
-        // Create the student
-        const createdStudent = await tx.student.create({
-          data: {
-            firstName,
-            lastName,
-            email,
-            registrationNumber,
-            contactNumber: contactNumber || undefined,
-            gender: gender as Gender,
-            semester: parseInt(semester),
-            programId,
-            batchId,
-            credentialId: credential.id,
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              semester: {
+                select: {
+                  id: true,
+                  number: true,
+                },
+              },
+              semesters: {
+                select: {
+                  id: true,
+                  number: true,
+                },
+              },
+            },
           },
-        });
+        },
+      });
 
-        // Then fetch the student with relations separately
-        const studentWithRelations = await tx.student.findUnique({
-          where: { id: createdStudent.id },
-          include: {
+      // Fetch bucket allotments
+      const bucketAllotments = await prisma.bucketAllotment.findMany({
+        where: { studentId },
+        include: {
+          courseBucket: {
+            select: {
+              id: true,
+              name: true,
+              courses: {
+                select: {
+                  course: {
+                    select: {
+                      id: true,
+                      name: true,
+                      code: true,
+                      credits: true,
+                      department: {
+                        select: {
+                          id: true,
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          semester: {
+            select: {
+              id: true,
+              number: true,
+            },
+          },
+        },
+      });
+
+      // Combine results
+      res.status(200).json({
+        standaloneAllotments,
+        bucketAllotments,
+      });
+    } catch (error) {
+      console.error("Error fetching student allotments:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  getSubjectCourseStudents: async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    const { subjectCourseWithSeatsId } = req.params;
+    const { sectionId, search, page = 1, limit = 10 } = req.query;
+
+    try {
+      if (!subjectCourseWithSeatsId) {
+        res.status(400).json({ error: "Subject course ID is required" });
+        return;
+      }
+
+      const skip = (Number(page) - 1) * Number(limit);
+
+      // First get the subject course details
+      const subjectCourse = await prisma.subjectCourseWithSeats.findUnique({
+        where: {
+          id: subjectCourseWithSeatsId,
+        },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              subjectType: {
+                select: {
+                  name: true,
+                  allotmentType: true,
+                },
+              },
+              batch: {
+                select: {
+                  year: true,
+                },
+              },
+            },
+          },
+          course: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              credits: true,
+              department: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!subjectCourse) {
+        res.status(404).json({ error: "Subject course not found" });
+        return;
+      }
+
+      const where = {
+        AND: [
+          {
+            isDeleted: false,
+            electiveSections: {
+              some: {
+                subjectCourseWithSeatsId,
+                ...(sectionId ? { id: sectionId as string } : {}),
+              },
+            },
+          },
+          search
+            ? {
+                OR: [
+                  {
+                    firstName: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    registrationNumber: {
+                      contains: search as string,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ],
+              }
+            : {},
+        ],
+      };
+
+      const [totalCount, students] = await prisma.$transaction([
+        prisma.student.count({ where }),
+        prisma.student.findMany({
+          where,
+          select: {
+            id: true,
+            firstName: true,
+            middleName: true,
+            lastName: true,
+            registrationNumber: true,
+            semester: true,
             program: {
               select: {
-                id: true,
                 name: true,
+                department: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
             batch: {
               select: {
-                id: true,
                 year: true,
               },
             },
+            electiveSections: {
+              where: {
+                subjectCourseWithSeatsId,
+              },
+              select: {
+                name: true,
+              },
+            },
           },
-        });
+          orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+          skip,
+          take: Number(limit),
+        }),
+      ]);
 
-        if (!studentWithRelations) {
-          throw new Error("Failed to fetch created student with relations");
-        }
+      const totalPages = Math.ceil(totalCount / Number(limit));
 
-        return studentWithRelations;
-      });
-
-      // Success response matching bulk format
-      res.status(201).json({
-        message: "Student created successfully",
-        summary: {
-          totalProcessed: 1,
-          successCount: 1,
-          failedCount: 0
+      res.status(200).json({
+        subjectCourse: {
+          id: subjectCourse.id,
+          subject: subjectCourse.subject,
+          course: subjectCourse.course,
         },
-        successful: [{
-          id: student.id,
-          email: student.email,
-          registrationNumber: student.registrationNumber,
-          firstName: student.firstName,
-          lastName: student.lastName || '',
-          contactNumber: student.contactNumber || undefined,
-          gender: student.gender,
-          semester: student.semester,
-          programId: student.programId,
-          batchId: student.batchId,
-          programName: student.program.name,
-          batchYear: student.batch.year.toString(),
-          defaultPassword: password,
-          message: "Student created successfully"
-        }],
-        failed: []
+        students,
+        pagination: {
+          currentPage: Number(page),
+          totalPages,
+          totalItems: totalCount,
+          hasMore: Number(page) < totalPages,
+        },
       });
-
     } catch (error) {
-      console.error("Error creating student:", error);
-      
-      let errorMessage = "Failed to create student due to system error";
-      if (error instanceof Error) {
-        if (error.message.includes('Unique constraint')) {
-          errorMessage = "Student with this email or registration number already exists";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      res.status(500).json({
-        message: "Student creation failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email,
-          registrationNumber,
-          error: errorMessage
-        }]
-      });
+      console.error("Error fetching subject course students:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
+  getSubjectCourseInfo: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { subjectCourseWithSeatsId } = req.params;
 
-  // Bulk add students with detailed error reporting
-  // controllers/StudentController.ts - Optimized bulkAddStudents function
-
-// Bulk add students with optimized performance
-bulkAddStudents: async (req: Request, res: Response): Promise<any> => {
-  const { students } = req.body;
-
-  if (!Array.isArray(students) || students.length === 0) {
-    return res.status(400).json({ 
-      message: "Students array is required and cannot be empty",
-      summary: {
-        totalProcessed: 0,
-        successCount: 0,
-        failedCount: 0
-      },
-      successful: [],
-      failed: []
-    });
-  }
-
-  // console.log(`Starting bulk upload for ${students.length} students`);
-
-  const results = {
-    successful: [] as SuccessfulStudent[],
-    failed: [] as FailedStudent[]
-  };
-
-  try {
-    // Pre-validation - check for required fields
-    students.forEach((student: BulkStudentData, index: number) => {
-      if (!student.firstName || !student.lastName || !student.email || !student.registrationNumber) {
-        results.failed.push({
-          email: student.email || 'Unknown',
-          registrationNumber: student.registrationNumber || 'Unknown',
-          error: "Missing required fields (firstName, lastName, email, or registrationNumber)",
-          index
-        });
-      }
-    });
-
-    // Filter out invalid students
-    const validStudents = students.filter((student, index) => 
-      !results.failed.some(failed => failed.index === index)
-    );
-
-    if (validStudents.length === 0) {
-      return res.status(400).json({
-        message: "All students failed validation",
-        summary: {
-          totalProcessed: students.length,
-          successCount: 0,
-          failedCount: results.failed.length
-        },
-        successful: [],
-        failed: results.failed
-      });
-    }
-
-    // Check for duplicates in one query
-    const emails = validStudents.map(s => s.email);
-    const registrationNumbers = validStudents.map(s => s.registrationNumber);
-
-    const existingStudents = await prisma.student.findMany({
-      where: {
-        OR: [
-          { email: { in: emails } },
-          { registrationNumber: { in: registrationNumbers } }
-        ]
-      },
-      select: {
-        email: true,
-        registrationNumber: true
-      }
-    });
-
-    const existingEmails = new Set(existingStudents.map(s => s.email));
-    const existingRegistrationNumbers = new Set(existingStudents.map(s => s.registrationNumber));
-
-    // Check for duplicates within the current batch
-    const seenEmails = new Set();
-    const seenRegNumbers = new Set();
-
-    validStudents.forEach((student, index) => {
-      const originalIndex = students.findIndex(s => 
-        s.email === student.email && s.registrationNumber === student.registrationNumber
-      );
-
-      if (existingEmails.has(student.email)) {
-        results.failed.push({
-          email: student.email,
-          registrationNumber: student.registrationNumber,
-          error: "Email already exists in system",
-          index: originalIndex
-        });
-        return;
-      }
-
-      if (existingRegistrationNumbers.has(student.registrationNumber)) {
-        results.failed.push({
-          email: student.email,
-          registrationNumber: student.registrationNumber,
-          error: "Registration number already exists in system",
-          index: originalIndex
-        });
-        return;
-      }
-
-      if (seenEmails.has(student.email) || seenRegNumbers.has(student.registrationNumber)) {
-        results.failed.push({
-          email: student.email,
-          registrationNumber: student.registrationNumber,
-          error: "Duplicate email or registration number within the batch",
-          index: originalIndex
-        });
-        return;
-      }
-
-      seenEmails.add(student.email);
-      seenRegNumbers.add(student.registrationNumber);
-    });
-
-    // Final list of students to process
-    const studentsToProcess = validStudents.filter((student) => 
-      !results.failed.some(failed => 
-        failed.email === student.email && failed.registrationNumber === student.registrationNumber
-      )
-    );
-
-    // console.log(`Processing ${studentsToProcess.length} valid students out of ${students.length} total`);
-
-    if (studentsToProcess.length === 0) {
-      return res.status(400).json({
-        message: "All students failed duplicate checks",
-        summary: {
-          totalProcessed: students.length,
-          successCount: 0,
-          failedCount: results.failed.length
-        },
-        successful: [],
-        failed: results.failed
-      });
-    }
-
-    // Process students in smaller batches to avoid transaction timeouts
-    const BATCH_SIZE = 50; // Increased batch size for better performance
-    const totalBatches = Math.ceil(studentsToProcess.length / BATCH_SIZE);
-
-    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-      const startIdx = batchIndex * BATCH_SIZE;
-      const endIdx = Math.min(startIdx + BATCH_SIZE, studentsToProcess.length);
-      const batch = studentsToProcess.slice(startIdx, endIdx);
-
-      // console.log(`Processing batch ${batchIndex + 1}/${totalBatches} with ${batch.length} students`);
-
-      try {
-        // Process batch in a single transaction for better performance
-        const batchResults = await prisma.$transaction(async (tx) => {
-          const batchSuccessful: SuccessfulStudent[] = [];
-          const batchFailed: FailedStudent[] = [];
-
-          // Pre-fetch all programs and batches for this batch
-          const programIds = [...new Set(batch.map(s => s.programId))];
-          const batchIds = [...new Set(batch.map(s => s.batchId))];
-
-          const programs = await tx.program.findMany({
-            where: { id: { in: programIds } },
-            select: { id: true, name: true }
-          });
-
-          const batches = await tx.batch.findMany({
-            where: { id: { in: batchIds } },
-            select: { id: true, year: true }
-          });
-
-          const programMap = new Map(programs.map(p => [p.id, p]));
-          const batchMap = new Map(batches.map(b => [b.id, b]));
-
-          // Process each student in the current batch
-          for (const studentData of batch) {
-            try {
-              const program = programMap.get(studentData.programId);
-              const batch = batchMap.get(studentData.batchId);
-
-              if (!program) {
-                batchFailed.push({
-                  email: studentData.email,
-                  registrationNumber: studentData.registrationNumber,
-                  error: `Program with ID ${studentData.programId} not found`
-                });
-                continue;
-              }
-
-              if (!batch) {
-                batchFailed.push({
-                  email: studentData.email,
-                  registrationNumber: studentData.registrationNumber,
-                  error: `Batch with ID ${studentData.batchId} not found`
-                });
-                continue;
-              }
-
-              // Hash password
-              const hashedPassword = await hash(studentData.password, 10);
-
-              // Create credential
-              const credential = await tx.credential.create({
-                data: {
-                  email: studentData.email,
-                  passwordHash: hashedPassword,
-                  role: UserRole.Student,
-                },
-              });
-
-              // Create student
-              const createdStudent = await tx.student.create({
-                data: {
-                  firstName: studentData.firstName,
-                  lastName: studentData.lastName,
-                  email: studentData.email,
-                  registrationNumber: studentData.registrationNumber,
-                  contactNumber: studentData.contactNumber || null,
-                  gender: studentData.gender,
-                  semester: studentData.semester,
-                  programId: studentData.programId,
-                  batchId: studentData.batchId,
-                  credentialId: credential.id,
-                },
-                include: {
-                  program: {
-                    select: {
-                      id: true,
-                      name: true,
-                    },
-                  },
-                  batch: {
-                    select: {
-                      id: true,
-                      year: true,
-                    },
-                  },
-                },
-              });
-
-              batchSuccessful.push({
-                id: createdStudent.id,
-                email: createdStudent.email,
-                registrationNumber: createdStudent.registrationNumber,
-                firstName: createdStudent.firstName,
-                lastName: createdStudent.lastName || '',
-                contactNumber: createdStudent.contactNumber || undefined,
-                gender: createdStudent.gender,
-                semester: createdStudent.semester,
-                programId: createdStudent.programId,
-                batchId: createdStudent.batchId,
-                programName: createdStudent.program.name,
-                batchYear: createdStudent.batch.year.toString(),
-                defaultPassword: studentData.password,
-                message: "Student created successfully"
-              });
-
-            } catch (error) {
-              console.error(`Error creating student ${studentData.email}:`, error);
-              
-              let errorMessage = "Failed to create student";
-              if (error instanceof Error) {
-                if (error.message.includes('Unique constraint')) {
-                  errorMessage = "Duplicate email or registration number";
-                } else {
-                  errorMessage = error.message;
-                }
-              }
-
-              batchFailed.push({
-                email: studentData.email,
-                registrationNumber: studentData.registrationNumber,
-                error: errorMessage
-              });
-            }
-          }
-
-          return { batchSuccessful, batchFailed };
-        }, {
-          maxWait: 30000000, // 30000 seconds max wait
-          timeout: 60000000  // 60000 seconds timeout
-        });
-
-        results.successful.push(...batchResults.batchSuccessful);
-        results.failed.push(...batchResults.batchFailed);
-
-        // Small delay between batches to prevent overwhelming the database
-        if (batchIndex < totalBatches - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-      } catch (batchError) {
-        console.error(`Batch ${batchIndex + 1} failed:`, batchError);
-        
-        // Mark all students in this batch as failed
-        batch.forEach(studentData => {
-          results.failed.push({
-            email: studentData.email,
-            registrationNumber: studentData.registrationNumber,
-            error: "Batch processing failed - transaction timeout or system error"
-          });
-        });
-      }
-    }
-
-    // Prepare final response
-    const successCount = results.successful.length;
-    const failedCount = results.failed.length;
-    const totalProcessed = students.length;
-
-    let finalMessage = "";
-    if (successCount === totalProcessed) {
-      finalMessage = "All students created successfully";
-    } else if (failedCount === totalProcessed) {
-      finalMessage = "All students failed to create";
-    } else {
-      finalMessage = `Bulk operation completed with ${successCount} successful and ${failedCount} failed`;
-    }
-
-    // console.log(`Bulk upload completed: ${successCount} successful, ${failedCount} failed`);
-
-    res.status(201).json({
-      message: finalMessage,
-      summary: {
-        totalProcessed,
-        successCount,
-        failedCount
-      },
-      successful: results.successful,
-      failed: results.failed
-    });
-
-  } catch (error) {
-    console.error("Error in bulk student creation:", error);
-    
-    // If we get here, it's a system-level error
-    res.status(500).json({ 
-      message: "Unable to process bulk student creation due to system error",
-      summary: {
-        totalProcessed: students.length,
-        successCount: 0,
-        failedCount: students.length
-      },
-      successful: [],
-      failed: students.map(student => ({
-        email: student.email,
-        registrationNumber: student.registrationNumber,
-        error: "System error during bulk processing"
-      }))
-    });
-  }
-},
-
-  // Update a student
-  updateStudent: async (req: Request, res: Response): Promise<any> => {
-  const { id } = req.params;
-  const {
-    firstName,
-    lastName,
-    email,
-    contactNumber,
-    gender,
-    semester,
-    programId,
-    batchId,
-    password // Add this
-  } = req.body;
-
-  try {
-    // Check if student exists and is not deleted
-    const existingStudent = await prisma.student.findUnique({ 
-      where: { id },
-      include: {
-        credential: true
-      }
-    });
-
-    if (!existingStudent || existingStudent.isDeleted) {
-      return res.status(404).json({
-        message: "Student update failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email: 'Unknown',
-          registrationNumber: 'Unknown',
-          error: "Student not found"
-        }]
-      });
-    }
-
-    // Validation
-    const validationErrors: Array<{ field: string; message: string }> = [];
-
-    if (!firstName) validationErrors.push({ field: "firstName", message: "First name is required" });
-    if (!lastName) validationErrors.push({ field: "lastName", message: "Last name is required" });
-    if (!email) validationErrors.push({ field: "email", message: "Email is required" });
-    if (!gender) validationErrors.push({ field: "gender", message: "Gender is required" });
-    if (!semester) validationErrors.push({ field: "semester", message: "Semester is required" });
-    if (!programId) validationErrors.push({ field: "programId", message: "Program ID is required" });
-    if (!batchId) validationErrors.push({ field: "batchId", message: "Batch ID is required" });
-    
-    // Add password validation if password is provided
-    if (password && password.length < 6) {
-      validationErrors.push({ field: "password", message: "Password must be at least 6 characters long" });
-    }
-
-    if (validationErrors.length > 0) {
-      return res.status(400).json({
-        message: "Validation failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email: email || existingStudent.email,
-          registrationNumber: existingStudent.registrationNumber,
-          error: `Validation errors: ${validationErrors.map(e => e.message).join(', ')}`
-        }]
-      });
-    }
-
-    // Check if email is being changed and if new email already exists
-    if (email !== existingStudent.email) {
-      const emailExists = await prisma.student.findFirst({
-        where: {
-          email: email,
-          id: { not: id }
-        }
-      });
-
-      if (emailExists) {
-        return res.status(400).json({
-          message: "Student update failed",
-          summary: {
-            totalProcessed: 1,
-            successCount: 0,
-            failedCount: 1
+      const subjectCourseWithSeats =
+        await prisma.subjectCourseWithSeats.findUnique({
+          where: {
+            id: subjectCourseWithSeatsId,
           },
-          successful: [],
-          failed: [{
-            email: email,
-            registrationNumber: existingStudent.registrationNumber,
-            error: "Email already exists in system"
-          }]
-        });
-      }
-    }
-
-    // Check if program exists
-    const program = await prisma.program.findUnique({
-      where: { id: programId }
-    });
-
-    if (!program) {
-      return res.status(400).json({
-        message: "Student update failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email: email,
-          registrationNumber: existingStudent.registrationNumber,
-          error: `Program with ID ${programId} not found`
-        }]
-      });
-    }
-
-    // Check if batch exists
-    const batch = await prisma.batch.findUnique({
-      where: { id: batchId }
-    });
-
-    if (!batch) {
-      return res.status(400).json({
-        message: "Student update failed",
-        summary: {
-          totalProcessed: 1,
-          successCount: 0,
-          failedCount: 1
-        },
-        successful: [],
-        failed: [{
-          email: email,
-          registrationNumber: existingStudent.registrationNumber,
-          error: `Batch with ID ${batchId} not found`
-        }]
-      });
-    }
-
-    // Update student and credential in transaction
-    const updatedStudent = await prisma.$transaction(async (tx) => {
-      // Prepare credential update data
-      const credentialUpdateData: any = {};
-      
-      if (email !== existingStudent.email) {
-        credentialUpdateData.email = email;
-      }
-      
-      // Hash password if provided
-      if (password && password.trim() !== "") {
-        const salt = await bcrypt.genSalt(10);
-        credentialUpdateData.passwordHash = await bcrypt.hash(password, salt);
-      }
-
-      // Update credential if there are changes
-      if (Object.keys(credentialUpdateData).length > 0) {
-        await tx.credential.update({
-          where: { id: existingStudent.credentialId },
-          data: credentialUpdateData
-        });
-      }
-
-      return await tx.student.update({
-        where: { id },
-        data: {
-          firstName,
-          lastName,
-          email,
-          contactNumber: contactNumber || undefined,
-          gender: gender as Gender,
-          semester: parseInt(semester),
-          programId,
-          batchId,
-        },
-        include: {
-          program: {
-            select: {
-              id: true,
-              name: true,
-              department: {
-                select: {
-                  id: true,
-                  name: true,
-                  school: { select: { id: true, name: true } },
+          include: {
+            subject: {
+              include: {
+                batch: true,
+                subjectType: true,
+              },
+            },
+            course: {
+              include: {
+                department: true,
+              },
+            },
+            sections: {
+              include: {
+                students: {
+                  select: {
+                    id: true,
+                    registrationNumber: true,
+                    firstName: true,
+                    middleName: true,
+                    lastName: true,
+                  },
                 },
               },
             },
           },
-          batch: {
-            select: {
-              id: true,
-              year: true,
-            },
-          },
+        });
+
+      if (!subjectCourseWithSeats) {
+        res.status(404).json({ message: "Subject course not found" });
+        return;
+      }
+
+      const response = {
+        id: subjectCourseWithSeats.id,
+        subject: {
+          id: subjectCourseWithSeats.subject.id,
+          name: subjectCourseWithSeats.subject.name,
+          batch: subjectCourseWithSeats.subject.batch,
+          subjectType: subjectCourseWithSeats.subject.subjectType,
         },
-      });
-    });
+        course: {
+          id: subjectCourseWithSeats.course.id,
+          name: subjectCourseWithSeats.course.name,
+          code: subjectCourseWithSeats.course.code,
+          credits: subjectCourseWithSeats.course.credits,
+          department: subjectCourseWithSeats.course.department,
+        },
+        totalSeats: subjectCourseWithSeats.totalSeats,
+        availableSeats: subjectCourseWithSeats.availableSeats,
+        sections: subjectCourseWithSeats.sections.map((section) => ({
+          id: section.id,
+          name: section.name,
+          students: section.students,
+        })),
+      };
 
-    // Success response matching bulk format
-    res.status(200).json({
-      message: "Student updated successfully",
-      summary: {
-        totalProcessed: 1,
-        successCount: 1,
-        failedCount: 0
-      },
-      successful: [{
-        id: updatedStudent.id,
-        email: updatedStudent.email,
-        registrationNumber: updatedStudent.registrationNumber,
-        firstName: updatedStudent.firstName,
-        lastName: updatedStudent.lastName || '',
-        contactNumber: updatedStudent.contactNumber || undefined,
-        gender: updatedStudent.gender,
-        semester: updatedStudent.semester,
-        programId: updatedStudent.programId,
-        batchId: updatedStudent.batchId,
-        message: "Student updated successfully" + (password ? " with password change" : "")
-      }],
-      failed: []
-    });
-
-  } catch (error) {
-    console.error("Error updating student:", error);
-    
-    let errorMessage = "Failed to update student due to system error";
-    if (error instanceof Error) {
-      if (error.message.includes('Unique constraint')) {
-        errorMessage = "Student with this email already exists";
-      } else if (error.message.includes('Record to update not found')) {
-        errorMessage = "Student not found";
-      } else {
-        errorMessage = error.message;
-      }
-    }
-
-    // Get student details for error response
-    let studentEmail = 'Unknown';
-    let studentRegNumber = 'Unknown';
-    
-    try {
-      const student = await prisma.student.findUnique({
-        where: { id },
-        select: { email: true, registrationNumber: true }
-      });
-      if (student) {
-        studentEmail = student.email;
-        studentRegNumber = student.registrationNumber;
-      }
-    } catch (e) {
-      // Ignore error in error handling
-    }
-
-    res.status(500).json({
-      message: "Student update failed",
-      summary: {
-        totalProcessed: 1,
-        successCount: 0,
-        failedCount: 1
-      },
-      successful: [],
-      failed: [{
-        email: studentEmail,
-        registrationNumber: studentRegNumber,
-        error: errorMessage
-      }]
-    });
-  }
-},
-
-  // Soft delete a student
-  deleteStudent: async (req: Request, res: Response): Promise<any> => {
-    const { id } = req.params;
-    try {
-      const student = await prisma.student.findUnique({ where: { id } });
-
-      if (!student || student.isDeleted) {
-        return res.status(404).json({ message: "Student not found" });
-      }
-
-      await prisma.student.update({
-        where: { id },
-        data: { isDeleted: true },
-      });
-
-      res.status(200).json({ message: "Student deleted successfully" });
+      res.json(response);
     } catch (error) {
-      console.error("Error deleting student:", error);
-      res.status(500).json({ message: "Unable to delete student" });
+      console.error("Error fetching subject course info:", error);
+      res.status(500).json({ message: "Error fetching subject course info" });
     }
   },
 };
 
-export default studentController;
+export default SubjectController;

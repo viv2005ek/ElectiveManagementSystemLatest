@@ -370,6 +370,12 @@ router.post(
   authorizeRoles([UserRole.Admin]),
   SubjectController.runAllotmentsForSubject,
 );
+router.get(
+  "/:subjectId/allotments/export",
+  authorizeRoles([UserRole.Admin]),
+  SubjectController.exportSubjectAllotments,
+);
+
 
 /**
  * @swagger

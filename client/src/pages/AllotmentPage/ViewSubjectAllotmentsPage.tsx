@@ -110,88 +110,32 @@ const handleRunPendingAllotments = async () => {
 
   // Function to export allotments to CSV
   const exportAllotmentsToCSV = async () => {
-    if (!id || !subjectInfo) return;
+  if (!id) return;
+  setExportLoading(true);
+  try {
+    const response = await axiosInstance.get(`/subjects/${id}/allotments/export`, {
+      params: { search: search || undefined },
+      responseType: "blob",
+    });
 
-    setExportLoading(true);
-    try {
-      // Fetch all allotments without pagination for export
-      const response = await axiosInstance.get(
-        `/subjects/${id}/allotments`,
-        {
-          params: { 
-            search: search || undefined,
-            page: 1,
-            limit: 10000 // Large limit to get all records
-          },
-        },
-      );
-
-      const data = response.data;
-      let csvContent = "";
-      const headers = [
-        "Registration Number",
-        "Student Name",
-        "Course/Bucket",
-        "Allotment Type",
-        "Subject",
-        "Batch Year",
-        "Subject Type"
-      ];
-
-      // Add headers
-      csvContent += headers.join(",") + "\n";
-
-      // Process standalone allotments
-      if (data.standaloneAllotments && data.standaloneAllotments.length > 0) {
-        data.standaloneAllotments.forEach((allotment: any) => {
-          const row = [
-            `"${allotment.student.registrationNumber}"`,
-            `"${allotment.student.firstName} ${allotment.student.lastName}"`,
-            `"${allotment.course.name}"`,
-            `"Standalone"`,
-            `"${subjectInfo.name}"`,
-            `"${subjectInfo.batch.year}"`,
-            `"${subjectInfo.subjectType.name}"`
-          ];
-          csvContent += row.join(",") + "\n";
-        });
-      }
-
-      // Process bucket allotments
-      if (data.bucketAllotments && data.bucketAllotments.length > 0) {
-        data.bucketAllotments.forEach((allotment: any) => {
-          const row = [
-            `"${allotment.student.registrationNumber}"`,
-            `"${allotment.student.firstName} ${allotment.student.lastName}"`,
-            `"${allotment.courseBucket.name}"`,
-            `"Bucket"`,
-            `"${subjectInfo.name}"`,
-            `"${subjectInfo.batch.year}"`,
-            `"${subjectInfo.subjectType.name}"`
-          ];
-          csvContent += row.join(",") + "\n";
-        });
-      }
-
-      // Create and download CSV file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `allotments_${subjectInfo.name.replace(/\s+/g, '_')}_${subjectInfo.batch.year}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success("Allotments exported successfully");
-    } catch (error) {
-      console.error("Error exporting allotments:", error);
-      toast.error("Failed to export allotments");
-    } finally {
-      setExportLoading(false);
-    }
-  };
+    const blob = new Blob([response.data], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const safeName = (subjectInfo?.name || `subject_${id}`).replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "");
+    a.href = url;
+    a.download = `allotments_${safeName}_${subjectInfo?.batch?.year ?? ""}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    toast.success("Allotments exported successfully");
+  } catch (err: any) {
+    console.error("Export error", err);
+    toast.error(err?.response?.data?.error || "Failed to export allotments");
+  } finally {
+    setExportLoading(false);
+  }
+};
 
   const renderSubjectHeader = () => {
     if (infoLoading) {
