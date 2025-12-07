@@ -1395,6 +1395,160 @@ getAllotmentStats: async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Internal server error" });
   }
 },
+// In SubjectController (new method)
+exportSubjectAllotments: async (req: Request, res: Response): Promise<void> => {
+  const { subjectId } = req.params;
+  const { search } = req.query;
+  // declare cursor ids with types
+let lastStandaloneId: string | undefined = undefined;
+let lastBucketId: string | undefined = undefined;
+
+  try {
+    if (!subjectId) {
+      res.status(400).json({ error: "subjectId required" });
+      return;
+    }
+
+    // Headers for CSV download
+    const filename = `allotments_${subjectId}.csv`;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    // Write CSV header row
+    const header = [
+      "Registration Number",
+      "Student Name",
+      "Course/Bucket",
+      "Allotment Type",
+      "SubjectId",
+      "BatchYear",
+      "SubjectType"
+    ].join(",") + "\n";
+    res.write(header);
+
+    // Helper to safely escape CSV values
+    const csvSafe = (v: any) => {
+      const s = v == null ? "" : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+
+    // Process standalone allotments in batches using cursor pagination
+   const batchSize = 500; 
+let lastStandaloneId: string | undefined = undefined;
+
+while (true) {
+  const standaloneRows: any[] = await prisma.standaloneAllotment.findMany({
+    where: {
+      subjectId,
+      ...(search
+        ? {
+            student: {
+              OR: [
+                { firstName: { contains: String(search), mode: "insensitive" } },
+                { lastName: { contains: String(search), mode: "insensitive" } },
+                { registrationNumber: { contains: String(search), mode: "insensitive" } },
+              ],
+            },
+          }
+        : {}),
+    },
+    include: {
+      student: { select: { registrationNumber: true, firstName: true, lastName: true } },
+      course: { select: { name: true } },
+      subject: { select: { batch: { select: { year: true } }, subjectType: { select: { name: true } } } }
+    },
+    orderBy: { id: "asc" },
+    take: batchSize,
+    ...(lastStandaloneId ? { cursor: { id: lastStandaloneId }, skip: 1 } : {}),
+  });
+
+  if (!standaloneRows.length) break;
+
+  for (const r of standaloneRows) {
+    const row = [
+      csvSafe(r.student?.registrationNumber),
+      csvSafe(`${r.student?.firstName ?? ""} ${r.student?.lastName ?? ""}`.trim()),
+      csvSafe(r.course?.name),
+      csvSafe("Standalone"),
+      csvSafe(r.subject ? r.subject.id : subjectId),
+      csvSafe(r.subject?.batch?.year ?? ""),
+      csvSafe(r.subject?.subjectType?.name ?? "")
+    ].join(",") + "\n";
+
+    if (!res.write(row)) {
+      await new Promise(resolve => res.once("drain", resolve));
+    }
+  }
+
+  lastStandaloneId = standaloneRows[standaloneRows.length - 1].id;
+  if (standaloneRows.length < batchSize) break;
+}
+
+
+    let lastBucketId: string | undefined = undefined;
+
+while (true) {
+  const bucketRows: any[] = await prisma.bucketAllotment.findMany({
+    where: {
+      subjectId,
+      ...(search
+        ? {
+            student: {
+              OR: [
+                { firstName: { contains: String(search), mode: "insensitive" } },
+                { lastName: { contains: String(search), mode: "insensitive" } },
+                { registrationNumber: { contains: String(search), mode: "insensitive" } },
+              ],
+            },
+          }
+        : {}),
+    },
+    include: {
+      student: { select: { registrationNumber: true, firstName: true, lastName: true } },
+      courseBucket: { select: { name: true } },
+      subject: { select: { batch: { select: { year: true } }, subjectType: { select: { name: true } } } }
+    },
+    orderBy: { id: "asc" },
+    take: batchSize,
+    ...(lastBucketId ? { cursor: { id: lastBucketId }, skip: 1 } : {}),
+  });
+
+  if (!bucketRows.length) break;
+
+  for (const r of bucketRows) {
+    const row = [
+      csvSafe(r.student?.registrationNumber),
+      csvSafe(`${r.student?.firstName ?? ""} ${r.student?.lastName ?? ""}`.trim()),
+      csvSafe(r.courseBucket?.name),
+      csvSafe("Bucket"),
+      csvSafe(r.subject ? r.subject.id : subjectId),
+      csvSafe(r.subject?.batch?.year ?? ""),
+      csvSafe(r.subject?.subjectType?.name ?? "")
+    ].join(",") + "\n";
+
+    if (!res.write(row)) {
+      await new Promise(resolve => res.once("drain", resolve));
+    }
+  }
+
+  lastBucketId = bucketRows[bucketRows.length - 1].id;
+  if (bucketRows.length < batchSize) break;
+}
+
+
+    // End stream
+    res.end();
+  } catch (err) {
+    console.error("Error exporting allotments:", err);
+    // If headers already sent, end the stream with error
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      try { res.end(); } catch (_) {}
+    }
+  }
+},
+
 
   updateSubject: async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
