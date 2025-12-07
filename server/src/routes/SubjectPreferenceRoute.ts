@@ -59,6 +59,13 @@ router.get(
   authorizeRoles([UserRole.Student]),
   SubjectPreferenceController.getSubjectPreferencesOfStudent,
 );
+// Add this route (Admin only)
+router.get(
+  "/:subjectId/export",
+  authorizeRoles([UserRole.Admin]),   // ensure only authorized users can export
+  SubjectPreferenceController.exportSubjectPreferences,
+);
+
 
 /**
  * @swagger

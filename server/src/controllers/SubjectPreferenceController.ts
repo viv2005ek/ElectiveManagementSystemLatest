@@ -162,6 +162,183 @@ const SubjectPreferenceController = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+// Inside SubjectPreferenceController (add this method)
+exportSubjectPreferences: async (req: Request, res: Response): Promise<void> => {
+  const { subjectId } = req.params;
+  const preferenceStatus = String(req.query.preferenceStatus || "").toLowerCase();
+  const search = String(req.query.search || "").trim();
+
+  try {
+    if (!subjectId) {
+      res.status(400).json({ error: "subjectId required" });
+      return;
+    }
+
+    // fetch subject and include programs + batch + subjectType
+    const subject = await prisma.subject.findUnique({
+      where: { id: subjectId },
+      include: {
+        subjectType: true,
+        batch: true,
+        programs: { select: { id: true } },
+      },
+    });
+
+    if (!subject) {
+      res.status(404).json({ error: "Subject not found" });
+      return;
+    }
+
+    if (!subject.batch) {
+      res.status(500).json({ error: "Subject batch information missing" });
+      return;
+    }
+
+    // filename & headers
+    const safeSubjectName = (subject.name || subjectId)
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_\-]/g, "");
+    const filename = `preferences_${safeSubjectName}_${subject.batch.year ?? ""}.csv`;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    // BOM for Excel/UTF-8
+    res.write("\uFEFF");
+
+    const baseHeaders = [
+      "Registration Number",
+      "Student Name",
+      "Preference Status",
+      "Preferences Count",
+    ];
+    if (subject.subjectType.allotmentType === AllotmentType.Standalone) {
+      baseHeaders.push("Priority 1 Course", "Priority 2 Course", "Priority 3 Course");
+    } else {
+      baseHeaders.push("Priority 1 Bucket", "Priority 2 Bucket", "Priority 3 Bucket");
+    }
+    res.write(baseHeaders.join(",") + "\n");
+
+    // helpers & paging
+    const csvSafe = (v: any) => {
+      const s = v == null ? "" : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+
+    const batchSize = 500;
+    let lastStudentId: string | undefined = undefined;
+
+    // compute program ids safely
+    const programIds: string[] = Array.isArray(subject.programs)
+      ? subject.programs.map((p: any) => p.id)
+      : [];
+
+    // base where
+    const baseWhere: any = {
+      batchId: subject.batch.id,
+      programId: { in: programIds },
+      isDeleted: false,
+    };
+
+    if (search) {
+      baseWhere.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { registrationNumber: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (preferenceStatus === "filled") {
+      baseWhere.OR = [
+        ...(baseWhere.OR || []),
+        { standaloneSubjectPreferences: { some: { subjectId } } },
+        { bucketSubjectPreferences: { some: { subjectId } } },
+      ];
+    } else if (preferenceStatus === "not-filled") {
+      baseWhere.AND = [
+        { standaloneSubjectPreferences: { none: { subjectId } } },
+        { bucketSubjectPreferences: { none: { subjectId } } },
+      ];
+    }
+
+    // stream in batches
+    while (true) {
+      const studentsBatch: any[] = await prisma.student.findMany({
+        where: baseWhere,
+        orderBy: { id: "asc" },
+        take: batchSize,
+        ...(lastStudentId ? { cursor: { id: lastStudentId }, skip: 1 } : {}),
+        include: {
+          standaloneSubjectPreferences: {
+            where: { subjectId },
+            select: {
+              firstPreferenceCourse: { select: { id: true, name: true } },
+              secondPreferenceCourse: { select: { id: true, name: true } },
+              thirdPreferenceCourse: { select: { id: true, name: true } },
+            },
+          },
+          bucketSubjectPreferences: {
+            where: { subjectId },
+            select: {
+              firstPreferenceCourseBucket: { select: { id: true, name: true } },
+              secondPreferenceCourseBucket: { select: { id: true, name: true } },
+              thirdPreferenceCourseBucket: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
+
+      if (!studentsBatch || studentsBatch.length === 0) break;
+
+      for (const s of studentsBatch) {
+        const isFilled =
+          (s.standaloneSubjectPreferences && s.standaloneSubjectPreferences.length > 0) ||
+          (s.bucketSubjectPreferences && s.bucketSubjectPreferences.length > 0);
+
+        const rowParts: string[] = [
+          csvSafe(s.registrationNumber),
+          csvSafe(`${s.firstName ?? ""} ${s.lastName ?? ""}`.trim()),
+          csvSafe(isFilled ? "Completed" : "Pending"),
+          csvSafe(isFilled ? "Has Preferences" : "No Preferences"),
+        ];
+
+        if (s.standaloneSubjectPreferences && s.standaloneSubjectPreferences.length > 0) {
+          const p = s.standaloneSubjectPreferences[0];
+          rowParts.push(
+            csvSafe(p.firstPreferenceCourse?.name ?? "Not selected"),
+            csvSafe(p.secondPreferenceCourse?.name ?? "Not selected"),
+            csvSafe(p.thirdPreferenceCourse?.name ?? "Not selected"),
+          );
+        } else if (s.bucketSubjectPreferences && s.bucketSubjectPreferences.length > 0) {
+          const p = s.bucketSubjectPreferences[0];
+          rowParts.push(
+            csvSafe(p.firstPreferenceCourseBucket?.name ?? "Not selected"),
+            csvSafe(p.secondPreferenceCourseBucket?.name ?? "Not selected"),
+            csvSafe(p.thirdPreferenceCourseBucket?.name ?? "Not selected"),
+          );
+        } else {
+          rowParts.push(csvSafe("Not selected"), csvSafe("Not selected"), csvSafe("Not selected"));
+        }
+
+        const row = rowParts.join(",") + "\n";
+        if (!res.write(row)) {
+          await new Promise((resolve) => res.once("drain", resolve));
+        }
+      }
+
+      lastStudentId = studentsBatch[studentsBatch.length - 1].id as string;
+      if (studentsBatch.length < batchSize) break;
+    }
+
+    res.end();
+  } catch (err) {
+    console.error("Error exporting preferences:", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      try { res.end(); } catch (_) {}
+    }
+  }
+},
+
 
   getSubjectPreferences: async (req: Request, res: Response): Promise<void> => {
   const { subjectId } = req.params;

@@ -84,102 +84,41 @@ export default function SubjectPreferencesPage() {
   };
 
   // Export functionality
-  const handleExportData = async () => {
-    if (!id || !subjectInfo) return;
+ const handleExportData = async () => {
+  if (!id || !subjectInfo) return;
 
-    setExportLoading(true);
-    try {
-      // Fetch all preferences for export (without pagination)
-      const response = await axiosInstance.get(
-        `/subject-preferences/${id}`,
-        {
-          params: { 
-            preferenceStatus: tabs.find((tab) => tab.name === activeTab)?.value || "",
-            search: search || undefined,
-            page: 1,
-            limit: 10000 // Large limit to get all records
-          },
-        },
-      );
+  setExportLoading(true);
+  try {
+    const params = {
+      preferenceStatus: tabs.find((tab) => tab.name === activeTab)?.value || "",
+      search: search || undefined,
+    };
 
-      const exportData = response.data;
-      let csvContent = "";
-      
-      // Define headers based on allotment type
-      const headers = [
-        "Registration Number",
-        "Student Name",
-        "Preference Status",
-        "Preferences Count"
-      ];
+    const response = await axiosInstance.get(`/subject-preferences/${id}/export`, {
+      params,
+      responseType: "blob",
+    });
 
-      // Add preference columns based on allotment type - FIXED: Use enum values
-      if (subjectInfo.subjectType.allotmentType === AllotmentType.STANDALONE) {
-        headers.push("Priority 1 Course", "Priority 2 Course", "Priority 3 Course");
-      } else if (subjectInfo.subjectType.allotmentType === AllotmentType.BUCKET) {
-        headers.push("Priority 1 Bucket", "Priority 2 Bucket", "Priority 3 Bucket");
-      }
+    const blob = new Blob([response.data], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const safeName = (subjectInfo?.name || `subject_${id}`).replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "");
+    a.href = url;
+    a.download = `preferences_${safeName}_${subjectInfo?.batch?.year ?? ""}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
 
-      // Add headers
-      csvContent += headers.join(",") + "\n";
+    toast.success("Preferences exported successfully");
+  } catch (err: any) {
+    console.error("Error exporting preferences:", err);
+    toast.error(err?.response?.data?.error || "Failed to export preferences");
+  } finally {
+    setExportLoading(false);
+  }
+};
 
-      // Process students data
-      if (exportData.students && exportData.students.length > 0) {
-        exportData.students.forEach((student: any) => {
-          const baseRow = [
-            `"${student.registrationNumber}"`,
-            `"${student.firstName} ${student.lastName}"`,
-            `"${student.isPreferenceFilled ? 'Completed' : 'Pending'}"`,
-            `"${student.preferences ? 'Has Preferences' : 'No Preferences'}"`
-          ];
-
-          // Add preferences based on allotment type
-          let preferenceRow = baseRow;
-          
-          if (student.preferences) {
-            if (subjectInfo.subjectType.allotmentType === AllotmentType.STANDALONE) {
-              preferenceRow.push(
-                `"${student.preferences.firstPreferenceCourse?.name || 'Not selected'}"`,
-                `"${student.preferences.secondPreferenceCourse?.name || 'Not selected'}"`,
-                `"${student.preferences.thirdPreferenceCourse?.name || 'Not selected'}"`
-              );
-            } else if (subjectInfo.subjectType.allotmentType === AllotmentType.BUCKET) {
-              preferenceRow.push(
-                `"${student.preferences.firstPreferenceCourseBucket?.name || 'Not selected'}"`,
-                `"${student.preferences.secondPreferenceCourseBucket?.name || 'Not selected'}"`,
-                `"${student.preferences.thirdPreferenceCourseBucket?.name || 'Not selected'}"`
-              );
-            }
-          } else {
-            // Add empty columns for no preferences
-            for (let i = 1; i <= 3; i++) {
-              preferenceRow.push('"Not selected"');
-            }
-          }
-
-          csvContent += preferenceRow.join(",") + "\n";
-        });
-      }
-
-      // Create and download CSV file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `preferences_${subjectInfo.name.replace(/\s+/g, '_')}_${subjectInfo.batch.year}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success("Preferences exported successfully");
-    } catch (error) {
-      console.error("Error exporting preferences:", error);
-      toast.error("Failed to export preferences");
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
   const renderSubjectHeader = () =>
     infoLoading ? (
